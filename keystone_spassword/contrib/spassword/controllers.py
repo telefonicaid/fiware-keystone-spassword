@@ -42,7 +42,7 @@ LOG = log.getLogger(__name__)
 
 class CheckPassword(object):
 
-    def my_check_password(self, new_password):
+    def strong_check_password(self, new_password):
         # Check password strengh
         try:
             import cracklib
@@ -56,31 +56,37 @@ class CheckPassword(object):
                         'weak password can be used when changing')
 
 
-class PasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
+class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
 
     def __init__(self):
-        super(PasswordScimUserV3Controller, self).__init__()
+        super(SPasswordScimUserV3Controller, self).__init__()
 
     def patch_user(self, context, user_id, **kwargs):
         scim = self._denormalize(kwargs)
         user = conv.user_scim2key(scim)
         if 'password' in user:
-            super(PasswordScimUserV3Controller, self).my_check_password(user['password'])
+            super(SPasswordScimUserV3Controller, self).strong_check_password(user['password'])
 
         # TODO: update_user_modification_time()
-        return super(PasswordScimUserV3Controller, self).patch_user(context, user_id, **kwargs)
+        return super(SPasswordScimUserV3Controller, self).patch_user(context, user_id, **kwargs)
     
     def put_user(self, context, user_id, **kwargs):
         return self.patch_user(context, user_id, **kwargs)
 
+    def create_user(self, context, user):
+        if 'password' in user:
+            super(SPasswordScimUserV3Controller, self).strong_check_password(user['password'])            
+            
+        return super(SPasswordScimUserV3Controller, self).create_user(context, user)        
+    
 
 class PasswordUserV3Controller(UserV3, CheckPassword):
 
     def __init__(self):
-        super(PasswordUserV3Controller, self).__init__()
+        super(SPasswordUserV3Controller, self).__init__()
 
     def create_user(self, context, user):
         if 'password' in user:
-            super(PasswordUserV3Controller, self).my_check_password(user['password'])            
+            super(SPasswordUserV3Controller, self).strong_check_password(user['password'])            
 
-        return super(PasswordUserV3Controller, self).create_user(context, user)        
+        return super(SPasswordUserV3Controller, self).create_user(context, user)        

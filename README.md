@@ -35,11 +35,6 @@ Authentication and Authorization mechanism in it's
 [official documentation](https://github.com/openstack/identity-api/blob/master/v3/src/markdown/identity-api-v3.md).
 
 
-Given that both Keystones Auth mechanisms and SCIM are document, this section
-focus on running examples, not covering the full API, but giving the reader
-and overview of how this extension should be used.
-
-
 ## Building and packaging
 
 In any OS (Linux, OSX) with a sane build environment (basically with `rpmbuild`

@@ -18,6 +18,7 @@ BuildArch: noarch
 %define python_lib /usr/lib/python2.6/site-packages
 %define keystone_paste /usr/share/keystone/keystone-dist-paste.ini
 %define keystone_policy /etc/keystone/policy.json
+%define keystone_conf /etc/keystone/keystone.conf
 
 %description
 SPASSWORD (System for ensure Strong passwords) extension for Keystone
@@ -43,6 +44,23 @@ else
   echo "SPASSWORD extension already configured. Skipping."
 fi
 
+if ! grep -q -F "password=keystone_spassword.contrib.spassword.SPassword" "%{keystone_conf}"; then
+  echo "Adding new spassword plugin module."
+  sed -i \
+      -e 's/\#password=keystone.auth.plugins.password.Password$/password=keystone_spassword.contrib.spassword.SPassword&/' \
+    %{keystone_conf}
+else
+  echo "Already installed spassword Password plugin module. Skipping."
+fi
+
+if ! grep -q -F "driver=keystone_spassword.contrib.spassword.backends.sql.Identity" "%{keystone_conf}"; then
+  echo "Adding new spassword plugin module."
+  sed -i \
+      -e 's/\#driver=keystone.identity.backends.sql.Identity$/driver=keystone_spassword.contrib.spassword.backends.sql.Identity&/' \
+    %{keystone_conf}
+else
+  echo "Already installed spassword Identity plugin module. Skipping."
+fi
 
 echo "SPASSWORD extension installed successfully. Restart Keystone daemon to take effect."
 
@@ -59,6 +77,16 @@ if grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
   -e 's/spassword_checker //g' \
   -e 's/spassword_time //g' \     
   %{keystone_paste}
+else
+  echo "SPASSWORD extension not configured. Skipping."
+fi
+
+if grep -q -F "[filter:spassword_checker]" "%{keystone_conf}"; then
+  echo "Removing SPASSWORD password and identity plugin extensions from Keystone configuration."
+  sed -i \
+  -e 's/password=keystone_spassword.contrib.spassword.SPassword //g' \
+  -e 's/driver=keystone_spassword.contrib.spassword.backends.sql.Identity //g' \     
+  %{keystone_conf}
 else
   echo "SPASSWORD extension not configured. Skipping."
 fi
