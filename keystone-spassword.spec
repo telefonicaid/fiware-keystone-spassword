@@ -62,6 +62,8 @@ else
   echo "Already installed spassword Identity plugin module. Skipping."
 fi
 
+keystone-manage db_sync --extension password
+
 echo "SPASSWORD extension installed successfully. Restart Keystone daemon to take effect."
 
 %preun

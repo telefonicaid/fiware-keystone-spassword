@@ -32,8 +32,8 @@ from keystone import identity
 from keystone.openstack.common import log
 from keystone.openstack.common import versionutils
 from keystone.common import manager
-from keystone_spassword.contrib.spassword.controllers import PasswordScimUserV3Controller
-from keystone_spassword.contrib.spassword.controllers import PasswordUserV3Controller
+from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
+from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
 LOG = log.getLogger(__name__)
 
 @dependency.provider('example_kk_api')
@@ -127,9 +127,8 @@ class PasswordExtension(wsgi.ExtensionRouter):
 
     def add_routes(self, mapper):
 
-        scim_user_controller = PasswordScimUserV3Controller()
-
-        user_controller = PasswordUserV3Controller()
+        scim_user_controller = SPasswordScimUserV3Controller()
+        user_controller = SPasswordUserV3Controller()
 
         # SCIM User Operations
         mapper.connect(

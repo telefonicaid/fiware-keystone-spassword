@@ -81,6 +81,7 @@ this will use `sqlite`).
 
 ```sh
 keystone-manage db_sync
+keystone-manage db_sync --extension spassword
 ```
 
 Launch server
