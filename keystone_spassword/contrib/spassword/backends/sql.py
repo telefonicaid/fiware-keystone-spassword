@@ -31,14 +31,16 @@ from keystone_spassword.contrib.spassword import Driver
 
 LOG = log.getLogger(__name__)
 
+
 class PasswordModel(sql.ModelBase, sql.DictBase):
-    __tablename__ = 'password'
-    attributes = ['user_id', 'creation_time', 'login_atemps_among'] 
+    __tablename__ = 'spassword'
+    attributes = ['user_id', 'creation_time', 'login_attempts_among']
     user_id = sql.Column(sql.String(64), primary_key=True)
     creation_time = sql.Column(sql.DateTime(), default=None)
-    login_atemps_among = sql.Column(sql.Integer, default=0)
-    # bad_attemps
+    login_attempts_among = sql.Column(sql.Integer, default=0)
+    # bad_attempts
     extra = sql.Column(sql.JsonBlob())
+
 
 class Password(Driver):
 
@@ -61,11 +63,10 @@ class Password(Driver):
                 session.add(password_ref)
         else:
             password_ref['creation_time'] = timeutils.utcnow()
-            password_ref['login_atemps_among'] = 0
+            password_ref['login_attempts_among'] = 0
 
         return password_ref.to_dict()
 
-        
     def update_user_modification_time(self, user):
         session = sql.get_session()
         password_ref = session.query(PasswordModel).get(user['id'])
@@ -76,9 +77,9 @@ class Password(Driver):
             data_user['user_id'] = user['id']
             data_user['creation_time'] = timeutils.utcnow()
             password_ref = PasswordModel.from_dict(data_user)
-            password_ref['login_atemps_among'] = 0                        
+            password_ref['login_attempts_among'] = 0
             with session.begin():
-                session.add(password_ref)            
+                session.add(password_ref)
 
 
 class Identity(Identity):
@@ -92,12 +93,11 @@ class Identity(Identity):
             expiration_date = datetime.datetime.today() - datetime.timedelta(2*365/12)
             if (password_ref['creation_time'] < expiration_date):
                 print "PASSWORD EXPIRED!"
-                #TODO: return False ?
-
+                # TODO: return False ?
             
         res = super(Identity, self)._check_password(password, user_ref)
         # TODO: Reset or increase login retries
-        #password_ref['login_atemps_among'] = 0
+        # password_ref['login_attempts_among'] = 0
         return res
 
     # Identity interface
@@ -108,11 +108,11 @@ class Identity(Identity):
 
         if password_ref:
             if not res:
-                password_ref['login_atemps_among'] += 1
+                password_ref['login_attempts_among'] += 1
 
             res['extras'] = {
                 "password_creation_time": str(password_ref['creation_time']),
-                "login_atemps_among": password_ref['login_atemps_among']
+                "login_attempts_among": password_ref['login_attempts_among']
             }
         return res
 
