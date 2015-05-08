@@ -50,8 +50,9 @@ class CheckPassword(object):
             try:
                 cracklib.VeryFascistCheck(new_password)
             except ValueError, msg:
-                raise exception.ValidationError(target='user',
-                        attribute='The password is too weak ({0})'.format(msg))
+                raise exception.SchemaValidationError(
+                    target='user',
+                    attribute='The password is too weak ({0})'.format(msg))
         except ImportError:  # not used if not configured (dev environments)
             LOG.error('cracklib module is not properly configured, '
                         'weak password can be used when changing')
