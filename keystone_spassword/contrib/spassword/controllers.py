@@ -50,7 +50,7 @@ class CheckPassword(object):
             try:
                 cracklib.VeryFascistCheck(new_password)
             except ValueError, msg:
-                raise exception.SchemaValidationError(
+                raise exception.ValidationError(
                     target='user',
                     attribute='The password is too weak ({0})'.format(msg))
         except ImportError:  # not used if not configured (dev environments)
@@ -71,8 +71,10 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
                 user['password'])
 
         # TODO: update_user_modification_time()
-        return super(SPasswordScimUserV3Controller, self).patch_user(context, user_id, **kwargs)
-    
+        return super(SPasswordScimUserV3Controller, self).patch_user(context,
+                                                                     user_id,
+                                                                     **kwargs)
+
     def put_user(self, context, user_id, **kwargs):
         return self.patch_user(context, user_id, **kwargs)
 
@@ -82,18 +84,17 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
                 user['password'])
 
         return super(SPasswordScimUserV3Controller, self).create_user(context,
-                                                                      user)
-
+                                                                      user=user)
 
 class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def __init__(self):
         super(SPasswordUserV3Controller, self).__init__()
 
+    @controller.protected()
     def create_user(self, context, user):
         if 'password' in user:
             super(SPasswordUserV3Controller, self).strong_check_password(
                 user['password'])
-
         return super(SPasswordUserV3Controller, self).create_user(context,
-                                                                  user)
+                                                                  user=user)

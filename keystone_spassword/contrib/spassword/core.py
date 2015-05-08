@@ -143,14 +143,14 @@ class PasswordExtension(wsgi.ExtensionRouter):
             action='put_user',
             conditions=dict(method=['PUT']))
 
-        # User Operations        
+        # User Operations
         mapper.connect(
             '/users',
             controller=user_controller,
             action='create_user',
             conditions=dict(method=['POST']))
 
-        # TODO: Add for create user using OS-SCIM API
+        # Create user using OS-SCIM API
         mapper.connect(
             '/OS-SCIM/Users',
             controller=scim_user_controller,
