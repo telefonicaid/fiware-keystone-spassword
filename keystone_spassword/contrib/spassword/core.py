@@ -29,14 +29,15 @@ from keystone.common import extension
 from keystone.common import wsgi
 from keystone import exception
 from keystone import identity
-from keystone.openstack.common import log
+try: from oslo_log import log
+except ImportError: from keystone.openstack.common import log
 from keystone.openstack.common import versionutils
 from keystone.common import manager
 from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
 from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
 LOG = log.getLogger(__name__)
 
-@dependency.provider('example_kk_api')
+#@dependency.provider('example_kk_api')
 class Manager(manager.Manager):
     """Password Manager.
 
@@ -123,6 +124,7 @@ class PasswordMiddleware(wsgi.Middleware):
         return super(PasswordMiddleware, self).__init__(*args, **kwargs)
 
 
+# TODO: put it in routers.py
 class PasswordExtension(wsgi.ExtensionRouter):
 
     def add_routes(self, mapper):
@@ -149,6 +151,25 @@ class PasswordExtension(wsgi.ExtensionRouter):
             controller=user_controller,
             action='create_user',
             conditions=dict(method=['POST']))
+
+        mapper.connect(
+            '/users',
+            controller=user_controller,
+            action='update_user',
+            conditions=dict(method=['PUT']))
+
+        mapper.connect(
+            '/users/{user_id}/password',
+            controller=user_controller,
+            action='change_password',
+            conditions=dict(method=['POST']))
+
+        # # New User operations: recover password
+        # mapper.connect(
+        #     '/users/{user_id}/password',
+        #     controller=user_controller,
+        #     action='recover_password',
+        #     conditions=dict(method=['PUT']))
 
         # Create user using OS-SCIM API
         mapper.connect(
@@ -190,6 +211,8 @@ class SPassword(password.Password):
             user_context['extras'] = res['extras']
 
     def recover_password(self, context, auth_payload, user_context):
+        # auth_payload = {u'user': {u'domain': {u'name': u'SmartCity'}, u'password': u'password', u'name': u'adm1'}}
+
         """Perform user password recover procedure."""
         user_info = password.UserAuthInfo.create(auth_payload)
 
@@ -197,6 +220,7 @@ class SPassword(password.Password):
         if not user_info.user_ref['email']:
             msg = 'User has no email defined'
             raise exception.Unauthorized(msg)
+
         # Create a new password randonly
         new_password = uuid.uuid4().hex
 

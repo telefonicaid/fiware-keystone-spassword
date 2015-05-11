@@ -33,7 +33,8 @@ from keystone import identity
 from keystone.identity.controllers import UserV3
 from keystone_scim.contrib.scim.controllers import ScimUserV3Controller
 from keystone_scim.contrib.scim import converter as conv
-from keystone.openstack.common import log
+try: from oslo_log import log
+except ImportError: from keystone.openstack.common import log
 
 
 CONF = config.CONF
@@ -86,6 +87,7 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
         return super(SPasswordScimUserV3Controller, self).create_user(context,
                                                                       user=user)
 
+
 class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def __init__(self):
@@ -98,3 +100,23 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                 user['password'])
         return super(SPasswordUserV3Controller, self).create_user(context,
                                                                   user=user)
+
+    @controller.protected()
+    def update_user(self, context, user_id, user):
+        if 'password' in user:
+            super(SPasswordUserV3Controller, self).strong_check_password(
+                user['password'])
+        return super(SPasswordUserV3Controller, self).update_password(context,
+                                                                      user_id=user_id,
+                                                                      user=user)
+
+    @controller.protected()
+    def change_password(self, context, user_id, user):
+        if 'password' in user:
+            super(SPasswordUserV3Controller, self).strong_check_password(
+                user['password'])
+        return super(SPasswordUserV3Controller, self).change_password(context,
+                                                                      user_id=user_id,
+                                                                      user=user)
+
+    # def recover_password(self, context, user): ?
