@@ -38,7 +38,7 @@ if ! grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
   echo "Adding SPASSWORD extension to Keystone configuration."
   sed -i \
   -e '/^\[pipeline:api_v3\]$/,/^\[/ s/^pipeline\(.*\) service_v3$/pipeline\1 spassword_checker spassword_time scim_extension service_v3/' \
-  -e 's/\[pipeline:api_v3\]/[filter:spassword_checker]\npaste.filter_factory = keystone_spassword.contrib.spassword.PasswordExtension.factory\n\n&/' \
+  -e 's/\[pipeline:api_v3\]/[filter:spassword_checker]\npaste.filter_factory = keystone_spassword.contrib.spassword.routers.PasswordExtension.factory\n\n&/' \
   -e 's/\[pipeline:api_v3\]/[filter:spassword_time]\npaste.filter_factory = keystone_spassword.contrib.spassword.PasswordMiddleware.factory\n\n&/' \  
   %{keystone_paste}
 else
