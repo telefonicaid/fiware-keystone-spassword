@@ -103,16 +103,12 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                                                                       user_id=user_id,
                                                                       user=user)
 
-    def recover_password(self, context, user_id, user):
-        #def recover_password(self, context, auth_payload, user_context):
-        # auth_payload = {u'user': {u'domain': {u'name': u'SmartCity'}, u'password': u'password', u'name': u'adm1'}}
-
+    def recover_password(self, context, user_id):
         """Perform user password recover procedure."""
-        #user_info = password.UserAuthInfo.create(auth_payload)
-        # TODO: recover user info from DB
+        user_info = self.identity_api.get_user(user_id)
 
         # Check if user has a email defined
-        if not user_info.user_email:
+        if not 'email' in user_info:
             msg = 'User has no email defined'
             raise exception.Unauthorized(msg)
 
@@ -122,41 +118,17 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         # Set new user password
         try:
             update_dict = {'password': new_password}
-            self.identity_api.update_user(context, user_id, update_dict)
-            # if 'J' in versionutils.deprecated._RELEASES:
-            #     self.identity_api.change_password(
-            #         context,
-            #         user_id=user_info.user_id,
-            #         original_password=user_info.password,
-            #         new_password=new_password)
-            # else:
-            #     self.identity_api.change_password(
-            #         context,
-            #         user_id=user_info.user_id,
-            #         original_password=user_info.password,
-            #         new_password=new_password,
-            #         domain_scope=user_info.domain_id)
+            self.identity_api.update_user( user_id, user_ref=update_dict)
         except AssertionError:
             # authentication failed because of invalid username or password
             msg = 'Invalid username or password'
             raise exception.Unauthorized(msg)
 
-        # TODO: Send email to user with new reset password
-        # TODO: set mail options in plugin conf section of keystone.conf
-        self.send_recovery_password_email(user_info.user_ref['email'],
+        self.send_recovery_password_email(user_info['email'],
                                           new_password)
 
     def send_recovery_password_email(self, user_email, user_password):
         import smtplib
-
-        # SMTP_SERVER = "smtp.gmail.com"
-        SMTP_SERVER = 'correo.tid.es'
-        SMTP_PORT = 587
-        SMTP_TLS = True
-
-        SMTPUSER = 'iot_support@tid.es'
-        PASSWORD = ''
-        FROM = "iot_support@tid.es"
 
         # TO = [user_email] # must be a list
         TO = ["alvaro.vegagarcia@telefonica.com"]  # must be a list
@@ -165,17 +137,17 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
         # Prepare actual message
         mail_headers = ("From: \"%s\" <%s>\r\nTo: %s\r\n"
-                        % (FROM, FROM, ", ".join(TO)))
+                        % (CONF.spassword.smtp_from, CONF.spassword.smtp_from, ", ".join(TO)))
 
         msg = mail_headers
         msg += ("Subject: %s\r\n\r\n" % SUBJECT)
         msg += TEXT
 
         # Send the mail
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server = smtplib.SMTP(CONF.spassword.smtp_server, CONF.spassword.smtp_port)
         server.ehlo()
         server.starttls()
         server.ehlo
-        server.login(SMTPUSER, PASSWORD)
-        server.sendmail(FROM, TO, msg)
+        server.login(CONF.spassword.smtpuser, CONF.spassword.smtppassword)
+        server.sendmail(CONF.spassword.smtp_from, TO, msg)
         server.quit()

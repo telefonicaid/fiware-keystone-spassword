@@ -64,12 +64,12 @@ class PasswordExtension(wsgi.ExtensionRouter):
             action='change_password',
             conditions=dict(method=['POST']))
 
-        # # New User operations: recover password
-        # mapper.connect(
-        #     '/users/{user_id}/password',
-        #     controller=user_controller,
-        #     action='recover_password',
-        #     conditions=dict(method=['PUT']))
+        # New User operations: recover password
+        mapper.connect(
+            '/users/{user_id}/recover_password',
+            controller=user_controller,
+            action='recover_password',
+            conditions=dict(method=['GET']))
 
         # Create user using OS-SCIM API
         mapper.connect(

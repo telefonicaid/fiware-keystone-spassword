@@ -63,6 +63,17 @@ else
   echo "Already installed spassword Identity plugin module. Skipping."
 fi
 
+if ! grep -q -F "[spassword]"; then
+    echo "Adding spassword config "
+    echo "[spassword]
+enabled=false
+smtp_server = 'correo.tid.es'
+smtp_port = 587
+smtp_tls = True
+smtp_user = 'iot_support@tid.es'
+smtp_password = ''
+smtp_from = 'iot_support@tid.es' ">  %{keystone_conf}
+
 keystone-manage db_sync --extension password
 
 echo "SPASSWORD extension installed successfully. Restart Keystone daemon to take effect."
