@@ -103,8 +103,6 @@ class Identity(Identity):
 
     # Identity interface
     def authenticate(self, user_id, password):
-        import ipdb
-        ipdb.set_trace()
         res = super(Identity, self).authenticate(user_id, password)
         session = sql.get_session()
         spassword_ref = session.query(PasswordModel).get(user_id)
