@@ -20,8 +20,9 @@
 
 import time
 import datetime
-from oslo.utils import timeutils
 
+from oslo.utils import timeutils
+from keystone import config
 from keystone.common import sql
 from keystone import exception
 from keystone.identity.backends.sql import User, Identity
@@ -29,12 +30,14 @@ from keystone_spassword.contrib.spassword import Driver
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
+CONF = config.CONF
+
 LOG = log.getLogger(__name__)
 
 
 class PasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
-    attributes = ['user_id', 'creation_time', 'login_attempts_among']
+    attributes = ['user_id', 'user_name', 'creation_time', 'login_attempts_among']
     user_id = sql.Column(sql.String(64), primary_key=True)
     creation_time = sql.Column(sql.DateTime(), default=None)
     login_attempts_among = sql.Column(sql.Integer, default=0)
@@ -57,6 +60,7 @@ class Password(Driver):
         if not spassword_ref:
             data_user = {}
             data_user['user_id'] = user['id']
+            data_user['user_id'] = user['name']
             data_user['creation_time'] = timeutils.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
             with session.begin():
@@ -75,7 +79,7 @@ class Password(Driver):
         else:
             data_user = {}
             data_user['user_id'] = user['id']
-            #data_user['user_name'] = user['name']
+            data_user['user_name'] = user['name']
             data_user['creation_time'] = timeutils.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
             spassword_ref['login_attempts_among'] = 0
@@ -90,12 +94,12 @@ class Identity(Identity):
         spassword_ref = session.query(PasswordModel).get(user_ref['id'])
         if not (spassword_ref == None):
             # Check password time: 2 months
-            # TODO: get expiration_time from settings
-            expiration_date = datetime.datetime.today() - datetime.timedelta(2*365/12)
+            expiration_date = datetime.datetime.today() - \
+              datetime.timedelta(CONF.spassword.password_expiration_days)
             if (spassword_ref['creation_time'] < expiration_date):
                 print "PASSWORD EXPIRED!"
                 # TODO: return False ?
-            
+
         res = super(Identity, self)._check_password(password, user_ref)
         # TODO: Reset or increase login retries
         # spassword_ref['login_attempts_among'] = 0

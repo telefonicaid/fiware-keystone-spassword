@@ -72,7 +72,8 @@ smtp_port = 587
 smtp_tls = True
 smtp_user = 'iot_support@tid.es'
 smtp_password = ''
-smtp_from = 'iot_support@tid.es' ">  %{keystone_conf}
+smtp_from = 'iot_support@tid.es'
+password_expiration_days = 2*365/12 ">  %{keystone_conf}
 
 keystone-manage db_sync --extension password
 
