@@ -30,17 +30,18 @@ from keystone_spassword.contrib.spassword import Driver
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
-CONF = config.CONF
 
+from oslo.config import cfg
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
 class PasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
-    attributes = ['user_id', 'user_name', 'creation_time', 'login_attempts_among']
+    attributes = ['user_id', 'user_name', 'creation_time', 'login_attempts']
     user_id = sql.Column(sql.String(64), primary_key=True)
     creation_time = sql.Column(sql.DateTime(), default=None)
-    login_attempts_among = sql.Column(sql.Integer, default=0)
+    login_attempts = sql.Column(sql.Integer, default=0)
     # bad_attempts
     extra = sql.Column(sql.JsonBlob())
 
@@ -67,7 +68,7 @@ class Password(Driver):
                 session.add(spassword_ref)
         else:
             spassword_ref['creation_time'] = timeutils.utcnow()
-            spassword_ref['login_attempts_among'] = 0
+            spassword_ref['login_attempts'] = 0
 
         return spassword_ref.to_dict()
 
@@ -82,7 +83,7 @@ class Password(Driver):
             data_user['user_name'] = user['name']
             data_user['creation_time'] = timeutils.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
-            spassword_ref['login_attempts_among'] = 0
+            spassword_ref['login_attempts'] = 0
             with session.begin():
                 session.add(spassword_ref)
 
@@ -97,27 +98,29 @@ class Identity(Identity):
             expiration_date = datetime.datetime.today() - \
               datetime.timedelta(CONF.spassword.password_expiration_days)
             if (spassword_ref['creation_time'] < expiration_date):
-                print "PASSWORD EXPIRED!"
+                LOG.error('password of user %s %s expired ' % (user_ref['id'],
+                                                               user_ref['name']))
                 # TODO: return False ?
 
         res = super(Identity, self)._check_password(password, user_ref)
         # TODO: Reset or increase login retries
-        # spassword_ref['login_attempts_among'] = 0
+        # spassword_ref['login_attempts'] = 0
         return res
 
     # Identity interface
     def authenticate(self, user_id, password):
         res = super(Identity, self).authenticate(user_id, password)
+
         session = sql.get_session()
         spassword_ref = session.query(PasswordModel).get(user_id)
 
         if spassword_ref:
             if not res:
-                spassword_ref['login_attempts_among'] += 1
+                spassword_ref['login_attempts'] += 1
 
             res['extras'] = {
                 "password_creation_time": str(spassword_ref['creation_time']),
-                "login_attempts_among": spassword_ref['login_attempts_among']
+                "login_attempts": spassword_ref['login_attempts']
             }
         #
         # else:  # if no sspassword_ref set creation time to now() ?

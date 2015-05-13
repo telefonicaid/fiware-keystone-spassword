@@ -19,6 +19,11 @@
 # under the License.
 
 from keystone import exception
+from keystone import config
+
+from oslo.config import cfg
+CONF = cfg.CONF
+
 
 class CheckPassword(object):
 
@@ -27,7 +32,8 @@ class CheckPassword(object):
         try:
             import cracklib
             try:
-                cracklib.VeryFascistCheck(new_password)
+                if CONF.spassword.enabled:
+                    cracklib.VeryFascistCheck(new_password)
             except ValueError, msg:
                 raise exception.ValidationError(
                     target='user',

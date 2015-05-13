@@ -37,8 +37,8 @@ from keystone_spassword.contrib.spassword.checker import CheckPassword
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
-
-CONF = config.CONF
+from oslo.config import cfg
+CONF = cfg.CONF
 
 LOG = log.getLogger(__name__)
 
@@ -130,8 +130,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
     def send_recovery_password_email(self, user_email, user_password):
         import smtplib
 
-        # TO = [user_email] # must be a list
-        TO = ["alvaro.vegagarcia@telefonica.com"]  # must be a list
+        TO = [user_email] # must be a list
         SUBJECT = "IoT Platform recovery password"
         TEXT = "Your new password is %s" % user_password
 

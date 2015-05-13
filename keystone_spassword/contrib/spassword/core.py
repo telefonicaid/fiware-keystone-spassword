@@ -37,7 +37,18 @@ from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3
 from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
 LOG = log.getLogger(__name__)
 
-#@dependency.provider('example_kk_api')
+
+from oslo.config import cfg
+CONF = cfg.CONF
+CONF.register_opt(cfg.StrOpt('enabled', default='true'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_server', default='0.0.0.0'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_port', default='587'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_tls', default='true'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_user', default='user'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_password', default='password'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
+CONF.register_opt(cfg.StrOpt('password_expiration_days', default='365'), group='spassword')
+
 class Manager(manager.Manager):
     """Password Manager.
 

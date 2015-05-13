@@ -1,5 +1,7 @@
 # Keystone SPASSWORD extension
-Keystone SPASSWORD is an OpenStack Keystone extension tha
+Keystone SPASSWORD is an OpenStack Keystone extension that enables
+some extra security checks over user passwords, as force strong passwords,
+a recover procedure and so on.
 
 
 ## Installing
@@ -12,9 +14,20 @@ Installing from RPM is pretty straightforward:
 rpm -Uvh keystone-spassword-*.noarch.rpm
 ```
 
-Once installed you can fine-tune the permissions (out-of-the box the
-installation configures the permissions to `rule:admin_required` for Role
-management; User and Group management reuses the Keystone permissions).
+Once installed you can fine-tune options (out-of-the box the
+installation configures default values for that options.
+
+```
+[spassword]
+enabled=true
+smtp_server = 'correo.tid.es'
+smtp_port = 587
+smtp_tls = True
+smtp_user = 'iot_support@tid.es'
+smtp_password = ''
+smtp_from = "iot_support@tid.es"
+password_expiration_days = 2*365/12
+```
 
 Restart Keystone server:
 
@@ -80,7 +93,6 @@ Setting up local development server. First populate database (remember that
 this will use `sqlite`).
 
 ```sh
-keystone-manage db_sync
 keystone-manage db_sync --extension spassword
 ```
 
@@ -89,6 +101,8 @@ Launch server
 ```sh
 PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 ```
+
+
 
 
 
