@@ -49,6 +49,7 @@ CONF.register_opt(cfg.StrOpt('smtp_password', default='password'), group='spassw
 CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
 CONF.register_opt(cfg.StrOpt('password_expiration_days', default='365'), group='spassword')
 
+@dependency.provider('example_kk_api')
 class Manager(manager.Manager):
     """Password Manager.
 

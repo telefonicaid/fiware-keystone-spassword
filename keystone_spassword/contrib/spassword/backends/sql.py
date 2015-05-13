@@ -40,6 +40,7 @@ class PasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
     attributes = ['user_id', 'user_name', 'creation_time', 'login_attempts']
     user_id = sql.Column(sql.String(64), primary_key=True)
+    user_name = sql.Column(sql.String(64), default=None)
     creation_time = sql.Column(sql.DateTime(), default=None)
     login_attempts = sql.Column(sql.Integer, default=0)
     # bad_attempts
