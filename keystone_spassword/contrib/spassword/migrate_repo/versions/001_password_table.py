@@ -24,11 +24,11 @@ def upgrade(migrate_engine):
     # catalog
 
     service_table = sql.Table(
-        'password',
+        'spassword',
         meta,
         sql.Column('user_id', sql.String(64), primary_key=True),
         sql.Column('creation_time', sql.DateTime()),
-        sql.Column('login_atemps_among', sql.Integer),
+        sql.Column('login_attempts_among', sql.Integer),
         sql.Column('extra', sql.Text()))
     service_table.create(migrate_engine, checkfirst=True)
 
@@ -38,7 +38,7 @@ def downgrade(migrate_engine):
     meta = sql.MetaData()
     meta.bind = migrate_engine
 
-    tables = ['password']
+    tables = ['spassword']
     for t in tables:
         table = sql.Table(t, meta, autoload=True)
         table.drop(migrate_engine, checkfirst=True)
