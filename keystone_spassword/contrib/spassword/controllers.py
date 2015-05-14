@@ -106,10 +106,14 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
     def recover_password(self, context, user_id):
         """Perform user password recover procedure."""
         user_info = self.identity_api.get_user(user_id)
+        LOG.debug('recover password invoked for user %s %s' % (user_info['id'],
+                                                               user['name']))
 
         # Check if user has a email defined
         if not 'email' in user_info:
-            msg = 'User has no email defined'
+            msg = 'User %s %s has no email defined' % (user_info['id'],
+                                                       user['name'])
+            LOG.error('%s' % msg)
             raise exception.Unauthorized(msg)
 
         # Create a new password randonly
@@ -122,6 +126,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         except AssertionError:
             # authentication failed because of invalid username or password
             msg = 'Invalid username or password'
+            LOG.error('%s' % msg)
             raise exception.Unauthorized(msg)
 
         self.send_recovery_password_email(user_info['email'],
@@ -134,19 +139,45 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         SUBJECT = "IoT Platform recovery password"
         TEXT = "Your new password is %s" % user_password
 
+        #
         # Prepare actual message
+        #
         mail_headers = ("From: \"%s\" <%s>\r\nTo: %s\r\n"
-                        % (CONF.spassword.smtp_from, CONF.spassword.smtp_from, ", ".join(TO)))
+                        % (CONF.spassword.smtp_from,
+                           CONF.spassword.smtp_from,
+                           ", ".join(TO)))
 
         msg = mail_headers
         msg += ("Subject: %s\r\n\r\n" % SUBJECT)
         msg += TEXT
 
+        #
         # Send the mail
-        server = smtplib.SMTP(CONF.spassword.smtp_server, CONF.spassword.smtp_port)
+        #
+        try:
+            server = smtplib.SMTP(CONF.spassword.smtp_server,
+                                  CONF.spassword.smtp_port)
+        except smtplib.socket.gaierror:
+            LOG.error('SMTP socket error')
+            return False
+
         server.ehlo()
         server.starttls()
         server.ehlo
-        server.login(CONF.spassword.smtpuser, CONF.spassword.smtppassword)
-        server.sendmail(CONF.spassword.smtp_from, TO, msg)
-        server.quit()
+
+        try:
+            server.login(CONF.spassword.smtpuser,
+                         CONF.spassword.smtppassword)
+        except SMTPAuthenticationError:
+            LOG.error('SMTP autentication error')
+            return False
+
+        try:
+            server.sendmail(CONF.spassword.smtp_from, TO, msg)
+        except Exception:  # try to avoid catching Exception unless you have too
+            LOG.error('SMTP autentication error')
+            return False
+        finally:
+            server.quit()
+
+        LOG.info('recover password email sent to %s' % user_email)
