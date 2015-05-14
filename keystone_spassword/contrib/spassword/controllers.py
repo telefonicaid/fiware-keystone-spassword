@@ -33,29 +33,14 @@ from keystone import identity
 from keystone.identity.controllers import UserV3
 from keystone_scim.contrib.scim.controllers import ScimUserV3Controller
 from keystone_scim.contrib.scim import converter as conv
-from keystone.openstack.common import log
+from keystone_spassword.contrib.spassword.checker import CheckPassword
+try: from oslo_log import log
+except ImportError: from keystone.openstack.common import log
 
-
-CONF = config.CONF
+from oslo.config import cfg
+CONF = cfg.CONF
 
 LOG = log.getLogger(__name__)
-
-
-class CheckPassword(object):
-
-    def strong_check_password(self, new_password):
-        # Check password strengh
-        try:
-            import cracklib
-            try:
-                cracklib.VeryFascistCheck(new_password)
-            except ValueError, msg:
-                raise exception.ValidationError(
-                    target='user',
-                    attribute='The password is too weak ({0})'.format(msg))
-        except ImportError:  # not used if not configured (dev environments)
-            LOG.error('cracklib module is not properly configured, '
-                        'weak password can be used when changing')
 
 
 class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
@@ -86,6 +71,7 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
         return super(SPasswordScimUserV3Controller, self).create_user(context,
                                                                       user=user)
 
+
 class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def __init__(self):
@@ -98,3 +84,100 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                 user['password'])
         return super(SPasswordUserV3Controller, self).create_user(context,
                                                                   user=user)
+
+    @controller.protected()
+    def update_user(self, context, user_id, user):
+        if 'password' in user:
+            super(SPasswordUserV3Controller, self).strong_check_password(
+                user['password'])
+        return super(SPasswordUserV3Controller, self).update_user(context,
+                                                                  user_id=user_id,
+                                                                  user=user)
+
+    @controller.protected()
+    def change_password(self, context, user_id, user):
+        if 'password' in user:
+            super(SPasswordUserV3Controller, self).strong_check_password(
+                user['password'])
+        return super(SPasswordUserV3Controller, self).change_password(context,
+                                                                      user_id=user_id,
+                                                                      user=user)
+
+    def recover_password(self, context, user_id):
+        """Perform user password recover procedure."""
+        user_info = self.identity_api.get_user(user_id)
+        LOG.debug('recover password invoked for user %s %s' % (user_info['id'],
+                                                               user['name']))
+
+        # Check if user has a email defined
+        if not 'email' in user_info:
+            msg = 'User %s %s has no email defined' % (user_info['id'],
+                                                       user['name'])
+            LOG.error('%s' % msg)
+            raise exception.Unauthorized(msg)
+
+        # Create a new password randonly
+        new_password = uuid.uuid4().hex
+
+        # Set new user password
+        try:
+            update_dict = {'password': new_password}
+            self.identity_api.update_user( user_id, user_ref=update_dict)
+        except AssertionError:
+            # authentication failed because of invalid username or password
+            msg = 'Invalid username or password'
+            LOG.error('%s' % msg)
+            raise exception.Unauthorized(msg)
+
+        self.send_recovery_password_email(user_info['email'],
+                                          new_password)
+
+    def send_recovery_password_email(self, user_email, user_password):
+        import smtplib
+
+        TO = [user_email] # must be a list
+        SUBJECT = "IoT Platform recovery password"
+        TEXT = "Your new password is %s" % user_password
+
+        #
+        # Prepare actual message
+        #
+        mail_headers = ("From: \"%s\" <%s>\r\nTo: %s\r\n"
+                        % (CONF.spassword.smtp_from,
+                           CONF.spassword.smtp_from,
+                           ", ".join(TO)))
+
+        msg = mail_headers
+        msg += ("Subject: %s\r\n\r\n" % SUBJECT)
+        msg += TEXT
+
+        #
+        # Send the mail
+        #
+        try:
+            server = smtplib.SMTP(CONF.spassword.smtp_server,
+                                  CONF.spassword.smtp_port)
+        except smtplib.socket.gaierror:
+            LOG.error('SMTP socket error')
+            return False
+
+        server.ehlo()
+        server.starttls()
+        server.ehlo
+
+        try:
+            server.login(CONF.spassword.smtpuser,
+                         CONF.spassword.smtppassword)
+        except SMTPAuthenticationError:
+            LOG.error('SMTP autentication error')
+            return False
+
+        try:
+            server.sendmail(CONF.spassword.smtp_from, TO, msg)
+        except Exception:  # try to avoid catching Exception unless you have too
+            LOG.error('SMTP autentication error')
+            return False
+        finally:
+            server.quit()
+
+        LOG.info('recover password email sent to %s' % user_email)

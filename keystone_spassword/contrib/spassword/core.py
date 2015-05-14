@@ -29,14 +29,27 @@ from keystone.common import extension
 from keystone.common import wsgi
 from keystone import exception
 from keystone import identity
-from keystone.openstack.common import log
+try: from oslo_log import log
+except ImportError: from keystone.openstack.common import log
 from keystone.openstack.common import versionutils
 from keystone.common import manager
 from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
 from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
 LOG = log.getLogger(__name__)
 
-@dependency.provider('example_kk_api')
+
+from oslo.config import cfg
+CONF = cfg.CONF
+CONF.register_opt(cfg.StrOpt('enabled', default='true'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_server', default='0.0.0.0'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_port', default='587'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_tls', default='true'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_user', default='user'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_password', default='password'), group='spassword')
+CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
+CONF.register_opt(cfg.StrOpt('password_expiration_days', default='365'), group='spassword')
+
+@dependency.provider('spassword_api')
 class Manager(manager.Manager):
     """Password Manager.
 
@@ -123,41 +136,6 @@ class PasswordMiddleware(wsgi.Middleware):
         return super(PasswordMiddleware, self).__init__(*args, **kwargs)
 
 
-class PasswordExtension(wsgi.ExtensionRouter):
-
-    def add_routes(self, mapper):
-
-        scim_user_controller = SPasswordScimUserV3Controller()
-        user_controller = SPasswordUserV3Controller()
-
-        # SCIM User Operations
-        mapper.connect(
-            '/OS-SCIM/Users/{user_id}',
-            controller=scim_user_controller,
-            action='patch_user',
-            conditions=dict(method=['PATCH']))
-
-        mapper.connect(
-            '/OS-SCIM/Users/{user_id}',
-            controller=scim_user_controller,
-            action='put_user',
-            conditions=dict(method=['PUT']))
-
-        # User Operations
-        mapper.connect(
-            '/users',
-            controller=user_controller,
-            action='create_user',
-            conditions=dict(method=['POST']))
-
-        # Create user using OS-SCIM API
-        mapper.connect(
-            '/OS-SCIM/Users',
-            controller=scim_user_controller,
-            action='create_user',
-            conditions=dict(method=['POST']))
-
-
 @dependency.requires('identity_api')
 class SPassword(password.Password):
 
@@ -188,73 +166,3 @@ class SPassword(password.Password):
             user_context['user_id'] = user_info.user_id
         if 'extras' in res:
             user_context['extras'] = res['extras']
-
-    def recover_password(self, context, auth_payload, user_context):
-        """Perform user password recover procedure."""
-        user_info = password.UserAuthInfo.create(auth_payload)
-
-        # Check if user has a email defined
-        if not user_info.user_ref['email']:
-            msg = 'User has no email defined'
-            raise exception.Unauthorized(msg)
-        # Create a new password randonly
-        new_password = uuid.uuid4().hex
-
-        # Set new user password
-        try:
-            if 'J' in versionutils.deprecated._RELEASES:
-                self.identity_api.change_password(
-                    context,
-                    user_id=user_info.user_id,
-                    original_password=user_info.password,
-                    new_password=new_password)
-            else:
-                self.identity_api.change_password(
-                    context,
-                    user_id=user_info.user_id,
-                    original_password=user_info.password,
-                    new_password=new_password,
-                    domain_scope=user_info.domain_id)
-        except AssertionError:
-            # authentication failed because of invalid username or password
-            msg = 'Invalid username or password'
-            raise exception.Unauthorized(msg)
-
-        # TODO: Send email to user with new reset password
-        # TODO: set mail options in plugin conf section of keystone.conf
-        self.send_recovery_password_email(user_info.user_ref['email'],
-                                          new_password)
-
-    def send_recovery_password_email(self, user_email, user_password):
-        import smtplib
-
-        # SMTP_SERVER = "smtp.gmail.com"
-        SMTP_SERVER = 'correo.tid.es'
-        SMTP_PORT = 587
-        SMTP_TLS = True
-
-        SMTPUSER = 'iot_support@tid.es'
-        PASSWORD = ''
-        FROM = "iot_support@tid.es"
-
-        # TO = [user_email] # must be a list
-        TO = ["alvaro.vegagarcia@telefonica.com"]  # must be a list
-        SUBJECT = "IoT Platform recovery password"
-        TEXT = "Your new password is %s" % user_password
-
-        # Prepare actual message
-        mail_headers = ("From: \"%s\" <%s>\r\nTo: %s\r\n"
-                        % (FROM, FROM, ", ".join(TO)))
-
-        msg = mail_headers
-        msg += ("Subject: %s\r\n\r\n" % SUBJECT)
-        msg += TEXT
-
-        # Send the mail
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.ehlo()
-        server.starttls()
-        server.ehlo
-        server.login(SMTPUSER, PASSWORD)
-        server.sendmail(FROM, TO, msg)
-        server.quit()
