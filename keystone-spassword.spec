@@ -73,6 +73,7 @@ smtp_user='smtpuser@yourdomain.com'
 smtp_password='yourpasswrod'
 smtp_from='smtpuser'
 password_expiration_days=2*365/12 ">> %{keystone_conf}
+fi
 
 ln -fs %{_root}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib
 keystone-manage db_sync --extension password
