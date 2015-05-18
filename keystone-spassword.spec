@@ -72,7 +72,7 @@ smtp_tls=True
 smtp_user='smtpuser@yourdomain.com'
 smtp_password='yourpasswrod'
 smtp_from='smtpuser'
-password_expiration_days=2*365/12 ">>  %{keystone_conf}
+password_expiration_days=2*365/12 ">> %{keystone_conf}
 
 ln -fs %{_root}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib
 keystone-manage db_sync --extension password
@@ -99,8 +99,8 @@ fi
 if grep -q -F "[filter:spassword_checker]" "%{keystone_conf}"; then
   echo "Removing SPASSWORD password and identity plugin extensions from Keystone configuration."
   sed -i \
-  -e 's/password=keystone_spassword.contrib.spassword.SPassword //g' \
-  -e 's/driver=keystone_spassword.contrib.spassword.backends.sql.Identity //g' \
+  -e 's/password=keystone_spassword.contrib.spassword.SPassword//g' \
+  -e 's/driver=keystone_spassword.contrib.spassword.backends.sql.Identity//g' \
   %{keystone_conf}
 else
   echo "SPASSWORD extension not configured. Skipping."
