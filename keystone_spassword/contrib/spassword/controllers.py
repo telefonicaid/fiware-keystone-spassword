@@ -51,7 +51,7 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
     def patch_user(self, context, user_id, **kwargs):
         scim = self._denormalize(kwargs)
         user = conv.user_scim2key(scim)
-        if 'password' in user:
+        if CONF.spassword.enabled and 'password' in user:
             super(SPasswordScimUserV3Controller, self).strong_check_password(
                 user['password'])
 
@@ -64,7 +64,7 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
         return self.patch_user(context, user_id, **kwargs)
 
     def create_user(self, context, user):
-        if 'password' in user:
+        if CONF.spassword.enabled and 'password' in user:
             super(SPasswordScimUserV3Controller, self).strong_check_password(
                 user['password'])
 
@@ -79,7 +79,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     @controller.protected()
     def create_user(self, context, user):
-        if 'password' in user:
+        if CONF.spassword.enabled and 'password' in user:
             super(SPasswordUserV3Controller, self).strong_check_password(
                 user['password'])
         return super(SPasswordUserV3Controller, self).create_user(context,
@@ -87,7 +87,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     @controller.protected()
     def update_user(self, context, user_id, user):
-        if 'password' in user:
+        if CONF.spassword.enabled and 'password' in user:
             super(SPasswordUserV3Controller, self).strong_check_password(
                 user['password'])
         return super(SPasswordUserV3Controller, self).update_user(context,
@@ -96,7 +96,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     @controller.protected()
     def change_password(self, context, user_id, user):
-        if 'password' in user:
+        if CONF.spassword.enabled and 'password' in user:
             super(SPasswordUserV3Controller, self).strong_check_password(
                 user['password'])
         return super(SPasswordUserV3Controller, self).change_password(context,

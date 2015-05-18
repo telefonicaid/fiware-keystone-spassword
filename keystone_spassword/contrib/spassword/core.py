@@ -40,14 +40,14 @@ LOG = log.getLogger(__name__)
 
 from oslo.config import cfg
 CONF = cfg.CONF
-CONF.register_opt(cfg.StrOpt('enabled', default='true'), group='spassword')
+CONF.register_opt(cfg.BoolOpt('enabled', default=False), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_server', default='0.0.0.0'), group='spassword')
-CONF.register_opt(cfg.StrOpt('smtp_port', default='587'), group='spassword')
-CONF.register_opt(cfg.StrOpt('smtp_tls', default='true'), group='spassword')
+CONF.register_opt(cfg.IntOpt('smtp_port', default=587), group='spassword')
+CONF.register_opt(cfg.BoolOpt('smtp_tls', default=True), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_user', default='user'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_password', default='password'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
-CONF.register_opt(cfg.StrOpt('password_expiration_days', default='365'), group='spassword')
+CONF.register_opt(cfg.IntOpt('pwd_exp_days', default=365), group='spassword')
 
 @dependency.provider('spassword_api')
 class Manager(manager.Manager):
@@ -81,14 +81,16 @@ class Manager(manager.Manager):
         LOG.debug("USER_UPDATED")
         user = self.driver.get_user(payload['resource_info'])
         # TODO: Always ?
-        self.driver.update_user_modification_time(user)
+        if CONF.spassword.enabled:
+            self.driver.update_user_modification_time(user)
 
     def user_created_callback(self, service, resource_type, operation,
                               payload):
         LOG.debug("USER_CREATED")
         user = self.driver.get_user(payload['resource_info'])
         # print user
-        user_password = self.driver.set_user_creation_time(user)
+        if CONF.spassword.enabled:
+            user_password = self.driver.set_user_creation_time(user)
 
 
 class Driver(object):
