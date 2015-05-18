@@ -124,7 +124,7 @@ class Identity(Identity):
                 "login_attempts": spassword_ref['login_attempts']
             }
         #
-        # else:  # if no sspassword_ref set creation time to now() ?
+        # else:  # if no spassword_ref set creation time to now() ?
         #
         return res
 

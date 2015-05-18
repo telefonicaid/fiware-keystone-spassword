@@ -28,7 +28,6 @@ SPASSWORD (System for ensure Strong passwords) extension for Keystone
 mkdir -p $RPM_BUILD_ROOT/%{python_lib}
 cp -a %{_root}/keystone_spassword $RPM_BUILD_ROOT/%{python_lib}
 find $RPM_BUILD_ROOT/%{python_lib}/keystone_spassword -name "*.pyc" -delete
-ln -fs %{_root}/keystone_spassword %{python_lib}/keystone/contrib
 
 %files
 "/usr/lib/python2.6/site-packages/keystone_spassword"
@@ -75,6 +74,7 @@ smtp_password = ''
 smtp_from = 'iot_support@tid.es'
 password_expiration_days = 2*365/12 ">  %{keystone_conf}
 
+ln -fs %{_root}/keystone_spassword %{python_lib}/keystone/contrib
 keystone-manage db_sync --extension password
 
 echo "SPASSWORD extension installed successfully. Restart Keystone daemon to take effect."

@@ -105,6 +105,10 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def recover_password(self, context, user_id):
         """Perform user password recover procedure."""
+
+        if not CONF.spassword.enabled:
+            raise exception.NotImplemented()
+
         user_info = self.identity_api.get_user(user_id)
         LOG.debug('recover password invoked for user %s %s' % (user_info['id'],
                                                                user['name']))
