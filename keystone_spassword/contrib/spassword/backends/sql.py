@@ -97,7 +97,7 @@ class Identity(Identity):
         if not (spassword_ref == None):
             # Check password time: 2 months
             expiration_date = datetime.datetime.today() - \
-              datetime.timedelta(CONF.spassword.password_expiration_days)
+              datetime.timedelta(CONF.spassword.pwd_exp_days)
             if (spassword_ref['creation_time'] < expiration_date):
                 LOG.error('password of user %s %s expired ' % (user_ref['id'],
                                                                user_ref['name']))
