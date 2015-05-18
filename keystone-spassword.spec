@@ -36,7 +36,7 @@ find $RPM_BUILD_ROOT/%{python_lib}/keystone_spassword -name "*.pyc" -delete
 if ! grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
   echo "Adding SPASSWORD extension to Keystone configuration."
   sed -i \
-  -e '/^\[pipeline:api_v3\]$/,/^\[/ s/^pipeline\(.*\) service_v3$/pipeline\1 spassword_checker spassword_time scim_extension service_v3/' \
+  -e '/^\[pipeline:api_v3\]$/,/^\[/ s/^pipeline\(.*\) scim_extension service_v3$/pipeline\1 spassword_checker spassword_time scim_extension service_v3/' \
   -e 's/\[pipeline:api_v3\]/[filter:spassword_checker]\npaste.filter_factory = keystone_spassword.contrib.spassword.routers.PasswordExtension.factory\n\n&/' \
   -e 's/\[pipeline:api_v3\]/[filter:spassword_time]\npaste.filter_factory = keystone_spassword.contrib.spassword.PasswordMiddleware.factory\n\n&/' \  
   %{keystone_paste}
@@ -47,7 +47,7 @@ fi
 if ! grep -q -F "password=keystone_spassword.contrib.spassword.SPassword" "%{keystone_conf}"; then
   echo "Adding new spassword plugin module."
   sed -i \
-      -e 's/\#password=keystone.auth.plugins.password.Password$/password=keystone_spassword.contrib.spassword.SPassword&/' \
+      -e 's/\#password=keystone.auth.plugins.password.Password$/password=keystone_spassword.contrib.spassword.SPassword\n&/' \
     %{keystone_conf}
 else
   echo "Already installed spassword Password plugin module. Skipping."
@@ -56,25 +56,25 @@ fi
 if ! grep -q -F "driver=keystone_spassword.contrib.spassword.backends.sql.Identity" "%{keystone_conf}"; then
   echo "Adding new spassword plugin module."
   sed -i \
-      -e 's/\#driver=keystone.identity.backends.sql.Identity$/driver=keystone_spassword.contrib.spassword.backends.sql.Identity&/' \
+      -e 's/\#driver=keystone.identity.backends.sql.Identity$/driver=keystone_spassword.contrib.spassword.backends.sql.Identity\n&/' \
     %{keystone_conf}
 else
   echo "Already installed spassword Identity plugin module. Skipping."
 fi
 
-if ! grep -q -F "[spassword]"; then
+if ! grep -q -F "[spassword]" "%{keystone_conf}"; then
     echo "Adding spassword config "
     echo "[spassword]
 enabled=false
-smtp_server = 'correo.tid.es'
-smtp_port = 587
-smtp_tls = True
-smtp_user = 'iot_support@tid.es'
-smtp_password = ''
-smtp_from = 'iot_support@tid.es'
-password_expiration_days = 2*365/12 ">  %{keystone_conf}
+smtp_server='0.0.0.0'
+smtp_port=587
+smtp_tls=True
+smtp_user='smtpuser@yourdomain.com'
+smtp_password='yourpasswrod'
+smtp_from='smtpuser'
+password_expiration_days=2*365/12 ">  %{keystone_conf}
 
-ln -fs %{_root}/keystone_spassword %{python_lib}/keystone/contrib
+ln -fs %{_root}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib
 keystone-manage db_sync --extension password
 
 echo "SPASSWORD extension installed successfully. Restart Keystone daemon to take effect."
