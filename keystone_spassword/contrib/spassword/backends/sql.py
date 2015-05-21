@@ -21,17 +21,16 @@
 import time
 import datetime
 
-from oslo.utils import timeutils
-from keystone import config
+import datetime
 from keystone.common import sql
 from keystone import exception
 from keystone.identity.backends.sql import User, Identity
 from keystone_spassword.contrib.spassword import Driver
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
+try: from oslo.config import cfg
+except ImportError: from keystone import config as cfg
 
-
-from oslo.config import cfg
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
@@ -63,12 +62,12 @@ class Password(Driver):
             data_user = {}
             data_user['user_id'] = user['id']
             data_user['user_id'] = user['name']
-            data_user['creation_time'] = timeutils.utcnow()
+            data_user['creation_time'] = datetime.datetime.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
             with session.begin():
                 session.add(spassword_ref)
         else:
-            spassword_ref['creation_time'] = timeutils.utcnow()
+            spassword_ref['creation_time'] = datetime.datetime.utcnow()
             spassword_ref['login_attempts'] = 0
 
         return spassword_ref.to_dict()
@@ -77,12 +76,12 @@ class Password(Driver):
         session = sql.get_session()
         spassword_ref = session.query(PasswordModel).get(user['id'])
         if spassword_ref:
-            spassword_ref['creation_time'] = timeutils.utcnow()
+            spassword_ref['creation_time'] = datetime.datetime.utcnow()
         else:
             data_user = {}
             data_user['user_id'] = user['id']
             data_user['user_name'] = user['name']
-            data_user['creation_time'] = timeutils.utcnow()
+            data_user['creation_time'] = datetime.datetime.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
             spassword_ref['login_attempts'] = 0
             with session.begin():
