@@ -90,17 +90,18 @@ class Password(Driver):
 
 class Identity(Identity):
     def _check_password(self, password, user_ref):
-        # Check if password has been expired
-        session = sql.get_session()
-        spassword_ref = session.query(PasswordModel).get(user_ref['id'])
-        if not (spassword_ref == None):
-            # Check password time: 2 months
-            expiration_date = datetime.datetime.today() - \
-              datetime.timedelta(CONF.spassword.pwd_exp_days)
-            if (spassword_ref['creation_time'] < expiration_date):
-                LOG.error('password of user %s %s expired ' % (user_ref['id'],
-                                                               user_ref['name']))
-                # TODO: return False ?
+        if CONF.spassword.enabled:
+            # Check if password has been expired
+            session = sql.get_session()
+            spassword_ref = session.query(PasswordModel).get(user_ref['id'])
+            if not (spassword_ref == None):
+                # Check password time: 2 months
+                expiration_date = datetime.datetime.today() - \
+                  datetime.timedelta(CONF.spassword.pwd_exp_days)
+                if (spassword_ref['creation_time'] < expiration_date):
+                    LOG.error('password of user %s %s expired ' % (user_ref['id'],
+                                                                   user_ref['name']))
+                    # TODO: return False ?
 
         res = super(Identity, self)._check_password(password, user_ref)
         # TODO: Reset or increase login retries
@@ -111,20 +112,21 @@ class Identity(Identity):
     def authenticate(self, user_id, password):
         res = super(Identity, self).authenticate(user_id, password)
 
-        session = sql.get_session()
-        spassword_ref = session.query(PasswordModel).get(user_id)
+        if CONF.spassword.enabled:
+            session = sql.get_session()
+            spassword_ref = session.query(PasswordModel).get(user_id)
 
-        if spassword_ref:
-            if not res:
-                spassword_ref['login_attempts'] += 1
+            if spassword_ref:
+                if not res:
+                    spassword_ref['login_attempts'] += 1
 
-            res['extras'] = {
-                "password_creation_time": str(spassword_ref['creation_time']),
-                "login_attempts": spassword_ref['login_attempts']
-            }
-        #
-        # else:  # if no spassword_ref set creation time to now() ?
-        #
+                    res['extras'] = {
+                        "password_creation_time": str(spassword_ref['creation_time']),
+                        "login_attempts": spassword_ref['login_attempts']
+                        }
+            #
+            # else:  # if no spassword_ref set creation time to now() ?
+            #
         return res
 
         
