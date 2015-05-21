@@ -68,9 +68,9 @@ if ! grep -q -F "[spassword]" "%{keystone_conf}"; then
 enabled=false
 smtp_server='0.0.0.0'
 smtp_port=587
-smtp_tls=True
+smtp_tls=true
 smtp_user='smtpuser@yourdomain.com'
-smtp_password='yourpasswrod'
+smtp_password='yourpassword'
 smtp_from='smtpuser'
 password_expiration_days=2*365/12 ">> %{keystone_conf}
 fi
