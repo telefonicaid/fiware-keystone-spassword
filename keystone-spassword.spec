@@ -8,7 +8,7 @@ Distribution: noarch
 Vendor: Telefonica I+D
 Group: Applications/System
 Packager: Telefonica I+D
-Requires: openstack-keystone keystone-scim
+Requires: openstack-keystone keystone-scim cracklib
 autoprov: no
 autoreq: no
 Prefix: /opt
@@ -37,8 +37,8 @@ if ! grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
   echo "Adding SPASSWORD extension to Keystone configuration."
   sed -i \
   -e '/^\[pipeline:api_v3\]$/,/^\[/ s/^pipeline\(.*\) scim_extension service_v3$/pipeline\1 spassword_checker spassword_time scim_extension service_v3/' \
-  -e 's/\[pipeline:api_v3\]/[filter:spassword_checker]\npaste.filter_factory = keystone_spassword.contrib.spassword.routers.PasswordExtension.factory\n\n&/' \
-  -e 's/\[pipeline:api_v3\]/[filter:spassword_time]\npaste.filter_factory = keystone_spassword.contrib.spassword.PasswordMiddleware.factory\n\n&/' \
+  -e 's/\[pipeline:api_v3\]/[filter:spassword_checker]\npaste.filter_factory = keystone_spassword.contrib.spassword.routers:PasswordExtension.factory\n\n&/' \
+  -e 's/\[pipeline:api_v3\]/[filter:spassword_time]\npaste.filter_factory = keystone_spassword.contrib.spassword:PasswordMiddleware.factory\n\n&/' \
   %{keystone_paste}
 else
   echo "SPASSWORD extension already configured. Skipping."
@@ -68,15 +68,15 @@ if ! grep -q -F "[spassword]" "%{keystone_conf}"; then
 enabled=false
 smtp_server='0.0.0.0'
 smtp_port=587
-smtp_tls=True
+smtp_tls=true
 smtp_user='smtpuser@yourdomain.com'
-smtp_password='yourpasswrod'
+smtp_password='yourpassword'
 smtp_from='smtpuser'
 password_expiration_days=2*365/12 ">> %{keystone_conf}
 fi
 
 ln -fs %{_root}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib
-keystone-manage db_sync --extension password
+keystone-manage db_sync --extension spassword
 
 echo "SPASSWORD extension installed successfully. Restart Keystone daemon to take effect."
 

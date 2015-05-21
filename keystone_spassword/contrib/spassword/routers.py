@@ -20,7 +20,6 @@
 
 import functools
 
-from keystone.common import json_home
 from keystone.common import wsgi
 from keystone_spassword.contrib.spassword import controllers
 

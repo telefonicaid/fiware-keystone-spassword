@@ -21,17 +21,16 @@
 import time
 import datetime
 
-from oslo.utils import timeutils
-from keystone import config
+import datetime
 from keystone.common import sql
 from keystone import exception
 from keystone.identity.backends.sql import User, Identity
 from keystone_spassword.contrib.spassword import Driver
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
+try: from oslo.config import cfg
+except ImportError: from keystone import config as cfg
 
-
-from oslo.config import cfg
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
@@ -63,12 +62,12 @@ class Password(Driver):
             data_user = {}
             data_user['user_id'] = user['id']
             data_user['user_id'] = user['name']
-            data_user['creation_time'] = timeutils.utcnow()
+            data_user['creation_time'] = datetime.datetime.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
             with session.begin():
                 session.add(spassword_ref)
         else:
-            spassword_ref['creation_time'] = timeutils.utcnow()
+            spassword_ref['creation_time'] = datetime.datetime.utcnow()
             spassword_ref['login_attempts'] = 0
 
         return spassword_ref.to_dict()
@@ -77,12 +76,12 @@ class Password(Driver):
         session = sql.get_session()
         spassword_ref = session.query(PasswordModel).get(user['id'])
         if spassword_ref:
-            spassword_ref['creation_time'] = timeutils.utcnow()
+            spassword_ref['creation_time'] = datetime.datetime.utcnow()
         else:
             data_user = {}
             data_user['user_id'] = user['id']
             data_user['user_name'] = user['name']
-            data_user['creation_time'] = timeutils.utcnow()
+            data_user['creation_time'] = datetime.datetime.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
             spassword_ref['login_attempts'] = 0
             with session.begin():
@@ -91,17 +90,18 @@ class Password(Driver):
 
 class Identity(Identity):
     def _check_password(self, password, user_ref):
-        # Check if password has been expired
-        session = sql.get_session()
-        spassword_ref = session.query(PasswordModel).get(user_ref['id'])
-        if not (spassword_ref == None):
-            # Check password time: 2 months
-            expiration_date = datetime.datetime.today() - \
-              datetime.timedelta(CONF.spassword.pwd_exp_days)
-            if (spassword_ref['creation_time'] < expiration_date):
-                LOG.error('password of user %s %s expired ' % (user_ref['id'],
-                                                               user_ref['name']))
-                # TODO: return False ?
+        if CONF.spassword.enabled:
+            # Check if password has been expired
+            session = sql.get_session()
+            spassword_ref = session.query(PasswordModel).get(user_ref['id'])
+            if not (spassword_ref == None):
+                # Check password time: 2 months
+                expiration_date = datetime.datetime.today() - \
+                  datetime.timedelta(CONF.spassword.pwd_exp_days)
+                if (spassword_ref['creation_time'] < expiration_date):
+                    LOG.error('password of user %s %s expired ' % (user_ref['id'],
+                                                                   user_ref['name']))
+                    # TODO: return False ?
 
         res = super(Identity, self)._check_password(password, user_ref)
         # TODO: Reset or increase login retries
@@ -112,20 +112,21 @@ class Identity(Identity):
     def authenticate(self, user_id, password):
         res = super(Identity, self).authenticate(user_id, password)
 
-        session = sql.get_session()
-        spassword_ref = session.query(PasswordModel).get(user_id)
+        if CONF.spassword.enabled:
+            session = sql.get_session()
+            spassword_ref = session.query(PasswordModel).get(user_id)
 
-        if spassword_ref:
-            if not res:
-                spassword_ref['login_attempts'] += 1
+            if spassword_ref:
+                if not res:
+                    spassword_ref['login_attempts'] += 1
 
-            res['extras'] = {
-                "password_creation_time": str(spassword_ref['creation_time']),
-                "login_attempts": spassword_ref['login_attempts']
-            }
-        #
-        # else:  # if no spassword_ref set creation time to now() ?
-        #
+                    res['extras'] = {
+                        "password_creation_time": str(spassword_ref['creation_time']),
+                        "login_attempts": spassword_ref['login_attempts']
+                        }
+            #
+            # else:  # if no spassword_ref set creation time to now() ?
+            #
         return res
 
         
