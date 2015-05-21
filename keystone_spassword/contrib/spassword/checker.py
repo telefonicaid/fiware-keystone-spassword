@@ -20,9 +20,13 @@
 
 from keystone import exception
 from keystone import config
+try: from oslo_log import log
+except ImportError: from keystone.openstack.common import log
 
 from oslo.config import cfg
 CONF = cfg.CONF
+
+LOG = log.getLogger(__name__)
 
 
 class CheckPassword(object):

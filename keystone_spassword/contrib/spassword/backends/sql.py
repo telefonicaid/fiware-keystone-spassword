@@ -39,7 +39,7 @@ class PasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
     attributes = ['user_id', 'user_name', 'creation_time', 'login_attempts']
     user_id = sql.Column(sql.String(64), primary_key=True)
-    user_name = sql.Column(sql.String(64), default=None)
+    user_name = sql.Column(sql.String(255), default=None)
     creation_time = sql.Column(sql.DateTime(), default=None)
     login_attempts = sql.Column(sql.Integer, default=0)
     # bad_attempts
@@ -61,7 +61,7 @@ class Password(Driver):
         if not spassword_ref:
             data_user = {}
             data_user['user_id'] = user['id']
-            data_user['user_id'] = user['name']
+            data_user['user_name'] = user['name']
             data_user['creation_time'] = datetime.datetime.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
             with session.begin():
