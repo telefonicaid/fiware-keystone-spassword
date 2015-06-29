@@ -64,6 +64,7 @@ class Password(Driver):
             data_user['user_name'] = user['name']
             data_user['creation_time'] = datetime.datetime.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
+            # A new session is needed
             with session.begin():
                 session.add(spassword_ref)
         else:
@@ -99,18 +100,20 @@ class Identity(Identity):
                 expiration_date = datetime.datetime.today() - \
                   datetime.timedelta(CONF.spassword.pwd_exp_days)
                 if (spassword_ref['creation_time'] < expiration_date):
-                    LOG.error('password of user %s %s expired ' % (user_ref['id'],
-                                                                   user_ref['name']))
-                    # TODO: return False ?
+                    LOG.info('password of user %s %s expired ' % (user_ref['id'],
+                                                                  user_ref['name']))
+                    res = False
 
         res = super(Identity, self)._check_password(password, user_ref)
-        # TODO: Reset or increase login retries
-        # spassword_ref['login_attempts'] = 0
         return res
 
     # Identity interface
     def authenticate(self, user_id, password):
-        res = super(Identity, self).authenticate(user_id, password)
+        try:
+            res = super(Identity, self).authenticate(user_id, password)
+        except AssertionError:
+            res = False
+            auth_error_msg = 'Invalid username or password'
 
         if CONF.spassword.enabled:
             session = sql.get_session()
@@ -118,15 +121,36 @@ class Identity(Identity):
 
             if spassword_ref:
                 if not res:
+                    LOG.debug('wrong password provided at login %s' % spassword_ref['user_name'])
                     spassword_ref['login_attempts'] += 1
+                else:
+                    spassword_ref['login_attempts'] = 0
+                if spassword_ref['login_attempts'] > 3:
+                    LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
+                    res = False
+                    auth_error_msg = ('User password %s blocked due to reach' +
+                                      ' max number of tries. Contact with your ' +
+                                      ' admin') % spassword_ref['user_name']
 
-                    res['extras'] = {
-                        "password_creation_time": str(spassword_ref['creation_time']),
-                        "login_attempts": spassword_ref['login_attempts']
-                        }
-            #
-            # else:  # if no spassword_ref set creation time to now() ?
-            #
+            else: # User still not registered in spassword
+                user = self.get_user(user_id)
+                data_user = {}
+                data_user['user_id'] = user['id']
+                data_user['user_name'] = user['name']
+                data_user['creation_time'] = datetime.datetime.utcnow()
+                if not res:
+                    data_user['login_attempts'] = 1
+                else:
+                    data_user['login_attempts'] = 0
+                spassword_ref = PasswordModel.from_dict(data_user)
+
+                # A new session is needed
+                with session.begin():
+                    session.add(spassword_ref)
+
+        if not res:
+            # Return 401 due to bad user/password or user reach max attempts
+            raise exception.Unauthorized(auth_error_msg)
         return res
 
         
