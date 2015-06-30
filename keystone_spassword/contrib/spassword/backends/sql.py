@@ -37,9 +37,10 @@ LOG = log.getLogger(__name__)
 
 class PasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
-    attributes = ['user_id', 'user_name', 'creation_time', 'login_attempts']
+    attributes = ['user_id', 'user_name', 'domain_id', 'creation_time', 'login_attempts']
     user_id = sql.Column(sql.String(64), primary_key=True)
     user_name = sql.Column(sql.String(255), default=None)
+    domain_id = sql.Column(sql.String(64), default=None)
     creation_time = sql.Column(sql.DateTime(), default=None)
     login_attempts = sql.Column(sql.Integer, default=0)
     # bad_attempts
@@ -63,6 +64,7 @@ class Password(Driver):
             data_user['user_id'] = user['id']
             data_user['user_name'] = user['name']
             data_user['creation_time'] = datetime.datetime.utcnow()
+            data_user['domain_id'] = user['domain_id']
             spassword_ref = PasswordModel.from_dict(data_user)
             # A new session is needed
             with session.begin():
@@ -82,6 +84,7 @@ class Password(Driver):
             data_user = {}
             data_user['user_id'] = user['id']
             data_user['user_name'] = user['name']
+            data_user['domain_id'] = user['domain_id']
             data_user['creation_time'] = datetime.datetime.utcnow()
             spassword_ref = PasswordModel.from_dict(data_user)
             spassword_ref['login_attempts'] = 0
@@ -123,9 +126,17 @@ class Identity(Identity):
                 if not res:
                     LOG.debug('wrong password provided at login %s' % spassword_ref['user_name'])
                     spassword_ref['login_attempts'] += 1
+
                 else:
                     spassword_ref['login_attempts'] = 0
-                if spassword_ref['login_attempts'] > 3:
+                    expiration_date = spassword_ref['creation_time'] + \
+                        datetime.timedelta(CONF.spassword.pwd_exp_days)
+                    res['extras'] = {
+                        "password_creation_time": str(spassword_ref['creation_time']),
+                        "password_expiration_time": str(expiration_date)
+                    }
+
+                if spassword_ref['login_attempts'] > CONF.spassword.max_tries:
                     LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
                     res = False
                     auth_error_msg = ('User password %s blocked due to reach' +
@@ -137,6 +148,7 @@ class Identity(Identity):
                 data_user = {}
                 data_user['user_id'] = user['id']
                 data_user['user_name'] = user['name']
+                data_user['domain_id'] = user['domain_id']
                 data_user['creation_time'] = datetime.datetime.utcnow()
                 if not res:
                     data_user['login_attempts'] = 1

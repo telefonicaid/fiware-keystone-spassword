@@ -41,13 +41,15 @@ LOG = log.getLogger(__name__)
 from oslo.config import cfg
 CONF = cfg.CONF
 CONF.register_opt(cfg.BoolOpt('enabled', default=False), group='spassword')
+CONF.register_opt(cfg.IntOpt('pwd_exp_days', default=365), group='spassword')
+CONF.register_opt(cfg.IntOpt('pwd_max_tries', default=3), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_server', default='0.0.0.0'), group='spassword')
 CONF.register_opt(cfg.IntOpt('smtp_port', default=587), group='spassword')
 CONF.register_opt(cfg.BoolOpt('smtp_tls', default=True), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_user', default='user'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_password', default='password'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
-CONF.register_opt(cfg.IntOpt('pwd_exp_days', default=365), group='spassword')
+
 
 @dependency.provider('spassword_api')
 class Manager(manager.Manager):

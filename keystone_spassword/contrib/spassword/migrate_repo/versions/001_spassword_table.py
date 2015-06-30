@@ -28,6 +28,7 @@ def upgrade(migrate_engine):
         meta,
         sql.Column('user_id', sql.String(64), primary_key=True),
         sql.Column('user_name', sql.String(255)),
+        sql.Column('domain_id', sql.String(64)),
         sql.Column('creation_time', sql.DateTime()),
         sql.Column('login_attempts', sql.Integer),
         sql.Column('extra', sql.Text()))
