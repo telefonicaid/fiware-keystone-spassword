@@ -21,7 +21,7 @@ installation configures default values for that options at /etc/keystone/keyston
 ```
 [spassword]
 enabled = true
-pwd_exp_days = 2*365/12
+pwd_exp_days = 180
 pwd_max_tries = 3
 smtp_server = '0.0.0.0'
 smtp_port = 587
