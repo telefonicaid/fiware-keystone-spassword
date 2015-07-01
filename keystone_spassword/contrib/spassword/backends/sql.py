@@ -59,6 +59,7 @@ class Password(Driver):
     def set_user_creation_time(self, user):
         session = sql.get_session()
         spassword_ref = session.query(PasswordModel).get(user['id'])
+        LOG.debug('set user creation time for %s' % user['id'])
         if not spassword_ref:
             data_user = {}
             data_user['user_id'] = user['id']
@@ -78,6 +79,7 @@ class Password(Driver):
     def update_user_modification_time(self, user):
         session = sql.get_session()
         spassword_ref = session.query(PasswordModel).get(user['id'])
+        LOG.debug('update user modification time for %s' % user['id'])
         if spassword_ref:
             spassword_ref['creation_time'] = datetime.datetime.utcnow()
         else:
@@ -136,7 +138,7 @@ class Identity(Identity):
                         "password_expiration_time": str(expiration_date)
                     }
 
-                if spassword_ref['login_attempts'] > CONF.spassword.max_tries:
+                if spassword_ref['login_attempts'] > CONF.spassword.pwd_max_tries:
                     LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
                     res = False
                     auth_error_msg = ('User password %s blocked due to reach' +
@@ -144,6 +146,7 @@ class Identity(Identity):
                                       ' admin') % spassword_ref['user_name']
 
             else: # User still not registered in spassword
+                LOG.debug('registering in spassword %s' % user_id)
                 user = self.get_user(user_id)
                 data_user = {}
                 data_user['user_id'] = user['id']
@@ -159,6 +162,13 @@ class Identity(Identity):
                 # A new session is needed
                 with session.begin():
                     session.add(spassword_ref)
+
+                expiration_date = spassword_ref['creation_time'] + \
+                        datetime.timedelta(CONF.spassword.pwd_exp_days)
+                res['extras'] = {
+                        "password_creation_time": str(spassword_ref['creation_time']),
+                        "password_expiration_time": str(expiration_date)
+                }
 
         if not res:
             # Return 401 due to bad user/password or user reach max attempts
