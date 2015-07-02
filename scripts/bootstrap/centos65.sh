@@ -111,7 +111,7 @@ pushd .
 cd ${dir}/${repo_scim}-${tag}
 source ./${pack_scim}
 
-find . -name "*.rpm" -exec rpm -Uvh {} \;
+find . -name "*.rpm" -exec sudo rpm -Uvh {} \;
 
 popd
 
@@ -130,16 +130,14 @@ pushd .
 cd ${dir}/${repo_spassword}-${tag}
 source ./${pack_spassword}
 
-find . -name "*.rpm" -exec rpm -Uvh {} \;
+find . -name "*.rpm" -exec sudo rpm -Uvh {} \;
 
 popd
 
 sudo service openstack-keystone restart
 
 
-# ######
-# mkdir updates
-# cd updates
+######
 
 export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://localhost:35357/v2.0
