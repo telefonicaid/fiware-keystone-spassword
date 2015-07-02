@@ -16,6 +16,9 @@ BuildArch: noarch
 
 %define _target_os Linux
 %define python_lib /usr/lib/python2.6/site-packages
+%if 0%{?with_python27}
+%define python_lib /usr/lib/python2.7/site-packages
+%endif # if with_python27
 %define keystone_paste /usr/share/keystone/keystone-dist-paste.ini
 %define keystone_policy /etc/keystone/policy.json
 %define keystone_conf /etc/keystone/keystone.conf
@@ -30,7 +33,7 @@ cp -a %{_root}/keystone_spassword $RPM_BUILD_ROOT/%{python_lib}
 find $RPM_BUILD_ROOT/%{python_lib}/keystone_spassword -name "*.pyc" -delete
 
 %files
-"/usr/lib/python2.6/site-packages/keystone_spassword"
+%{python_lib}/keystone_spassword/*
 
 %post
 if ! grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
@@ -76,7 +79,7 @@ pwd_exp_days=180
 #smtp_from='smtpuser'">> %{keystone_conf}
 fi
 
-ln -fs %{_root}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib
+ln -fs %{python_lib}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib
 keystone-manage db_sync --extension spassword
 
 echo "SPASSWORD extension installed successfully. Restart Keystone daemon to take effect."
