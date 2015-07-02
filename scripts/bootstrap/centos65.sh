@@ -145,18 +145,17 @@ export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://localhost:35357/v2.0
 readonly KEYSTONE_HOST="localhost:5001"
 
-sudo keystone user-create --name=admin --pass=admin_4passw0rd --email=admin@no.com
+keystone user-create --name=admin --pass=admin_4passw0rd --email=admin@no.com
 
-sudo keystone role-create --name=admin
+keystone role-create --name=admin
 
-sudo keystone tenant-create --name=admin --description="Admin Tenant"
+keystone tenant-create --name=admin --description="Admin Tenant"
 
-sudo keystone user-role-add --user=admin --tenant=admin --role=admin
+keystone user-role-add --user=admin --tenant=admin --role=admin
 
-sudo keystone role-create --name=service
+keystone role-create --name=service
 
-sudo keystone user-create --name=iotagent --pass=i0ta6ent --email=iotagent@no.com
-
+keystone user-create --name=iotagent --pass=i0ta6ent --email=iotagent@no.com
 
 ADMIN_TOKEN=$(\
     curl http://${KEYSTONE_HOST}/v3/auth/tokens \
@@ -190,7 +189,6 @@ ADMIN_TOKEN=$(\
           }
       }
   }' | grep ^X-Subject-Token: | awk '{print $2}' ) 
-
 
 ID_ADMIN_DOMAIN=$(\
     curl http://${KEYSTONE_HOST}/v3/domains \
