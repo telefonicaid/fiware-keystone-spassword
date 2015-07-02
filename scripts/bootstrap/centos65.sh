@@ -259,7 +259,7 @@ SERVICE_ROLE_ID=$(\
       -H "X-Auth-Token: $ADMIN_TOKEN" \
       -H "Content-Type: application/json"
 
-  curl -s -L --insecure https://github.com/openstack/keystone/raw/stable/icehouse/etc/policy.v3cloudsample.json \
+  curl -s -L --insecure https://github.com/openstack/keystone/raw/icehouse-eol/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id" 
      | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
