@@ -1,6 +1,6 @@
 %define timestamp %(date +"%Y%m%d%H%M%S")
 Name: keystone-spassword
-Version: 0.1.0
+Version: 0.2.0
 Release: %{timestamp}
 Summary: Keystone SPASSWORD extension
 License: Copyright 2015 Telefonica Investigación y Desarrollo, S.A.U
@@ -65,14 +65,15 @@ fi
 if ! grep -q -F "[spassword]" "%{keystone_conf}"; then
     echo "Adding spassword config "
     echo "[spassword]
-enabled=false
-smtp_server='0.0.0.0'
-smtp_port=587
-smtp_tls=true
-smtp_user='smtpuser@yourdomain.com'
-smtp_password='yourpassword'
-smtp_from='smtpuser'
-password_expiration_days=2*365/12 ">> %{keystone_conf}
+enabled=true
+pwd_max_tries=3
+pwd_exp_days=180
+#smtp_server='0.0.0.0'
+#smtp_port=587
+#smtp_tls=true
+#smtp_user='smtpuser@yourdomain.com'
+#smtp_password='yourpassword'
+#smtp_from='smtpuser'">> %{keystone_conf}
 fi
 
 ln -fs %{_root}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib

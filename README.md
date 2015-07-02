@@ -15,19 +15,44 @@ rpm -Uvh keystone-spassword-*.noarch.rpm
 ```
 
 Once installed you can fine-tune options (out-of-the box the
-installation configures default values for that options.
+installation configures default values for that options at /etc/keystone/keystone.conf).
+
 
 ```
 [spassword]
-enabled=true
-smtp_server = 'correo.tid.es'
+enabled = true
+pwd_exp_days = 180
+pwd_max_tries = 3
+smtp_server = '0.0.0.0'
 smtp_port = 587
-smtp_tls = True
-smtp_user = 'iot_support@tid.es'
-smtp_password = ''
-smtp_from = "iot_support@tid.es"
-password_expiration_days = 2*365/12
+smtp_tls = true
+smtp_user = 'smtpuser@yourdomain.com'
+smtp_password = 'yourpassword'
+smtp_from = 'smtpuser'
 ```
+
+keystone-spassword enables two new authentication and identity plugins, which extends
+default provided plugins to ensure the use of strong passwords, to check expiration time
+and to control the number of tries that an user can use badly their password before be blocked
+
+```
+[auth]
+password=keystone_spassword.contrib.spassword.SPassword
+```
+and
+```
+[identity]
+driver=keystone_spassword.contrib.spassword.backends.sql.Identity
+```
+
+```
+[filter:spassword_checker]
+paste.filter_factory = keystone_spassword.contrib.spassword.routers:PasswordExtension.factory
+
+[filter:spassword_time]
+paste.filter_factory = keystone_spassword.contrib.spassword:PasswordMiddleware.factory
+```
+
 
 Restart Keystone server:
 
