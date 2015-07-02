@@ -111,7 +111,7 @@ pushd .
 cd ${dir}/${repo_scim}-${tag}
 source ./${pack_scim}
 
-find . -name "*.rpm" -exec rpm -Uvh {} \;
+find . -name "*.rpm" -exec sudo rpm -Uvh {} \;
 
 popd
 
@@ -130,16 +130,14 @@ pushd .
 cd ${dir}/${repo_spassword}-${tag}
 source ./${pack_spassword}
 
-find . -name "*.rpm" -exec rpm -Uvh {} \;
+find . -name "*.rpm" -exec sudo rpm -Uvh {} \;
 
 popd
 
 sudo service openstack-keystone restart
 
 
-# ######
-# mkdir updates
-# cd updates
+######
 
 export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://localhost:35357/v2.0
@@ -261,7 +259,7 @@ SERVICE_ROLE_ID=$(\
       -H "X-Auth-Token: $ADMIN_TOKEN" \
       -H "Content-Type: application/json"
 
-  curl -s -L --insecure https://github.com/openstack/keystone/raw/stable/icehouse/etc/policy.v3cloudsample.json \
+  curl -s -L --insecure https://github.com/openstack/keystone/raw/icehouse-eol/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id" 
      | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
