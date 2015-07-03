@@ -70,7 +70,10 @@ sudo openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001
 
 sudo openstack-config --set /etc/keystone/keystone.conf \
-   os_inherit enabled true
+    os_inherit enabled true
+
+sudo openstack-config --set /etc/keystone/keystone.conf \
+    token provider keystone.token.providers.uuid.Provider
 
 cat <<EOF | mysql -u root
 CREATE DATABASE keystone;
