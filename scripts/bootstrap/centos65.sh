@@ -33,7 +33,7 @@ sudo yum -y install python git python-pip python-devel python-virtualenv gcc ssh
 sudo yum install -y https://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm
 sudo yum install -y openstack-utils openstack-keystone python-keystoneclient
 sudo yum install -y wget unzip nc jq 
-sudo yum install -y cracklib
+sudo yum install -y cracklib cracklib-python
 
 sudo yum -y install mysql-server mysql
 sudo service mysqld start
