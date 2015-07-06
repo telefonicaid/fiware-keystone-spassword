@@ -189,7 +189,9 @@ ADMIN_TOKEN=$(\
               }
           }
       }
-  }' | grep ^X-Subject-Token: | awk '{print $2}' ) 
+  }' | grep ^X-Subject-Token: | awk '{print $2}' )
+
+echo "ADMIN_TOKEN: $ADMIN_TOKEN"
 
 ID_ADMIN_DOMAIN=$(\
     curl http://${KEYSTONE_HOST}/v3/domains \
@@ -203,6 +205,7 @@ ID_ADMIN_DOMAIN=$(\
       "name": "admin_domain"
       }
   }' | jq .domain.id | tr -d '"' )
+echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 
 ID_CLOUD_SERVICE=$(\
     curl http://${KEYSTONE_HOST}/v3/users \
@@ -219,6 +222,7 @@ ID_CLOUD_SERVICE=$(\
           "password": "pep_4passw0rd"
       }
   }' | jq .user.id | tr -d '"' )
+echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
 ID_CLOUD_ADMIN=$(\
     curl http://${KEYSTONE_HOST}/v3/users \
@@ -232,16 +236,17 @@ ID_CLOUD_ADMIN=$(\
           "domain_id": "'$ID_ADMIN_DOMAIN'",
           "enabled": true,
           "name": "cloud_admin",
-          "password": "4passw0rd"
+          "password": "cloud_admin_4passw0rd"
       }
   }' | jq .user.id | tr -d '"' ) 
-
+echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
 
 ADMIN_ROLE_ID=$(\
     curl "http://${KEYSTONE_HOST}/v3/roles?name=admin" \
          -s \
          -H "X-Auth-Token: $ADMIN_TOKEN" \
-        | jq .roles[0].id | tr -d '"' ) 
+        | jq .roles[0].id | tr -d '"' )
+echo "ADMIN_ROLE_ID: $ADMIN_ROLE_ID"
 
 
 curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_ADMIN}/roles/${ADMIN_ROLE_ID} \
