@@ -40,8 +40,8 @@ if ! grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
   echo "Adding SPASSWORD extension to Keystone configuration."
   sed -i \
   -e '/^\[pipeline:api_v3\]$/,/^\[/ s/^pipeline\(.*\) scim_extension service_v3$/pipeline\1 spassword_checker spassword_time scim_extension service_v3/' \
-  -e 's/\[pipeline:api_v3\]/[filter:spassword_checker]\npaste.filter_factory = keystone_spassword.contrib.spassword.routers:PasswordExtension.factory\n\n&/' \
-  -e 's/\[pipeline:api_v3\]/[filter:spassword_time]\npaste.filter_factory = keystone_spassword.contrib.spassword:PasswordMiddleware.factory\n\n&/' \
+  -e 's/\[pipeline:api_v3\]/[filter:spassword_checker]\npaste.filter_factory = keystone_spassword.contrib.spassword.routers:SPasswordExtension.factory\n\n&/' \
+  -e 's/\[pipeline:api_v3\]/[filter:spassword_time]\npaste.filter_factory = keystone_spassword.contrib.spassword:SPasswordMiddleware.factory\n\n&/' \
   %{keystone_paste}
 else
   echo "SPASSWORD extension already configured. Skipping."
@@ -53,7 +53,7 @@ if ! grep -q -F "password=keystone_spassword.contrib.spassword.SPassword" "%{key
       -e 's/\#password=keystone.auth.plugins.password.Password$/password=keystone_spassword.contrib.spassword.SPassword\n&/' \
     %{keystone_conf}
 else
-  echo "Already installed spassword Password plugin module. Skipping."
+  echo "Already installed spassword SPassword plugin module. Skipping."
 fi
 
 if ! grep -q -F "driver=keystone_spassword.contrib.spassword.backends.sql.Identity" "%{keystone_conf}"; then

@@ -35,7 +35,7 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
-class PasswordModel(sql.ModelBase, sql.DictBase):
+class SPasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
     attributes = ['user_id', 'user_name', 'domain_id', 'creation_time', 'login_attempts']
     user_id = sql.Column(sql.String(64), primary_key=True)
@@ -47,7 +47,7 @@ class PasswordModel(sql.ModelBase, sql.DictBase):
     extra = sql.Column(sql.JsonBlob())
 
 
-class Password(Driver):
+class SPassword(Driver):
 
     def get_user(self, user_id):
         session = sql.get_session()
@@ -58,7 +58,7 @@ class Password(Driver):
 
     def set_user_creation_time(self, user):
         session = sql.get_session()
-        spassword_ref = session.query(PasswordModel).get(user['id'])
+        spassword_ref = session.query(SPasswordModel).get(user['id'])
         LOG.debug('set user creation time for %s' % user['id'])
         if not spassword_ref:
             data_user = {}
@@ -66,7 +66,7 @@ class Password(Driver):
             data_user['user_name'] = user['name']
             data_user['creation_time'] = datetime.datetime.utcnow()
             data_user['domain_id'] = user['domain_id']
-            spassword_ref = PasswordModel.from_dict(data_user)
+            spassword_ref = SPasswordModel.from_dict(data_user)
             # A new session is needed
             with session.begin():
                 session.add(spassword_ref)
@@ -78,7 +78,7 @@ class Password(Driver):
 
     def update_user_modification_time(self, user):
         session = sql.get_session()
-        spassword_ref = session.query(PasswordModel).get(user['id'])
+        spassword_ref = session.query(SPasswordModel).get(user['id'])
         LOG.debug('update user modification time for %s' % user['id'])
         if spassword_ref:
             spassword_ref['creation_time'] = datetime.datetime.utcnow()
@@ -88,7 +88,7 @@ class Password(Driver):
             data_user['user_name'] = user['name']
             data_user['domain_id'] = user['domain_id']
             data_user['creation_time'] = datetime.datetime.utcnow()
-            spassword_ref = PasswordModel.from_dict(data_user)
+            spassword_ref = SPasswordModel.from_dict(data_user)
             spassword_ref['login_attempts'] = 0
             with session.begin():
                 session.add(spassword_ref)
@@ -99,7 +99,7 @@ class Identity(Identity):
         if CONF.spassword.enabled:
             # Check if password has been expired
             session = sql.get_session()
-            spassword_ref = session.query(PasswordModel).get(user_ref['id'])
+            spassword_ref = session.query(SPasswordModel).get(user_ref['id'])
             if not (spassword_ref == None):
                 # Check password time: 2 months
                 expiration_date = datetime.datetime.today() - \
@@ -122,7 +122,7 @@ class Identity(Identity):
 
         if CONF.spassword.enabled:
             session = sql.get_session()
-            spassword_ref = session.query(PasswordModel).get(user_id)
+            spassword_ref = session.query(SPasswordModel).get(user_id)
 
             if spassword_ref:
                 if not res:
@@ -157,7 +157,7 @@ class Identity(Identity):
                     data_user['login_attempts'] = 1
                 else:
                     data_user['login_attempts'] = 0
-                spassword_ref = PasswordModel.from_dict(data_user)
+                spassword_ref = SPasswordModel.from_dict(data_user)
 
                 # A new session is needed
                 with session.begin():
