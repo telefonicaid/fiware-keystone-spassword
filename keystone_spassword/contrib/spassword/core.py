@@ -148,7 +148,7 @@ class SPassword(password.Password):
 
     def authenticate(self, context, auth_payload, user_context):
         """Try to authenticate against the identity backend."""
-        if ('K' in versionutils.deprecated._RELEASES):
+        if ('L' in versionutils.deprecated._RELEASES):
             user_info = password.auth_plugins.UserAuthInfo.create(auth_payload, self.method)
         else:
             user_info = password.UserAuthInfo.create(auth_payload)
