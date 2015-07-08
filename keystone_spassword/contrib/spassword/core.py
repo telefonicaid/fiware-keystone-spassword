@@ -52,8 +52,8 @@ CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
 
 
 @dependency.provider('spassword_api')
-class Manager(manager.Manager):
-    """Password Manager.
+class SPasswordManager(manager.Manager):
+    """SPassword Manager.
 
     See :mod:`keystone.common.manager.Manager` for more details on
     how this dynamically calls the backend.
@@ -75,8 +75,8 @@ class Manager(manager.Manager):
                 },
             }
 
-        super(Manager, self).__init__(
-            'keystone_spassword.contrib.spassword.backends.sql.Password')
+        super(SPasswordManager, self).__init__(
+            'keystone_spassword.contrib.spassword.backends.sql.SPassword')
 
     def user_updated_callback(self, service, resource_type, operation,
                               payload):
@@ -96,7 +96,7 @@ class Manager(manager.Manager):
 
 
 class Driver(object):
-    """Interface description for Password driver."""
+    """Interface description for SPassword driver."""
 
     def get_user(self, user_id):
         """Getuser
@@ -132,12 +132,15 @@ class Driver(object):
         raise exception.NotImplemented()
 
 
-class PasswordMiddleware(wsgi.Middleware):
+class SPasswordMiddleware(wsgi.Middleware):
 
     def __init__(self, *args, **kwargs):
-        LOG.debug("USER_CREATED")
-        self.password_api = Manager()
-        return super(PasswordMiddleware, self).__init__(*args, **kwargs)
+        LOG.debug("SPasswordMiddleware INIT")
+        try:
+            self.spassword_api = SPasswordManager()
+        except Exception:
+            LOG.debug("SPasswordMiddleware already registered")
+        return super(SPasswordMiddleware, self).__init__(*args, **kwargs)
 
 
 @dependency.requires('identity_api')
@@ -145,12 +148,16 @@ class SPassword(password.Password):
 
     def authenticate(self, context, auth_payload, user_context):
         """Try to authenticate against the identity backend."""
-        user_info = password.UserAuthInfo.create(auth_payload)
+        if ('K' in versionutils.deprecated._RELEASES):
+            user_info = password.auth_plugins.UserAuthInfo.create(auth_payload, self.method)
+        else:
+            user_info = password.UserAuthInfo.create(auth_payload)
 
         # FIXME(gyee): identity.authenticate() can use some refactoring since
         # all we care is password matches
         try:
-            if 'J' in versionutils.deprecated._RELEASES:
+            if (('J' in versionutils.deprecated._RELEASES) or
+                ('K' in versionutils.deprecated._RELEASES)):
                 res = self.identity_api.authenticate(
                     context,
                     user_id=user_info.user_id,
