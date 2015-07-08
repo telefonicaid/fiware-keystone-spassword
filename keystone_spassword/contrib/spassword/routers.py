@@ -24,7 +24,7 @@ from keystone.common import wsgi
 from keystone_spassword.contrib.spassword import controllers
 
 
-class PasswordExtension(wsgi.ExtensionRouter):
+class SPasswordExtension(wsgi.ExtensionRouter):
 
     def add_routes(self, mapper):
 
