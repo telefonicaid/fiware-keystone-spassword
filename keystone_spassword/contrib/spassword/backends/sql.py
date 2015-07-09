@@ -119,7 +119,6 @@ class Identity(Identity):
         except AssertionError:
             res = False
             auth_error_msg = 'Invalid username or password'
-
         if CONF.spassword.enabled:
             session = sql.get_session()
             spassword_ref = session.query(SPasswordModel).get(user_id)
@@ -157,18 +156,17 @@ class Identity(Identity):
                     data_user['login_attempts'] = 1
                 else:
                     data_user['login_attempts'] = 0
+                    expiration_date = data_user['creation_time'] + \
+                        datetime.timedelta(CONF.spassword.pwd_exp_days)
+                    res['extras'] = {
+                        "password_creation_time": str(data_user['creation_time']),
+                        "password_expiration_time": str(expiration_date)
+                    }
                 spassword_ref = SPasswordModel.from_dict(data_user)
 
-                # A new session is needed
-                with session.begin():
-                    session.add(spassword_ref)
-
-                expiration_date = spassword_ref['creation_time'] + \
-                        datetime.timedelta(CONF.spassword.pwd_exp_days)
-                res['extras'] = {
-                        "password_creation_time": str(spassword_ref['creation_time']),
-                        "password_expiration_time": str(expiration_date)
-                }
+            # A new session is needed
+            with session.begin():
+                session.add(spassword_ref)
 
         if not res:
             # Return 401 due to bad user/password or user reach max attempts
