@@ -1,7 +1,8 @@
 # Keystone SPASSWORD extension
 Keystone SPASSWORD is an OpenStack Keystone extension that enables
-some extra security checks over user passwords, as force strong passwords,
-a recover procedure and so on.
+some extra security checks over user passwords, as force the usage of strong passwords,
+expiration time for a password, number of bad login attempts before user account became blocked,
+a recover procedure password and so on.
 
 
 ## Installing
