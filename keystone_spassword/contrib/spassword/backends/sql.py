@@ -82,6 +82,7 @@ class SPassword(Driver):
         LOG.debug('update user modification time for %s' % user['id'])
         if spassword_ref:
             spassword_ref['creation_time'] = datetime.datetime.utcnow()
+            spassword_ref['login_attempts'] = 0
         else:
             data_user = {}
             data_user['user_id'] = user['id']
@@ -90,8 +91,8 @@ class SPassword(Driver):
             data_user['creation_time'] = datetime.datetime.utcnow()
             spassword_ref = SPasswordModel.from_dict(data_user)
             spassword_ref['login_attempts'] = 0
-            with session.begin():
-                session.add(spassword_ref)
+        with session.begin():
+            session.add(spassword_ref)
 
 
 class Identity(Identity):
