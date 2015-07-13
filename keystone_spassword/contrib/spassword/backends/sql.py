@@ -67,12 +67,15 @@ class SPassword(Driver):
             data_user['creation_time'] = datetime.datetime.utcnow()
             data_user['domain_id'] = user['domain_id']
             spassword_ref = SPasswordModel.from_dict(data_user)
-            # A new session is needed
-            with session.begin():
-                session.add(spassword_ref)
         else:
+            # TODO: Never reached?
+            LOG.info('user %s already created in spassword, just updating' % user['id'])
             spassword_ref['creation_time'] = datetime.datetime.utcnow()
             spassword_ref['login_attempts'] = 0
+
+        # A new session is needed
+        with session.begin():
+            session.add(spassword_ref)
 
         return spassword_ref.to_dict()
 
