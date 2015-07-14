@@ -80,17 +80,19 @@ class SPasswordManager(manager.Manager):
 
     def user_updated_callback(self, service, resource_type, operation,
                               payload):
-        LOG.debug("USER_UPDATED")
         user = self.driver.get_user(payload['resource_info'])
-        # TODO: Always ?
+        LOG.debug("User %s updated." % user['id'])
+        # TODO: Already is done in any update operations.
+        # But only admin can modify user is password were blocked
+        # Minor bug: user acount is unlocker when admin user modifies any issue
+        # about user not just password
         if CONF.spassword.enabled:
             self.driver.update_user_modification_time(user)
 
     def user_created_callback(self, service, resource_type, operation,
                               payload):
-        LOG.debug("USER_CREATED")
         user = self.driver.get_user(payload['resource_info'])
-        # print user
+        LOG.debug("User %s created." % user['id'])
         if CONF.spassword.enabled:
             user_password = self.driver.set_user_creation_time(user)
 
