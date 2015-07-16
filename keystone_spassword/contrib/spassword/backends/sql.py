@@ -23,6 +23,7 @@ import datetime
 
 import datetime
 from keystone.common import sql
+from keystone.openstack.common import timeutils
 from keystone import exception
 from keystone.identity.backends.sql import User, Identity
 from keystone_spassword.contrib.spassword import Driver
@@ -137,8 +138,8 @@ class Identity(Identity):
                     expiration_date = spassword_ref['creation_time'] + \
                         datetime.timedelta(CONF.spassword.pwd_exp_days)
                     res['extras'] = {
-                        "password_creation_time": str(spassword_ref['creation_time']),
-                        "password_expiration_time": str(expiration_date)
+                        "password_creation_time": timeutils.isotime(spassword_ref['creation_time']),
+                        "password_expiration_time": timeutils.isotime(expiration_date)
                     }
 
                 if spassword_ref['login_attempts'] > CONF.spassword.pwd_max_tries:
@@ -163,8 +164,8 @@ class Identity(Identity):
                     expiration_date = data_user['creation_time'] + \
                         datetime.timedelta(CONF.spassword.pwd_exp_days)
                     res['extras'] = {
-                        "password_creation_time": str(data_user['creation_time']),
-                        "password_expiration_time": str(expiration_date)
+                        "password_creation_time": timeutils.isotime(data_user['creation_time']),
+                        "password_expiration_time": timeutils.isotime(expiration_date)
                     }
                 spassword_ref = SPasswordModel.from_dict(data_user)
 
