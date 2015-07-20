@@ -11,12 +11,11 @@ RUN service mysqld start
 
 RUN yum -y install rpm-build
 RUN yum -y install python git python-pip python-devel python-virtualenv gcc ssh
-RUN yum install -y openstack-utils openstack-keystone python-keystoneclient
-RUN yum install -y wget unzip nc jq 
-RUN yum install -y cracklib cracklib-python
 
-
-
+RUN yum install -y https://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm
+RUN yum -y install openstack-utils openstack-keystone python-keystoneclient
+RUN yum -y install wget unzip nc jq
+RUN yum -y install cracklib cracklib-python
 
 RUN openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql://keystone:keystone@localhost/keystone
@@ -35,7 +34,7 @@ RUN openstack-config --set /etc/keystone/keystone.conf \
 
 RUN echo "CREATE DATABASE keystone; GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
   IDENTIFIED BY 'keystone'; GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
-  IDENTIFIED BY 'keystone';" | /usr/bin/mysql -u root
+  IDENTIFIED BY 'keystone';" | /usr/bin/mysql -u root -h localhost
 
 RUN keystone-manage db_sync keystone
 
