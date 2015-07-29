@@ -38,12 +38,14 @@ LOG = log.getLogger(__name__)
 
 class SPasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
-    attributes = ['user_id', 'user_name', 'domain_id', 'creation_time', 'login_attempts']
+    attributes = ['user_id', 'user_name', 'domain_id', 'creation_time',
+                  'login_attempts', 'last_login_attempt_time']
     user_id = sql.Column(sql.String(64), primary_key=True)
     user_name = sql.Column(sql.String(255), default=None)
     domain_id = sql.Column(sql.String(64), default=None)
     creation_time = sql.Column(sql.DateTime(), default=None)
     login_attempts = sql.Column(sql.Integer, default=0)
+    last_login_attempt_time = sql.Column(sql.DateTime(), default=None)
     # bad_attempts
     extra = sql.Column(sql.JsonBlob())
 
@@ -132,7 +134,6 @@ class Identity(Identity):
                 if not res:
                     LOG.debug('wrong password provided at login %s' % spassword_ref['user_name'])
                     spassword_ref['login_attempts'] += 1
-
                 else:
                     spassword_ref['login_attempts'] = 0
                     expiration_date = spassword_ref['creation_time'] + \
@@ -143,11 +144,16 @@ class Identity(Identity):
                     }
 
                 if spassword_ref['login_attempts'] > CONF.spassword.pwd_max_tries:
-                    LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
-                    res = False
-                    auth_error_msg = ('User password %s blocked due to reach' +
-                                      ' max number of tries. Contact with your ' +
-                                      ' admin') % spassword_ref['user_name']
+                    # Check last bloking
+                    if (spassword_ref['last_login_attempt_time'] >
+                        datetime.datetime.utcnow() - datetime.timedelta(30):
+                        LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
+                        res = False
+                        auth_error_msg = ('User password %s temporarily blocked due to reach' +
+                                          ' max number of tries. Contact with your ' +
+                                          ' admin') % spassword_ref['user_name']
+                # Update login attempt time
+                spassword_ref['last_login_attempt_time'] = datetime.datetime.utcnow()
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
@@ -157,6 +163,7 @@ class Identity(Identity):
                 data_user['user_name'] = user['name']
                 data_user['domain_id'] = user['domain_id']
                 data_user['creation_time'] = datetime.datetime.utcnow()
+                data_user['last_login_attempt_time'] = datetime.datetime.utcnow()
                 if not res:
                     data_user['login_attempts'] = 1
                 else:
@@ -178,4 +185,3 @@ class Identity(Identity):
             raise exception.Unauthorized(auth_error_msg)
         return res
 
-        

@@ -31,6 +31,7 @@ def upgrade(migrate_engine):
         sql.Column('domain_id', sql.String(64)),
         sql.Column('creation_time', sql.DateTime()),
         sql.Column('login_attempts', sql.Integer),
+        sql.Column('last_login_attempt_time', sql.DateTime()),
         sql.Column('extra', sql.Text()))
     service_table.create(migrate_engine, checkfirst=True)
 
