@@ -108,27 +108,45 @@ class Identity(Identity):
             session = sql.get_session()
             spassword_ref = session.query(SPasswordModel).get(user_ref['id'])
             if not (spassword_ref == None):
-                # Check password time: 2 months
+                # Check password time
                 expiration_date = datetime.datetime.today() - \
-                  datetime.timedelta(CONF.spassword.pwd_exp_days)
+                  datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                 if (spassword_ref['creation_time'] < expiration_date):
                     LOG.info('password of user %s %s expired ' % (user_ref['id'],
                                                                   user_ref['name']))
                     res = False
+                    return res
 
         res = super(Identity, self)._check_password(password, user_ref)
         return res
 
     # Identity interface
     def authenticate(self, user_id, password):
+
+        if CONF.spassword.enabled:
+            session = sql.get_session()
+            spassword_ref = session.query(SPasswordModel).get(user_id)
+
+            if spassword_ref:
+                if spassword_ref['login_attempts'] > CONF.spassword.pwd_max_tries:
+                    # Check last block attempt
+                    if (spassword_ref['last_login_attempt_time'] > \
+                        datetime.datetime.utcnow() - \
+                        datetime.timedelta(minutes=CONF.spassword.pwd_block_minutes)):
+                        LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
+                        auth_error_msg = ('User password %s temporarily blocked due to reach' +
+                                          ' max number of tries. Contact with your ' +
+                                          ' admin') % spassword_ref['user_name']
+                        raise exception.Unauthorized(auth_error_msg)
         try:
             res = super(Identity, self).authenticate(user_id, password)
         except AssertionError:
             res = False
             auth_error_msg = 'Invalid username or password'
+
         if CONF.spassword.enabled:
-            session = sql.get_session()
-            spassword_ref = session.query(SPasswordModel).get(user_id)
+            # session = sql.get_session()
+            # spassword_ref = session.query(SPasswordModel).get(user_id)
 
             if spassword_ref:
                 if not res:
@@ -137,21 +155,11 @@ class Identity(Identity):
                 else:
                     spassword_ref['login_attempts'] = 0
                     expiration_date = spassword_ref['creation_time'] + \
-                        datetime.timedelta(CONF.spassword.pwd_exp_days)
+                        datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                     res['extras'] = {
                         "password_creation_time": timeutils.isotime(spassword_ref['creation_time']),
                         "password_expiration_time": timeutils.isotime(expiration_date)
                     }
-
-                if spassword_ref['login_attempts'] > CONF.spassword.pwd_max_tries:
-                    # Check last bloking
-                    if (spassword_ref['last_login_attempt_time'] >
-                        datetime.datetime.utcnow() - datetime.timedelta(30):
-                        LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
-                        res = False
-                        auth_error_msg = ('User password %s temporarily blocked due to reach' +
-                                          ' max number of tries. Contact with your ' +
-                                          ' admin') % spassword_ref['user_name']
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = datetime.datetime.utcnow()
 
@@ -169,7 +177,7 @@ class Identity(Identity):
                 else:
                     data_user['login_attempts'] = 0
                     expiration_date = data_user['creation_time'] + \
-                        datetime.timedelta(CONF.spassword.pwd_exp_days)
+                        datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                     res['extras'] = {
                         "password_creation_time": timeutils.isotime(data_user['creation_time']),
                         "password_expiration_time": timeutils.isotime(expiration_date)
