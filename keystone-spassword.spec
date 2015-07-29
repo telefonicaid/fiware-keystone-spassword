@@ -70,6 +70,7 @@ if ! grep -q -F "[spassword]" "%{keystone_conf}"; then
     echo "[spassword]
 enabled=true
 pwd_max_tries=3
+pwd_block_minutes=30
 pwd_exp_days=180
 #smtp_server='0.0.0.0'
 #smtp_port=587
