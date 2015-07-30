@@ -107,7 +107,8 @@ class Identity(Identity):
             # Check if password has been expired
             session = sql.get_session()
             spassword_ref = session.query(SPasswordModel).get(user_ref['id'])
-            if not (spassword_ref == None):
+            if (not (spassword_ref == None)) and \
+                (not user_ref['id'] in CONF.spassword.pwd_user_blacklist):
                 # Check password time
                 expiration_date = datetime.datetime.today() - \
                   datetime.timedelta(days=CONF.spassword.pwd_exp_days)
@@ -125,7 +126,8 @@ class Identity(Identity):
     # Identity interface
     def authenticate(self, user_id, password):
 
-        if CONF.spassword.enabled:
+        if CONF.spassword.enabled and \
+           not (user_id in CONF.spassword.pwd_user_blacklist):
             session = sql.get_session()
             spassword_ref = session.query(SPasswordModel).get(user_id)
 
@@ -147,8 +149,8 @@ class Identity(Identity):
             auth_error_msg = 'Invalid username or password'
 
         if CONF.spassword.enabled:
-            # session = sql.get_session()
-            # spassword_ref = session.query(SPasswordModel).get(user_id)
+            session = sql.get_session()
+            spassword_ref = session.query(SPasswordModel).get(user_id)
 
             if spassword_ref:
                 if not res:
