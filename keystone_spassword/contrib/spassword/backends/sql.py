@@ -115,7 +115,9 @@ class Identity(Identity):
                     LOG.info('password of user %s %s expired ' % (user_ref['id'],
                                                                   user_ref['name']))
                     res = False
-                    return res
+                    auth_error_msg = ('User password %s expired. Contact with your ' +
+                                          ' admin') % spassword_ref['user_name']
+                    raise exception.Unauthorized(auth_error_msg)
 
         res = super(Identity, self)._check_password(password, user_ref)
         return res
