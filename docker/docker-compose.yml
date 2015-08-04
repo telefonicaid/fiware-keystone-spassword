@@ -1,0 +1,21 @@
+db:
+  image: mysql
+  expose:
+    - "3306"
+  ports:
+    - "3307:3306"
+  environment:
+    MYSQL_ROOT_PASSWORD: keystone  
+    MYSQL_DATABASE: keystone
+    MYSQL_USER: keystone
+    MYSQL_PASSWORD: keystone
+
+keystone:
+  build: .
+  links:
+    - db
+  ports:
+    - "5001:5000"
+
+
+
