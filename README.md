@@ -1,7 +1,7 @@
 # Keystone SPASSWORD extension
 Keystone SPASSWORD is an OpenStack Keystone extension that enables
 some extra security checks over user passwords, as force the usage of strong passwords,
-expiration time for a password, number of bad login attempts before user account became blocked,
+expiration time for a password, number of bad login attempts before user account became temporarily blocked,
 a recover procedure password and so on.
 
 
@@ -22,9 +22,10 @@ installation configures default values for that options at /etc/keystone/keyston
 ```
 [spassword]
 enabled = true
-pwd_exp_days = 180
-pwd_max_tries = 3
+pwd_exp_days = 365
+pwd_max_tries = 5
 pwd_block_minutes = 30
+pwd_user_blacklist=
 smtp_server = '0.0.0.0'
 smtp_port = 587
 smtp_tls = true
