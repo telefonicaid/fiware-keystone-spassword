@@ -1,5 +1,8 @@
 # Keystone SPASSWORD extension
-Keystone SPASSWORD is an OpenStack Keystone extension tha
+Keystone SPASSWORD is an OpenStack Keystone extension that enables
+some extra security checks over user passwords, as force the usage of strong passwords,
+expiration time for a password, number of bad login attempts before user account became temporarily blocked,
+a recover procedure password and so on.
 
 
 ## Installing
@@ -12,9 +15,47 @@ Installing from RPM is pretty straightforward:
 rpm -Uvh keystone-spassword-*.noarch.rpm
 ```
 
-Once installed you can fine-tune the permissions (out-of-the box the
-installation configures the permissions to `rule:admin_required` for Role
-management; User and Group management reuses the Keystone permissions).
+Once installed you can fine-tune options (out-of-the box the
+installation configures default values for that options at /etc/keystone/keystone.conf).
+
+
+```
+[spassword]
+enabled = true
+pwd_exp_days = 365
+pwd_max_tries = 5
+pwd_block_minutes = 30
+pwd_user_blacklist=
+smtp_server = '0.0.0.0'
+smtp_port = 587
+smtp_tls = true
+smtp_user = 'smtpuser@yourdomain.com'
+smtp_password = 'yourpassword'
+smtp_from = 'smtpuser'
+```
+
+keystone-spassword enables two new authentication and identity plugins, which extends
+default provided plugins to ensure the use of strong passwords, to check expiration time
+and to control the number of tries that an user can use badly their password before be blocked
+
+```
+[auth]
+password=keystone_spassword.contrib.spassword.SPassword
+```
+and
+```
+[identity]
+driver=keystone_spassword.contrib.spassword.backends.sql.Identity
+```
+
+```
+[filter:spassword_checker]
+paste.filter_factory = keystone_spassword.contrib.spassword.routers:PasswordExtension.factory
+
+[filter:spassword_time]
+paste.filter_factory = keystone_spassword.contrib.spassword:PasswordMiddleware.factory
+```
+
 
 Restart Keystone server:
 
@@ -33,11 +74,6 @@ by Keystone. This document assumes that the reader has previous experience
 with Keystone, but as a reference you can read more about the Keystone
 Authentication and Authorization mechanism in it's
 [official documentation](https://github.com/openstack/identity-api/blob/master/v3/src/markdown/identity-api-v3.md).
-
-
-Given that both Keystones Auth mechanisms and SCIM are document, this section
-focus on running examples, not covering the full API, but giving the reader
-and overview of how this extension should be used.
 
 
 ## Building and packaging
@@ -85,7 +121,7 @@ Setting up local development server. First populate database (remember that
 this will use `sqlite`).
 
 ```sh
-keystone-manage db_sync
+keystone-manage db_sync --extension spassword
 ```
 
 Launch server
@@ -93,6 +129,8 @@ Launch server
 ```sh
 PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 ```
+
+
 
 
 

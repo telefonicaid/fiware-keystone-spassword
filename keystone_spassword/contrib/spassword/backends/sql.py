@@ -20,27 +20,37 @@
 
 import time
 import datetime
-from oslo.utils import timeutils
 
+import datetime
 from keystone.common import sql
+from keystone.openstack.common import timeutils
 from keystone import exception
 from keystone.identity.backends.sql import User, Identity
-from keystone.openstack.common import log
 from keystone_spassword.contrib.spassword import Driver
+try: from oslo_log import log
+except ImportError: from keystone.openstack.common import log
+try: from oslo.config import cfg
+except ImportError: from keystone import config as cfg
 
-
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
-class PasswordModel(sql.ModelBase, sql.DictBase):
-    __tablename__ = 'password'
-    attributes = ['user_id', 'creation_time', 'login_atemps_among'] 
+
+class SPasswordModel(sql.ModelBase, sql.DictBase):
+    __tablename__ = 'spassword'
+    attributes = ['user_id', 'user_name', 'domain_id', 'creation_time',
+                  'login_attempts', 'last_login_attempt_time']
     user_id = sql.Column(sql.String(64), primary_key=True)
+    user_name = sql.Column(sql.String(255), default=None)
+    domain_id = sql.Column(sql.String(64), default=None)
     creation_time = sql.Column(sql.DateTime(), default=None)
-    login_atemps_among = sql.Column(sql.Integer, default=0)
-    # bad_attemps
+    login_attempts = sql.Column(sql.Integer, default=0)
+    last_login_attempt_time = sql.Column(sql.DateTime(), default=None)
+    # bad_attempts
     extra = sql.Column(sql.JsonBlob())
 
-class Password(Driver):
+
+class SPassword(Driver):
 
     def get_user(self, user_id):
         session = sql.get_session()
@@ -51,69 +61,139 @@ class Password(Driver):
 
     def set_user_creation_time(self, user):
         session = sql.get_session()
-        password_ref = session.query(PasswordModel).get(user['id'])
-        if not password_ref:
+        spassword_ref = session.query(SPasswordModel).get(user['id'])
+        LOG.debug('set user creation time for %s' % user['id'])
+        if not spassword_ref:
             data_user = {}
             data_user['user_id'] = user['id']
-            data_user['creation_time'] = timeutils.utcnow()
-            password_ref = PasswordModel.from_dict(data_user)
-            with session.begin():
-                session.add(password_ref)
+            data_user['user_name'] = user['name']
+            data_user['creation_time'] = datetime.datetime.utcnow()
+            data_user['domain_id'] = user['domain_id']
+            spassword_ref = SPasswordModel.from_dict(data_user)
         else:
-            password_ref['creation_time'] = timeutils.utcnow()
-            password_ref['login_atemps_among'] = 0
+            # TODO: Never reached?
+            LOG.info('user %s already created in spassword, just updating' % user['id'])
+            spassword_ref['creation_time'] = datetime.datetime.utcnow()
+            spassword_ref['login_attempts'] = 0
 
-        return password_ref.to_dict()
+        # A new session is needed
+        with session.begin():
+            session.add(spassword_ref)
 
-        
+        return spassword_ref.to_dict()
+
     def update_user_modification_time(self, user):
         session = sql.get_session()
-        password_ref = session.query(PasswordModel).get(user['id'])
-        if password_ref:
-            password_ref['creation_time'] = timeutils.utcnow()
+        spassword_ref = session.query(SPasswordModel).get(user['id'])
+        LOG.debug('update user modification time for %s' % user['id'])
+        if spassword_ref:
+            spassword_ref['creation_time'] = datetime.datetime.utcnow()
+            spassword_ref['login_attempts'] = 0
         else:
             data_user = {}
             data_user['user_id'] = user['id']
-            data_user['creation_time'] = timeutils.utcnow()
-            password_ref = PasswordModel.from_dict(data_user)
-            password_ref['login_atemps_among'] = 0                        
-            with session.begin():
-                session.add(password_ref)            
+            data_user['user_name'] = user['name']
+            data_user['domain_id'] = user['domain_id']
+            data_user['creation_time'] = datetime.datetime.utcnow()
+            spassword_ref = SPasswordModel.from_dict(data_user)
+            spassword_ref['login_attempts'] = 0
+        with session.begin():
+            session.add(spassword_ref)
 
 
 class Identity(Identity):
     def _check_password(self, password, user_ref):
-        # Check if password has been expired
-        session = sql.get_session()
-        password_ref = session.query(PasswordModel).get(user_ref['id'])
-        if not (password_ref == None):
-            # Check password time: 2 months
-            # TODO: get expiration_time from settings
-            expiration_date = datetime.datetime.today() - datetime.timedelta(2*365/12)
-            if (password_ref['creation_time'] < expiration_date):
-                print "PASSWORD EXPIRED!"
-                #TODO: return False ?
+        if CONF.spassword.enabled:
+            # Check if password has been expired
+            session = sql.get_session()
+            spassword_ref = session.query(SPasswordModel).get(user_ref['id'])
+            if (not (spassword_ref == None)) and \
+                (not user_ref['id'] in CONF.spassword.pwd_user_blacklist):
+                # Check password time
+                expiration_date = datetime.datetime.today() - \
+                  datetime.timedelta(days=CONF.spassword.pwd_exp_days)
+                if (spassword_ref['creation_time'] < expiration_date):
+                    LOG.info('password of user %s %s expired ' % (user_ref['id'],
+                                                                  user_ref['name']))
+                    res = False
+                    auth_error_msg = ('Password expired for user %s. Contact with your ' +
+                                      'admin') % spassword_ref['user_name']
+                    raise exception.Unauthorized(auth_error_msg)
 
-            
         res = super(Identity, self)._check_password(password, user_ref)
-        # TODO: Reset or increase login retries
-        #password_ref['login_atemps_among'] = 0
         return res
 
     # Identity interface
     def authenticate(self, user_id, password):
-        res = super(Identity, self).authenticate(user_id, password)
-        session = sql.get_session()
-        password_ref = session.query(PasswordModel).get(user_id)
 
-        if password_ref:
-            if not res:
-                password_ref['login_atemps_among'] += 1
+        if CONF.spassword.enabled and \
+           not (user_id in CONF.spassword.pwd_user_blacklist):
+            session = sql.get_session()
+            spassword_ref = session.query(SPasswordModel).get(user_id)
 
-            res['extras'] = {
-                "password_creation_time": str(password_ref['creation_time']),
-                "login_atemps_among": password_ref['login_atemps_among']
-            }
+            if spassword_ref:
+                if spassword_ref['login_attempts'] > CONF.spassword.pwd_max_tries:
+                    # Check last block attempt
+                    if (spassword_ref['last_login_attempt_time'] > \
+                        datetime.datetime.utcnow() - \
+                        datetime.timedelta(minutes=CONF.spassword.pwd_block_minutes)):
+                        LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
+                        auth_error_msg = ('Password temporarily blocked for user %s due to reach' +
+                                          ' max number of tries. Contact with your ' +
+                                          ' admin') % spassword_ref['user_name']
+                        raise exception.Unauthorized(auth_error_msg)
+        try:
+            res = super(Identity, self).authenticate(user_id, password)
+        except AssertionError:
+            res = False
+            auth_error_msg = 'Invalid username or password'
+
+        if CONF.spassword.enabled:
+            session = sql.get_session()
+            spassword_ref = session.query(SPasswordModel).get(user_id)
+
+            if spassword_ref:
+                if not res:
+                    LOG.debug('wrong password provided at login %s' % spassword_ref['user_name'])
+                    spassword_ref['login_attempts'] += 1
+                else:
+                    spassword_ref['login_attempts'] = 0
+                    expiration_date = spassword_ref['creation_time'] + \
+                        datetime.timedelta(days=CONF.spassword.pwd_exp_days)
+                    res['extras'] = {
+                        "password_creation_time": timeutils.isotime(spassword_ref['creation_time']),
+                        "password_expiration_time": timeutils.isotime(expiration_date)
+                    }
+                # Update login attempt time
+                spassword_ref['last_login_attempt_time'] = datetime.datetime.utcnow()
+
+            else: # User still not registered in spassword
+                LOG.debug('registering in spassword %s' % user_id)
+                user = self.get_user(user_id)
+                data_user = {}
+                data_user['user_id'] = user['id']
+                data_user['user_name'] = user['name']
+                data_user['domain_id'] = user['domain_id']
+                data_user['creation_time'] = datetime.datetime.utcnow()
+                data_user['last_login_attempt_time'] = datetime.datetime.utcnow()
+                if not res:
+                    data_user['login_attempts'] = 1
+                else:
+                    data_user['login_attempts'] = 0
+                    expiration_date = data_user['creation_time'] + \
+                        datetime.timedelta(days=CONF.spassword.pwd_exp_days)
+                    res['extras'] = {
+                        "password_creation_time": timeutils.isotime(data_user['creation_time']),
+                        "password_expiration_time": timeutils.isotime(expiration_date)
+                    }
+                spassword_ref = SPasswordModel.from_dict(data_user)
+
+            # A new session is needed
+            with session.begin():
+                session.add(spassword_ref)
+
+        if not res:
+            # Return 401 due to bad user/password or user reach max attempts
+            raise exception.Unauthorized(auth_error_msg)
         return res
 
-        
