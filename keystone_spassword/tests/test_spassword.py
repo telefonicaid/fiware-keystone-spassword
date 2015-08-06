@@ -28,8 +28,8 @@ import os
 
 class BaseTests(object):
 
-    EXTENSION_NAME = 'scim'
-    EXTENSION_TO_ADD = 'scim_extension'
+    EXTENSION_NAME = 'spassword'
+    EXTENSION_TO_ADD = 'spassword_extension'
 
     def build_entity(self, *args, **kwarws):
         raise NotImplementedError
