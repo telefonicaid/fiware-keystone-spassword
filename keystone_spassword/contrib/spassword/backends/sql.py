@@ -110,7 +110,7 @@ class Identity(Identity):
             if (not (spassword_ref == None)) and \
                 (not user_ref['id'] in CONF.spassword.pwd_user_blacklist):
                 # Check password time
-                expiration_date = datetime.datetime.today() - \
+                expiration_date = datetime.datetime.utcnow() - \
                   datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                 if (spassword_ref['creation_time'] < expiration_date):
                     LOG.info('password of user %s %s expired ' % (user_ref['id'],
