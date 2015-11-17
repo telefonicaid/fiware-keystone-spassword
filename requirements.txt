@@ -1,2 +1,2 @@
--e git+https://github.com/openstack/keystone/tree/icehouse-eol
+-e git+https://github.com/openstack/keystone/tree/icehouse-eol#egg=keystone
 cracklib==2.9.2
