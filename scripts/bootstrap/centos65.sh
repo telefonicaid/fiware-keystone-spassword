@@ -30,7 +30,7 @@ sudo sed -i "s/#baseurl/baseurl/" /etc/yum.repos.d/epel.repo
 sudo yum -y install rpm-build
 sudo yum -y install python git python-pip python-devel python-virtualenv gcc ssh
 
-sudo yum install -y https://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm
+sudo yum install -y https://repos.fedorapeople.org/repos/openstack/EOL/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm
 sudo yum install -y openstack-utils openstack-keystone python-keystoneclient
 sudo yum install -y wget unzip nc jq 
 sudo yum install -y cracklib cracklib-python
