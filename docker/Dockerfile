@@ -13,7 +13,7 @@ RUN yum -y install mysql
 RUN yum -y install rpm-build
 RUN yum -y install python git python-pip python-devel python-virtualenv gcc ssh
 
-RUN yum install -y https://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm
+RUN yum install -y https://repos.fedorapeople.org/repos/openstack/EOL/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm
 RUN yum -y install openstack-utils openstack-keystone python-keystoneclient
 RUN yum -y install wget unzip nc jq
 RUN yum -y install cracklib cracklib-python
