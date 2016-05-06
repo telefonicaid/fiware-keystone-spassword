@@ -3,7 +3,7 @@ FROM centos:6
 MAINTAINER IoT team
 
 ENV DB_HOST localhost
-
+ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 
 RUN \
     # Install dependencies
@@ -78,33 +78,46 @@ RUN \
     find . -name "*.rpm" -exec rpm -Uvh {} \;
 
 
+RUN mkdir -p /opt/keystone
+COPY keystone-entrypoint.sh /opt/keystone
+
 # The following sections build a script that will be executed on launch via ENTRYPOINT
 #https://allthingsopen.com/2014/07/09/docker-all-the-things-openstack-keystone-and-ceilometer-automated-builds-on-docker-hub/
 
 ## Start Keystone
-RUN echo "#!/bin/bash" > /root/postlaunchconfig.sh
-RUN echo "/usr/bin/keystone-manage db_sync keystone" >> /root/postlaunchconfig.sh
-RUN echo "/usr/bin/keystone-manage db_sync --extension spassword" >> /root/postlaunchconfig.sh
-RUN echo "/usr/bin/keystone-all &" >> /root/postlaunchconfig.sh
+RUN echo "#!/bin/bash" > /opt/keystone/postlaunchconfig.sh
+RUN echo " \
+DB_HOST_ARG=\${1}                                                         \
+DB_HOST_VALUE=\${2}                                                       \
+if [ \"\$DB_HOST_ARG\" == \"-dbhost\" ]; then                             \
+    openstack-config --set /etc/keystone/keystone.conf                    \
+    database connection mysql://keystone:keystone@$DB_HOST_VALUE/keystone \
+fi                                                                        \
+                                                                          \
+/usr/bin/keystone-manage db_sync keystone                                 \
+/usr/bin/keystone-manage db_sync --extension spassword                    \
+/usr/bin/keystone-all & " >> /opt/keystone/postlaunchconfig.sh
 
 # Create Services
-#I'm not sure if exporting works, so I just specify these environment variables on each command, but it might be cleaner to test this
+# I'm not sure if exporting works, so I just specify these environment
+# variables on each command, but it might be cleaner to test this
 
-RUN echo 'export OS_SERVICE_TOKEN=ADMIN' >> /root/postlaunchconfig.sh
-RUN echo 'export OS_SERVICE_ENDPOINT=http://localhost:35357/v2.0 ' >> /root/postlaunchconfig.sh
-RUN echo 'readonly KEYSTONE_HOST="localhost:5001" ' >> /root/postlaunchconfig.sh
-RUN echo 'keystone user-create --name=admin --pass=4pass1w0rd --email=admin@no.com ' >> /root/postlaunchconfig.sh
-RUN echo 'keystone role-create --name=admin ' >> /root/postlaunchconfig.sh
-RUN echo 'keystone tenant-create --name=admin --description="Admin Tenant" ' >> /root/postlaunchconfig.sh
-RUN echo 'keystone user-role-add --user=admin --tenant=admin --role=admin' >> /root/postlaunchconfig.sh
-RUN echo 'keystone role-create --name=service ' >> /root/postlaunchconfig.sh
-RUN echo 'keystone user-create --name=iotagent --pass=4pass1w0rd --email=iotagent@no.com' >> /root/postlaunchconfig.sh
+RUN echo " \
+export OS_SERVICE_TOKEN=ADMIN                                                 \
+export OS_SERVICE_ENDPOINT=http://localhost:35357/v2.0                        \
+readonly KEYSTONE_HOST=\"localhost:5001\"                                     \
+keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
+keystone role-create --name=admin                                             \
+keystone tenant-create --name=admin --description=\"Admin Tenant\"            \
+keystone user-role-add --user=admin --tenant=admin --role=admin               \
+keystone role-create --name=service                                           \
+keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iotagent@no.com" >> /opt/keystone/postlaunchconfig.sh
 
 RUN echo "ADMIN_TOKEN=\$(\
-    curl http://\${KEYSTONE_HOST}/v3/auth/tokens \
-         -s \
-         -i \
-         -H \"Content-Type: application/json\" \
+curl http://\${KEYSTONE_HOST}/v3/auth/tokens         \
+         -s                                          \
+         -i                                          \
+         -H \"Content-Type: application/json\"       \
          -d '                                        \
      {                                               \
       \"auth\": {                                    \
@@ -118,7 +131,7 @@ RUN echo "ADMIN_TOKEN=\$(\
                           \"name\": \"Default\       \
                       },                             \
                       \"name\": \"admin\",           \
-                      \"password\": \"4pass1w0rd\"   \
+                      \"password\": \"$KEYSTONE_ADMIN_PASSWORD\"   \
                   }                                  \
               }                                      \
           },                                         \
@@ -131,46 +144,45 @@ RUN echo "ADMIN_TOKEN=\$(\
               }                                      \
           }                                          \
       }                                              \
-    }' | grep ^X-Subject-Token: | awk '{print \$2}' )" >> /root/postlaunchconfig.sh
+    }' | grep ^X-Subject-Token: | awk '{print \$2}' )" >> /opt/keystone/postlaunchconfig.sh
+RUN echo "echo \"ADMIN_TOKEN: \$ADMIN_TOKEN\"" >> /opt/keystone/postlaunchconfig.sh
 
-RUN echo "echo \"ADMIN_TOKEN: \$ADMIN_TOKEN\"" >> /root/postlaunchconfig.sh
-
-RUN echo "ID_ADMIN_DOMAIN=\$(\
-    curl http://\${KEYSTONE_HOST}/v3/domains \
-         -s \
-         -H \"X-Auth-Token: \$ADMIN_TOKEN\" \
-         -H \"Content-Type: application/json\" \
+RUN echo "ID_ADMIN_DOMAIN=\$(                       \
+curl http://\${KEYSTONE_HOST}/v3/domains            \
+         -s                                         \
+         -H \"X-Auth-Token: \$ADMIN_TOKEN\"         \
+         -H \"Content-Type: application/json\"      \
          -d '                                       \
   {                                                 \
       \"domain\": {                                 \
       \"enabled\": true,                            \
       \"name\": \"admin_domain\"                    \
       }                                             \
-  }' | jq .domain.id | tr -d '\"' )" >> /root/postlaunchconfig.sh
-RUN echo "echo \"ID_ADMIN_DOMAIN: \$ID_ADMIN_DOMAIN\"" >> /root/postlaunchconfig.sh
+  }' | jq .domain.id | tr -d '\"' )" >> /opt/keystone/postlaunchconfig.sh
+RUN echo "echo \"ID_ADMIN_DOMAIN: \$ID_ADMIN_DOMAIN\"" >> /opt/keystone/postlaunchconfig.sh
 
-RUN echo "ID_CLOUD_SERVICE=\$(\
-    curl http://\${KEYSTONE_HOST}/v3/users \
-         -s \
-         -H \"X-Auth-Token: \$ADMIN_TOKEN\" \
-         -H \"Content-Type: application/json\" \
+RUN echo "ID_CLOUD_SERVICE=\$(                      \
+curl http://\${KEYSTONE_HOST}/v3/users              \
+         -s                                         \
+         -H \"X-Auth-Token: \$ADMIN_TOKEN\"         \
+         -H \"Content-Type: application/json\"      \
          -d '                                       \
   {                                                 \
       \"user\": {                                   \
           \"description\": \"Cloud service\",       \
-          \"domain_id\": \"'\$ID_ADMIN_DOMAIN'\",    \
+          \"domain_id\": \"'\$ID_ADMIN_DOMAIN'\",   \
           \"enabled\": true,                        \
           \"name\": \"pep\",                        \
-          \"password\": \"4pass1w0rd\"              \
+          \"password\": \"$KEYSTONE_ADMIN_PASSWORD\"\
       }                                             \
-  }' | jq .user.id | tr -d '\"' )" >> /root/postlaunchconfig.sh
-RUN echo "echo \"ID_CLOUD_SERVICE: \$ID_CLOUD_SERVICE\"" >> /root/postlaunchconfig.sh
+  }' | jq .user.id | tr -d '\"' )" >> /opt/keystone/postlaunchconfig.sh
+RUN echo "echo \"ID_CLOUD_SERVICE: \$ID_CLOUD_SERVICE\"" >> /opt/keystone/postlaunchconfig.sh
 
-RUN echo "ID_CLOUD_ADMIN=\$(\
-    curl http://\${KEYSTONE_HOST}/v3/users \
-         -s \
-         -H \"X-Auth-Token: \$ADMIN_TOKEN\" \
-         -H \"Content-Type: application/json\" \
+RUN echo "ID_CLOUD_ADMIN=\$(                        \
+curl http://\${KEYSTONE_HOST}/v3/users              \
+         -s                                         \
+         -H \"X-Auth-Token: \$ADMIN_TOKEN\"         \
+         -H \"Content-Type: application/json\"      \
          -d '                                       \
   {                                                 \
       \"user\": {                                   \
@@ -178,36 +190,35 @@ RUN echo "ID_CLOUD_ADMIN=\$(\
           \"domain_id\": \"'\$ID_ADMIN_DOMAIN'\",   \
           \"enabled\": true,                        \
           \"name\": \"cloud_admin\",                \
-          \"password\": \"4pass1w0rd\"              \
+          \"password\": \"$KEYSTONE_ADMIN_PASSWORD\"\
       }                                             \
-  }' | jq .user.id | tr -d '\"' )" >> /root/postlaunchconfig.sh
-RUN echo "echo \"ID_CLOUD_ADMIN: \$ID_CLOUD_ADMIN\"" >> /root/postlaunchconfig.sh
+  }' | jq .user.id | tr -d '\"' )" >> /opt/keystone/postlaunchconfig.sh
+RUN echo "echo \"ID_CLOUD_ADMIN: \$ID_CLOUD_ADMIN\"" >> /opt/keystone/postlaunchconfig.sh
 
 RUN echo "ADMIN_ROLE_ID=\$(\
-    curl \"http://\${KEYSTONE_HOST}/v3/roles?name=admin\" \
-         -s \
-         -H \"X-Auth-Token: \$ADMIN_TOKEN\" \
-        | jq .roles[0].id | tr -d '\"' )" >> /root/postlaunchconfig.sh
-RUN echo "echo \"ADMIN_ROLE_ID: \$ADMIN_ROLE_ID\" " >> /root/postlaunchconfig.sh
-
+curl \"http://\${KEYSTONE_HOST}/v3/roles?name=admin\"     \
+         -s                                               \
+         -H \"X-Auth-Token: \$ADMIN_TOKEN\"               \
+        | jq .roles[0].id | tr -d '\"' )" >> /opt/keystone/postlaunchconfig.sh
+RUN echo "echo \"ADMIN_ROLE_ID: \$ADMIN_ROLE_ID\" " >> /opt/keystone/postlaunchconfig.sh
 
 RUN echo "curl -X PUT http://\${KEYSTONE_HOST}/v3/domains/\${ID_ADMIN_DOMAIN}/users/\${ID_CLOUD_ADMIN}/roles/\${ADMIN_ROLE_ID} \
-     -s \
-     -i \
+     -s                                 \
+     -i                                 \
      -H \"X-Auth-Token: \$ADMIN_TOKEN\" \
-     -H \"Content-Type: application/json\" ">> /root/postlaunchconfig.sh
+     -H \"Content-Type: application/json\" ">> /opt/keystone/postlaunchconfig.sh
 
 RUN echo "SERVICE_ROLE_ID=\$(\
-    curl \"http://\${KEYSTONE_HOST}/v3/roles?name=service\" \
-         -s \
-         -H \"X-Auth-Token: \$ADMIN_TOKEN\" \
-        | jq .roles[0].id | tr -d '\"' ) ">> /root/postlaunchconfig.sh
+curl \"http://\${KEYSTONE_HOST}/v3/roles?name=service\" \
+         -s                                             \
+         -H \"X-Auth-Token: \$ADMIN_TOKEN\"             \
+        | jq .roles[0].id | tr -d '\"' ) ">> /opt/keystone/postlaunchconfig.sh
 
 RUN echo "curl -X PUT http://\${KEYSTONE_HOST}/v3/domains/\${ID_ADMIN_DOMAIN}/users/\${ID_CLOUD_SERVICE}/roles/\${SERVICE_ROLE_ID} \
-      -s \
-      -i \
+      -s                                 \
+      -i                                 \
       -H \"X-Auth-Token: \$ADMIN_TOKEN\" \
-      -H \"Content-Type: application/json\" ">> /root/postlaunchconfig.sh
+      -H \"Content-Type: application/json\" ">> /opt/keystone/postlaunchconfig.sh
 
 RUN echo "curl -s -L --insecure https://github.com/openstack/keystone/raw/icehouse-eol/etc/policy.v3cloudsample.json \
   | jq ' .[\"identity:scim_create_role\"]=\"rule:cloud_admin or rule:admin_and_matching_domain_id\"  \
@@ -219,16 +230,18 @@ RUN echo "curl -s -L --insecure https://github.com/openstack/keystone/raw/icehou
      | .[\"identity:get_domain\"]=\"\"                                                               \
      | .admin_and_user_filter=\"role:admin and \\"%\\":%(user.id)%\"                                 \
      | .admin_and_project_filter=\"role:admin and \\"%\\":%(scope.project.id)%\"                     \
-     | .[\"identity:list_role_assignments\"]=\"rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter\" \
+     | .[\"identity:list_role_assignments\"]=\"rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter\"                                                                   \
      | .[\"identity:list_projects\"]=\"rule:cloud_admin or rule:admin_and_matching_domain_id or rule:cloud_service\" \
-     | .cloud_admin=\"rule:admin_required and domain_id:'\${ID_ADMIN_DOMAIN}'\"                   \
-     | .cloud_service=\"rule:service_role and domain_id:'\${ID_ADMIN_DOMAIN}'\"' \
-  | tee /etc/keystone/policy.json  ">> /root/postlaunchconfig.sh
+     | .cloud_admin=\"rule:admin_required and domain_id:'\${ID_ADMIN_DOMAIN}'\"                      \
+     | .cloud_service=\"rule:service_role and domain_id:'\${ID_ADMIN_DOMAIN}'\"'                     \
+  | tee /etc/keystone/policy.json  ">> /opt/keystone/postlaunchconfig.sh
 
-RUN chmod 755 /root/postlaunchconfig.sh
-#RUN cat /root/postlaunchconfig.sh
+RUN chmod 755 /opt/keystone/postlaunchconfig.sh
+#RUN cat /opt/keystone/postlaunchconfig.sh
 
-# RUN chkconfig openstack-keystone on
-# CMD ["keystone-all"]
+WORKDIR /opt/keystone
+
+# Define the entry point
+ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
 EXPOSE 5000 35357
