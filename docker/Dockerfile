@@ -105,7 +105,7 @@ RUN echo " \
 export OS_SERVICE_TOKEN=ADMIN                                                 \
 export OS_SERVICE_ENDPOINT=http://localhost:35357/v2.0                        \
 readonly KEYSTONE_HOST=\"localhost:5001\"                                     \
-keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
+keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com \
 keystone role-create --name=admin                                             \
 keystone tenant-create --name=admin --description=\"Admin Tenant\"            \
 keystone user-role-add --user=admin --tenant=admin --role=admin               \
