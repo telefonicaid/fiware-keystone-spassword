@@ -10,9 +10,8 @@ RUN \
     yum update -y && yum install -y wget  && \
     wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm  && \
     yum localinstall -y --nogpgcheck epel-release-6-8.noarch.rpm  && \
-    # Install MySQL (client at least?)
+    # Install MySQL client
     yum -y install mysql  && \
-
     # Install keystone dependencies
     yum -y install rpm-build && \
     yum -y install python git python-pip python-devel python-virtualenv gcc ssh && \
@@ -237,7 +236,6 @@ RUN echo "curl -s -L --insecure https://github.com/openstack/keystone/raw/icehou
   | tee /etc/keystone/policy.json  ">> /opt/keystone/postlaunchconfig.sh
 
 RUN chmod 755 /opt/keystone/postlaunchconfig.sh
-#RUN cat /opt/keystone/postlaunchconfig.sh
 
 WORKDIR /opt/keystone
 
