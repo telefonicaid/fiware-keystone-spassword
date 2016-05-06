@@ -244,4 +244,4 @@ WORKDIR /opt/keystone
 # Define the entry point
 ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
-EXPOSE 5000 35357
+EXPOSE 5001
