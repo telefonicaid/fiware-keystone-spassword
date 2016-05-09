@@ -4,6 +4,9 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
+ENV KEYSTONE_SCIM_VERSION 0.4.1
+ENV KEYSTONE_SPASSWORD_VERSION 0.2.1
+
 
 RUN \
     # Install dependencies
@@ -15,12 +18,9 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build && \
     yum -y install python git python-pip python-devel python-virtualenv gcc ssh && \
-    yum install -y https://repos.fedorapeople.org/repos/openstack/EOL/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm
-
-# This is a patch to allow the EOL version to work
-RUN sed -i "s/baseurl=.*/baseurl=https:\/\/repos.fedorapeople.org\/repos\/openstack\/EOL\/openstack-icehouse\/epel-6/" /etc/yum.repos.d/rdo-release.repo
-
-RUN \
+    yum install -y https://repos.fedorapeople.org/repos/openstack/EOL/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm && \
+    # This is a patch to allow the EOL version to work
+    sed -i "s/baseurl=.*/baseurl=https:\/\/repos.fedorapeople.org\/repos\/openstack\/EOL\/openstack-icehouse\/epel-6/" /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install wget unzip nc jq  && \
@@ -40,16 +40,15 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     token provider keystone.token.providers.uuid.Provider && \
     openstack-config --set /etc/keystone/keystone.conf \
-    database connection mysql://keystone:keystone@$DB_HOST/keystone
-
-RUN \
+    database connection mysql://keystone:keystone@$DB_HOST/keystone && \
+    # Set keystone SSL configuration
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl
 
 RUN \
     # Install Keystone-SCIM
-    tag="develop" && \
+    tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
     repo_scim="fiware-keystone-scim" && \
     pack_scim="package-keystone-scim.sh" && \
@@ -64,7 +63,7 @@ RUN \
 
 RUN \
     # Install Keystone-SPASSWORD
-    tag="develop" && \
+    tag=$KEYSTONE_SPASSWORD_VERSION && \
     user="telefonicaid" && \
     repo_spassword="fiware-keystone-spassword" && \
     pack_spassword="package-keystone-spassword.sh" && \
