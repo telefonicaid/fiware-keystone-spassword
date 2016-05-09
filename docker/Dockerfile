@@ -42,6 +42,9 @@ RUN \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
+    # Copy entrypoint
+    mkdir -p /opt/keystone && \
+    cp ./keystone-entrypoint.sh /opt/keystone && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
@@ -65,10 +68,8 @@ RUN \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_spassword}-${tag} && \
     source ./${pack_spassword} && \
-    find . -name "*.rpm" -exec rpm -Uvh {} \; && \
-    # Copy entrypoint
-    mkdir -p /opt/keystone && \
-    cp ./keystone-entrypoint.sh /opt/keystone
+    find . -name "*.rpm" -exec rpm -Uvh {} \;
+
 
 # The following sections build a script that will be executed on launch via ENTRYPOINT
 #https://allthingsopen.com/2014/07/09/docker-all-the-things-openstack-keystone-and-ceilometer-automated-builds-on-docker-hub/
