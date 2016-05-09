@@ -66,8 +66,9 @@ RUN \
     cd ${dir}/${repo_spassword}-${tag} && \
     source ./${pack_spassword} && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # Copy entrypoint
     mkdir -p /opt/keystone && \
-    cp keystone-entrypoint.sh /opt/keystone
+    cp ./keystone-entrypoint.sh /opt/keystone
 
 # The following sections build a script that will be executed on launch via ENTRYPOINT
 #https://allthingsopen.com/2014/07/09/docker-all-the-things-openstack-keystone-and-ceilometer-automated-builds-on-docker-hub/
