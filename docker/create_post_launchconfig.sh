@@ -1,6 +1,6 @@
 #!/bin/bash
 
-KEYSTONE_ADMIN_PASSWORD=${1}                                                         \
+KEYSTONE_ADMIN_PASSWORD=${1}
 
     echo "#!/bin/bash" > /opt/keystone/postlaunchconfig.sh && \
     echo " \
