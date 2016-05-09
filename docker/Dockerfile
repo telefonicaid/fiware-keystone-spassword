@@ -42,9 +42,8 @@ RUN \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
-    # Copy entrypoint
+    # Create /opt/keystone
     mkdir -p /opt/keystone && \
-    cp ./keystone-entrypoint.sh /opt/keystone && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
@@ -74,8 +73,22 @@ RUN \
 # The following sections build a script that will be executed on launch via ENTRYPOINT
 #https://allthingsopen.com/2014/07/09/docker-all-the-things-openstack-keystone-and-ceilometer-automated-builds-on-docker-hub/
 
-## Start Keystone
-RUN echo "#!/bin/bash" > /opt/keystone/postlaunchconfig.sh && \
+
+RUN \
+    # Keystone entrypoint file
+    echo "#!/bin/bash" > /opt/keystone/postlaunchconfig.sh && \
+    echo " \
+DB_HOST_ARG=\${1}                                                         \
+DB_HOST_VALUE=\${2}                                                       \
+                                                                          \
+if [ \"\$DB_HOST_ARG\" == \"-dbhost\" ]; then                             \
+    /opt/keystone/postlaunchconfig.sh \$DB_HOST_ARGS \$DB_HOST_VALUE      \
+fi                                                                        \
+                                                                          \
+keystone-all "  >> /opt/keystone/keystone-entrypoint.sh && \
+
+    # Keystone postconfig file
+    echo "#!/bin/bash" > /opt/keystone/postlaunchconfig.sh && \
     echo " \
 DB_HOST_ARG=\${1}                                                         \
 DB_HOST_VALUE=\${2}                                                       \
