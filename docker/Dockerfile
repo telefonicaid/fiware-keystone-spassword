@@ -70,10 +70,6 @@ RUN \
     find . -name "*.rpm" -exec rpm -Uvh {} \;
 
 
-# The following sections build a script that will be executed on launch via ENTRYPOINT
-#https://allthingsopen.com/2014/07/09/docker-all-the-things-openstack-keystone-and-ceilometer-automated-builds-on-docker-hub/
-
-
 RUN \
     # Keystone entrypoint file
     echo "#!/bin/bash" > /opt/keystone/postlaunchconfig.sh && \
@@ -102,9 +98,6 @@ fi                                                                        \
 /usr/bin/keystone-all & " >> /opt/keystone/postlaunchconfig.sh && \
 
 # Create Services
-# I'm not sure if exporting works, so I just specify these environment
-# variables on each command, but it might be cleaner to test this
-
     echo " \
 export OS_SERVICE_TOKEN=ADMIN                                                 \
 export OS_SERVICE_ENDPOINT=http://localhost:35357/v2.0                        \
