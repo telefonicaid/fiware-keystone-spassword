@@ -11,7 +11,7 @@ db:
     MYSQL_PASSWORD: keystone
 
 keystone:
-  build: .
+  image: telefonicaiot/fiware-keystone-spassword
   links:
     - db
   ports:
