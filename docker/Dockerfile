@@ -54,6 +54,7 @@ RUN \
     # Keystone postconfig file
     ./create_post_launchconfig.sh $KEYSTONE_ADMIN_PASSWORD && \
     chmod 755 /opt/keystone/postlaunchconfig.sh && \
+    chmod 755 /opt/keystone/keystone-entrypoint.sh && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
