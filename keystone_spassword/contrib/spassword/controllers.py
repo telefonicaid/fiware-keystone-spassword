@@ -111,12 +111,12 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
         user_info = self.identity_api.get_user(user_id)
         LOG.debug('recover password invoked for user %s %s' % (user_info['id'],
-                                                               user['name']))
+                                                               user_info['name']))
 
         # Check if user has a email defined
         if not 'email' in user_info:
             msg = 'User %s %s has no email defined' % (user_info['id'],
-                                                       user['name'])
+                                                       user_info['name'])
             LOG.error('%s' % msg)
             raise exception.Unauthorized(msg)
 
@@ -172,7 +172,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         try:
             server.login(CONF.spassword.smtpuser,
                          CONF.spassword.smtppassword)
-        except SMTPAuthenticationError:
+        except smtplib.SMTPAuthenticationError:
             LOG.error('SMTP autentication error')
             return False
 
