@@ -1,6 +1,6 @@
 #!/bin/bash
 
-KEYSTONE_ADMIN_PASSWORD="password"
+KEYSTONE_ADMIN_PASSWORD=4pass1w0rd
 MYSQL_ROOT_PASSWORD="iotonpremise"
 
 DB_HOST_ARG=${1}
