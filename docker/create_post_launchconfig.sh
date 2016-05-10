@@ -7,8 +7,8 @@ echo "                                                                    \
 DB_HOST_ARG=\${1}                                                         \
 DB_HOST_VALUE=\${2}                                                       \
 if [ \"\$DB_HOST_ARG\" == \"-dbhost\" ]; then                             \
-    openstack-config --set /etc/keystone/keystone.conf                    \
-    database connection mysql://keystone:keystone@$DB_HOST_VALUE/keystone \
+    openstack-config --set /etc/keystone/keystone.conf;                   \
+    database connection mysql://keystone:keystone@$DB_HOST_VALUE/keystone;\
 fi                                                                        \
                                                                           \
 /usr/bin/keystone-manage db_sync keystone                                 \
