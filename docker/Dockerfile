@@ -46,13 +46,13 @@ RUN \
     mkdir -p /opt/keystone
 
 COPY ./keystone-entrypoint.sh /opt/keystone
-COPY ./create_post_launchconfig.sh /opt/keystone
+COPY ./postlaunchconfig.sh /opt/keystone
 
 WORKDIR /opt/keystone
 
 RUN \
     # Keystone postconfig file
-    ./create_post_launchconfig.sh $KEYSTONE_ADMIN_PASSWORD && \
+    sed -i "s/KEYSTONE_ADMIN_PASSWORD=\"paasword\"/KEYSTONE_ADMIN_PASSWORD="$KEYSTONE_ADMIN_PASSWORD"/g" /opt/keystone/postlaunchconfig.sh && \
     chmod 755 /opt/keystone/postlaunchconfig.sh && \
     chmod 755 /opt/keystone/keystone-entrypoint.sh && \
     # Install Keystone-SCIM
