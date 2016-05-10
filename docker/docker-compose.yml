@@ -11,11 +11,11 @@ db:
     MYSQL_PASSWORD: keystone
 
 keystone:
-  build: .
+  image: telefonicaiot/fiware-keystone-spassword
   links:
     - db
   ports:
-    - "5001:5000"
-
+    - "5001:5001"
+  command: -dbhost db
 
 

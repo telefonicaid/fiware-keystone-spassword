@@ -2,58 +2,88 @@ FROM centos:6
 
 MAINTAINER IoT team
 
-RUN yum update -y && yum install -y wget
-RUN wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-RUN yum localinstall -y --nogpgcheck epel-release-6-8.noarch.rpm
-
-#RUN yum -y install mysql-server mysql
-#RUN service mysqld start
-RUN yum -y install mysql
-
-RUN yum -y install rpm-build
-RUN yum -y install python git python-pip python-devel python-virtualenv gcc ssh
-
-RUN yum install -y https://repos.fedorapeople.org/repos/openstack/EOL/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm
-RUN yum -y install openstack-utils openstack-keystone python-keystoneclient
-RUN yum -y install wget unzip nc jq
-RUN yum -y install cracklib cracklib-python
-
-RUN openstack-config --set /etc/keystone/keystone.conf \
-    database connection mysql://keystone:keystone@db/keystone
-
-RUN openstack-config --set /etc/keystone/keystone.conf \
-    DEFAULT admin_token ADMIN
-
-RUN openstack-config --set /etc/keystone/keystone.conf \
-    DEFAULT public_port 5001
-
-RUN openstack-config --set /etc/keystone/keystone.conf \
-    os_inherit enabled true
-
-RUN openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.uuid.Provider
-
-RUN keystone-manage db_sync keystone
+ENV DB_HOST localhost
+ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
+ENV KEYSTONE_SCIM_VERSION 0.4.1
+ENV KEYSTONE_SPASSWORD_VERSION 0.2.1
 
 
-RUN keystone-manage pki_setup --keystone-user keystone --keystone-group keystone
-RUN chown -R keystone:keystone /etc/keystone/ssl
-RUN chmod -R o-rwx /etc/keystone/ssl
+RUN \
+    # Install dependencies
+    yum update -y && yum install -y wget  && \
+    wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm  && \
+    yum localinstall -y --nogpgcheck epel-release-6-8.noarch.rpm  && \
+    # Install MySQL client
+    yum -y install mysql  && \
+    # Install keystone dependencies
+    yum -y install rpm-build && \
+    yum -y install python git python-pip python-devel python-virtualenv gcc ssh && \
+    yum install -y https://repos.fedorapeople.org/repos/openstack/EOL/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm && \
+    # This is a patch to allow the EOL version to work
+    sed -i "s/baseurl=.*/baseurl=https:\/\/repos.fedorapeople.org\/repos\/openstack\/EOL\/openstack-icehouse\/epel-6/" /etc/yum.repos.d/rdo-release.repo && \
+    # Install keystone dependencies
+    yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
+    yum -y install wget unzip nc jq  && \
+    yum -y install cracklib cracklib-python && \
+    # Set keystone configuration
+    openstack-config --set /etc/keystone/keystone.conf \
+    database connection mysql://keystone:keystone@db/keystone && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT admin_token ADMIN  && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT public_port 5001  && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    os_inherit enabled true  && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    token provider keystone.token.providers.uuid.Provider && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    database connection mysql://keystone:keystone@$DB_HOST/keystone && \
+    # Set keystone SSL configuration
+    keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
+    chown -R keystone:keystone /etc/keystone/ssl && \
+    chmod -R o-rwx /etc/keystone/ssl && \
+    # Create /opt/keystone
+    mkdir -p /opt/keystone
 
-RUN service openstack-keystone start
+COPY ./keystone-entrypoint.sh /opt/keystone
+COPY ./postlaunchconfig.sh /opt/keystone
 
-RUN chkconfig openstack-keystone on
+WORKDIR /opt/keystone
 
-# Install Keystone-SCIM
-RUN /bin/bash -c "source keystone_scim.sh"
+RUN \
+    # Keystone postconfig file
+    sed -i "s/KEYSTONE_ADMIN_PASSWORD=\"paasword\"/KEYSTONE_ADMIN_PASSWORD="$KEYSTONE_ADMIN_PASSWORD"/g" /opt/keystone/postlaunchconfig.sh && \
+    chmod 755 /opt/keystone/postlaunchconfig.sh && \
+    chmod 755 /opt/keystone/keystone-entrypoint.sh && \
+    # Install Keystone-SCIM
+    tag=$KEYSTONE_SCIM_VERSION && \
+    user="telefonicaid" && \
+    repo_scim="fiware-keystone-scim" && \
+    pack_scim="package-keystone-scim.sh" && \
+    url_scim="https://github.com/${user}/${repo_scim}/archive/${tag}.tar.gz" && \
+    dir=~/fiware-keystone && \
+    rm -fR $dir && mkdir -p $dir && \
+    curl -s --insecure -L "${url_scim}" | tar zxvf - -C ${dir} && \
+    cd ${dir}/${repo_scim}-${tag} && \
+    source ./${pack_scim} && \
+    find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # Install Keystone-SPASSWORD
+    tag=$KEYSTONE_SPASSWORD_VERSION && \
+    user="telefonicaid" && \
+    repo_spassword="fiware-keystone-spassword" && \
+    pack_spassword="package-keystone-spassword.sh" && \
+    url_spassword="https://github.com/${user}/${repo_spassword}/archive/${tag}.tar.gz" && \
+    dir=~/fiware-keystone && \
+    rm -fR $dir && mkdir -p $dir && \
+    curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
+    cd ${dir}/${repo_spassword}-${tag} && \
+    source ./${pack_spassword} && \
+    find . -name "*.rpm" -exec rpm -Uvh {} \;
 
-RUN service openstack-keystone start
 
-# Install Keystone-SPASSWORD
-RUN /bin/bash -c "source keystone_spassword.sh"
+WORKDIR /opt/keystone
 
-RUN service openstack-keystone start
+# Define the entry point
+ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
-RUN /bin/bash -c "source keystone_conf.sh"
-
-RUN service openstack-keystone start
+EXPOSE 5001
