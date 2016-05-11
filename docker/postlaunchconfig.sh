@@ -9,7 +9,6 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
                      database connection mysql://keystone:keystone@$DB_HOST_VALUE/keystone;
     mysql -h $DB_HOST_VALUE -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
-DROP DATABASE keystone;
 CREATE DATABASE keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
     IDENTIFIED BY 'keystone';
@@ -21,16 +20,16 @@ fi
 
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
+
 /usr/bin/keystone-all &
-sleep 10
+keystone_all_pid=`echo $!`
+sleep 5
 
 # Create Services
 
 export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
-readonly KEYSTONE_HOST="127.0.0.1:5001"
 export KEYSTONE_HOST="127.0.0.1:5001"
-echo "$KEYSTONE_HOST"
 
 keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com 
 keystone role-create --name=admin
@@ -162,3 +161,8 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/icehouse-eol/etc
      | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
+
+
+kill -9 $keystone_all_pid
+sleep 3
+chkconfig openstack-keystone on
