@@ -9,7 +9,6 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
                      database connection mysql://keystone:keystone@$DB_HOST_VALUE/keystone;
     mysql -h $DB_HOST_VALUE -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
-DROP DATABASE keystone;
 CREATE DATABASE keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
     IDENTIFIED BY 'keystone';
@@ -30,7 +29,6 @@ sleep 5
 
 export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
-#readonly KEYSTONE_HOST="127.0.0.1:5001"
 export KEYSTONE_HOST="127.0.0.1:5001"
 
 keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com 

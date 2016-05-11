@@ -11,8 +11,7 @@ mysql:
     MYSQL_PASSWORD: keystone
 
 keystone:
-#  image: telefonicaiot/fiware-keystone-spassword
-  build: .
+  image: telefonicaiot/fiware-keystone-spassword
   expose:
     - "5001"
   links:
