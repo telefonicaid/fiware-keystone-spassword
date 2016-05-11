@@ -21,16 +21,17 @@ fi
 
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
+
 /usr/bin/keystone-all &
-sleep 10
+keystone_all_pid=`echo $!`
+sleep 5
 
 # Create Services
 
 export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
-readonly KEYSTONE_HOST="127.0.0.1:5001"
+#readonly KEYSTONE_HOST="127.0.0.1:5001"
 export KEYSTONE_HOST="127.0.0.1:5001"
-echo "$KEYSTONE_HOST"
 
 keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com 
 keystone role-create --name=admin
@@ -162,3 +163,8 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/icehouse-eol/etc
      | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
+
+
+kill -9 $keystone_all_pid
+sleep 3
+chkconfig openstack-keystone on
