@@ -16,7 +16,7 @@ RUN \
     # Install MySQL client
     yum -y install mysql  && \
     # Install keystone dependencies
-    yum -y install rpm-build && \
+    yum -y install rpm-build tar findutils && \
     yum -y install python git python-pip python-devel python-virtualenv gcc ssh && \
     yum install -y https://repos.fedorapeople.org/repos/openstack/EOL/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm && \
     # This is a patch to allow the EOL version to work
