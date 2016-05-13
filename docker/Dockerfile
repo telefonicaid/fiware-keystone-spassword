@@ -18,7 +18,9 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python git python-pip python-devel python-virtualenv gcc ssh && \
-    yum install -y https://repos.fedorapeople.org/repos/openstack/EOL/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm && \
+
+    curl -s --insecure -L 'https://github.com/telefonicaid/fiware-keystone-spassword/blob/develop/docker/rdo-release-icehouse-4.noarch.rpm?raw=true' > rdo-release-icehouse-4.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-icehouse-4.noarch.rpm && \
     # This is a patch to allow the EOL version to work
     sed -i "s/baseurl=.*/baseurl=https:\/\/repos.fedorapeople.org\/repos\/openstack\/EOL\/openstack-icehouse\/epel-6/" /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
