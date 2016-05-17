@@ -71,6 +71,7 @@ RUN \
     source ./${pack_scim} && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Install Keystone-SPASSWORD
+    cd /opt/keystone && \
     tag=$KEYSTONE_SPASSWORD_VERSION && \
     user="telefonicaid" && \
     repo_spassword="fiware-keystone-spassword" && \
