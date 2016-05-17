@@ -8,6 +8,10 @@ DB_HOST_VALUE=${2}
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
                      database connection mysql://keystone:keystone@$DB_HOST_VALUE/keystone;
+    # Ensure previous keystone database does not exist
+    mysql -h $DB_HOST_VALUE -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
+DROP DATABASE keystone;
+EOF
     mysql -h $DB_HOST_VALUE -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
 CREATE DATABASE keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
