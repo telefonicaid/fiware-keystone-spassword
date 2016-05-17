@@ -4,9 +4,11 @@ echo "[ keystone-entrypoint - starts... ] "
 # Check argument DB_HOST
 DB_HOST_ARG=${1}
 DB_HOST_VALUE=${2}
+DB_HOST_PORT=3306
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
-    sleep 40
+    # Wait until DB is up
+    while ! nc -z $DB_HOST_VALUE $DB_HOST_PORT ; do sleep 10; done
     # Check if postlaunchconfig was executed
     chkconfig openstack-keystone --level 3
     if [ "$?" == "1" ]; then
