@@ -5,6 +5,22 @@ MYSQL_ROOT_PASSWORD="iotonpremise"
 
 DB_HOST_ARG=${1}
 DB_HOST_VALUE=${2}
+
+DEFAULT_PASSWORD_ARG=${3}
+DEFAULT_PASSWORD_VALUE=${4}
+
+MYSQL_PASSWORD_ARG=${5}
+MYSQL_PASSWORD_VALUE=${6}
+
+if [ "$DEFAULT_PASSWORD_ARG" == "-default_pwd" ]; then
+    KEYSTONE_ADMIN_PASSWORD=$DEFAULT_PASSWORD_VALUE
+fi
+
+if [ "$MYSQL_PASSWORD_ARG" == "-mysql_pwd" ]; then
+    MYSQL_ROOT_PASSWORD="$MYSQL_PASSWORD_VALUE"
+fi
+
+
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
                      database connection mysql://keystone:keystone@$DB_HOST_VALUE/keystone;
