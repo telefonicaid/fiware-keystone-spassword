@@ -18,6 +18,6 @@ keystone:
     - mysql
   ports:
     - "5001:5001"
-  command: -dbhost mysql
+  command: -dbhost mysql -default_pwd 4pass1w0rd -mysql_pwd iotonpremise
 
 
