@@ -1,7 +1,9 @@
 %define timestamp %(date +"%Y%m%d%H%M%S")
 Name: keystone-spassword
-Version: 0.2.0
-Release: %{timestamp}
+# Version: 0.2.0
+# Release: %{timestamp}
+Version: %{_version}
+Release: %{_release}
 Summary: Keystone SPASSWORD extension
 License: Copyright 2015 Telefonica Investigación y Desarrollo, S.A.U
 Distribution: noarch
