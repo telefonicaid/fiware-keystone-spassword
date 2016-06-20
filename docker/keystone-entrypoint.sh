@@ -18,7 +18,13 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     # Check if postlaunchconfig was executed
     chkconfig openstack-keystone --level 3
     if [ "$?" == "1" ]; then
-        /opt/keystone/postlaunchconfig.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $MYSQL_PASSWORD_ARG $MYSQL_PASSWORD_VALUE
+        # Check if previos DB data exists
+        mysql -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone'
+        if [ "$?" == "1" ]; then
+            /opt/keystone/postlaunchconfig.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $MYSQL_PASSWORD_ARG $MYSQL_PASSWORD_VALUE
+        else
+            /opt/keystone/postlaunchconfig_update.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $MYSQL_PASSWORD_ARG $MYSQL_PASSWORD_VALUE
+        fi
     fi
 fi
 
