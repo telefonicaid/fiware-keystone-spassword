@@ -55,6 +55,7 @@ WORKDIR /opt/keystone
 RUN \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh && \
+    chmod 755 /opt/keystone/postlaunchconfig_update.sh && \
     chmod 755 /opt/keystone/keystone-entrypoint.sh && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
