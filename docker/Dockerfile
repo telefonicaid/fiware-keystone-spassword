@@ -4,7 +4,7 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-ENV KEYSTONE_SCIM_VERSION 0.4.1
+ENV KEYSTONE_SCIM_VERSION 1.0.0
 ENV KEYSTONE_SPASSWORD_VERSION 1.0.0
 
 
@@ -48,6 +48,7 @@ RUN \
 
 COPY ./keystone-entrypoint.sh /opt/keystone
 COPY ./postlaunchconfig.sh /opt/keystone
+COPY ./postlaunchconfig_update.sh /opt/keystone
 
 WORKDIR /opt/keystone
 
