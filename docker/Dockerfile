@@ -76,7 +76,7 @@ RUN \
     source ./${pack_spassword} && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Cleaning unused files...
-    rpm -e --nodeps redhat-logos && yum -y erase libss && \
+    rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
     rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
     rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm
