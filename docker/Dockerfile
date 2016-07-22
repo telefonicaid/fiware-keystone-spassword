@@ -1,4 +1,4 @@
-FROM centos:6
+FROM centos:7
 
 MAINTAINER IoT team
 
@@ -11,17 +11,16 @@ ENV KEYSTONE_SPASSWORD_VERSION 1.0.0
 RUN \
     # Install dependencies
     yum update -y && yum install -y wget  && \
-    wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm  && \
-    yum localinstall -y --nogpgcheck epel-release-6-8.noarch.rpm  && \
+    wget http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-7.noarch.rpm && \
+    yum localinstall -y --nogpgcheck epel-release-7-7.noarch.rpm && \
     # Install MySQL client
     yum -y install mysql  && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python git python-pip python-devel python-virtualenv gcc ssh && \
-    curl -s --insecure -L 'https://github.com/telefonicaid/fiware-keystone-spassword/blob/develop/docker/rdo-release-icehouse-4.noarch.rpm?raw=true' > rdo-release-icehouse-4.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-icehouse-4.noarch.rpm && \
-    # This is a patch to allow the EOL version to work
-    sed -i "s/baseurl=.*/baseurl=https:\/\/repos.fedorapeople.org\/repos\/openstack\/EOL\/openstack-icehouse\/epel-6/" /etc/yum.repos.d/rdo-release.repo && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-liberty/rdo-release-liberty-5.noarch.rpm?raw=true' > rdo-release-liberty-5.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-liberty-5.noarch.rpm && \
+    # Repo    https://repos.fedorapeople.org/repos/openstack/openstack-liberty/
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install curl unzip nc jq  && \
