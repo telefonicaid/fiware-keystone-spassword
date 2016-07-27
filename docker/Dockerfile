@@ -24,7 +24,7 @@ RUN \
     yum localinstall -y --nogpgcheck rdo-release-liberty-5.noarch.rpm && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
-    yum -y install unzip nc jq  && \
+    yum -y install unzip tcping jq  && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
