@@ -55,6 +55,8 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/icehouse-eol/etc
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
 
+/usr/bin/keystone-manage db_sync
+
 # Set another ADMIN TOKEN
 openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
