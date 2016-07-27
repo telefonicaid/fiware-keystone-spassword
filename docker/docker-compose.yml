@@ -6,9 +6,6 @@ mysql:
     - "3306:3306"
   environment:
     MYSQL_ROOT_PASSWORD: iotonpremise
-    MYSQL_DATABASE: keystone
-    MYSQL_USER: keystone
-    MYSQL_PASSWORD: keystone
 
 keystone:
   image: telefonicaiot/fiware-keystone-spassword
