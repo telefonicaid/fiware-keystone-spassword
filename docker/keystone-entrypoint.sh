@@ -15,7 +15,7 @@ MYSQL_PASSWORD_VALUE=${6}
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     # Wait until DB is up
     #while ! nc -z $DB_HOST_VALUE $DB_HOST_PORT ; do sleep 10; done
-    while ! tcping -t $DB_HOST_VALUE $DB_HOST_PORT; do sleep 10; done
+    while ! tcping -t 1 $DB_HOST_VALUE $DB_HOST_PORT; do sleep 10; done
     # Check if postlaunchconfig was executed
     chkconfig openstack-keystone --level 3
     if [ "$?" == "1" ]; then
