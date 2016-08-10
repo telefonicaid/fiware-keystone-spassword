@@ -29,4 +29,5 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
 fi
 
 echo "[ keystone-entrypoint - keystone-all ] "
-/usr/bin/keystone-all
+/usr/bin/keystone-all &
+tail -f /var/log/keystone/keystone.log
