@@ -4,7 +4,7 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-ENV KEYSTONE_SCIM_VERSION 1.0.0
+ENV KEYSTONE_SCIM_VERSION 1.1.0
 ENV KEYSTONE_SPASSWORD_VERSION 1.0.0
 
 COPY ./*.sh /opt/keystone/
@@ -16,7 +16,7 @@ RUN \
     yum update -y && yum install -y curl && \
     yum install -y epel-release && yum update -y epel-release && \
     # Install MySQL client
-    yum -y install mysql  && \
+    yum -y install mysql git  && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python  && \
