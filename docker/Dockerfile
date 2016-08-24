@@ -4,27 +4,29 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-ENV KEYSTONE_SCIM_VERSION 0.4.1
+ENV KEYSTONE_SCIM_VERSION 1.0.0
 ENV KEYSTONE_SPASSWORD_VERSION 1.0.0
 
+COPY ./*.sh /opt/keystone/
+
+WORKDIR /opt/keystone
 
 RUN \
     # Install dependencies
-    yum update -y && yum install -y wget  && \
-    wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm  && \
-    yum localinstall -y --nogpgcheck epel-release-6-8.noarch.rpm  && \
+    yum update -y && yum install -y curl && \
+    yum install -y epel-release && yum update -y epel-release && \
     # Install MySQL client
     yum -y install mysql  && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
-    yum -y install python git python-pip python-devel python-virtualenv gcc ssh && \
+    yum -y install python && \
     curl -s --insecure -L 'https://github.com/telefonicaid/fiware-keystone-spassword/blob/develop/docker/rdo-release-icehouse-4.noarch.rpm?raw=true' > rdo-release-icehouse-4.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-icehouse-4.noarch.rpm && \
     # This is a patch to allow the EOL version to work
     sed -i "s/baseurl=.*/baseurl=https:\/\/repos.fedorapeople.org\/repos\/openstack\/EOL\/openstack-icehouse\/epel-6/" /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
-    yum -y install curl unzip nc jq  && \
+    yum -y install unzip nc jq  && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
@@ -44,17 +46,10 @@ RUN \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
     # Create /opt/keystone
-    mkdir -p /opt/keystone
-
-COPY ./keystone-entrypoint.sh /opt/keystone
-COPY ./postlaunchconfig.sh /opt/keystone
-
-WORKDIR /opt/keystone
-
-RUN \
+    mkdir -p /opt/keystone && \
     # Keystone postconfig file
-    chmod 755 /opt/keystone/postlaunchconfig.sh && \
-    chmod 755 /opt/keystone/keystone-entrypoint.sh && \
+    chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
+    chown root.root /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
@@ -79,12 +74,15 @@ RUN \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_spassword}-${tag} && \
     source ./${pack_spassword} && \
-    find . -name "*.rpm" -exec rpm -Uvh {} \;
-
-
-WORKDIR /opt/keystone
+    find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # Cleaning unused files...
+    rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
+    yum clean all && rm -rf /var/lib/yum/yumdb && \
+    rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
+    rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm
 
 # Define the entry point
 ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
 EXPOSE 5001
+
