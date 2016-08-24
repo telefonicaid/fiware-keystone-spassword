@@ -19,7 +19,7 @@ RUN \
     yum -y install mysql git  && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
-    yum -y install python  && \
+    yum -y install python python27  && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-liberty/rdo-release-liberty-5.noarch.rpm?raw=true' > rdo-release-liberty-5.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-liberty-5.noarch.rpm && \
     # Install keystone dependencies
@@ -47,7 +47,7 @@ RUN \
     mkdir -p /opt/keystone && \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
-    chown root.root /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
+    #  chown root.root /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
@@ -58,7 +58,7 @@ RUN \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_scim}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_scim}-${tag} && \
-    source ./${pack_scim} && \
+    source ./${pack_scim} with_python27 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Install Keystone-SPASSWORD
     cd /opt/keystone && \
@@ -71,7 +71,7 @@ RUN \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_spassword}-${tag} && \
-    source ./${pack_spassword} && \
+    source ./${pack_spassword} with_python27 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
