@@ -37,7 +37,9 @@ from keystone_spassword.contrib.spassword.checker import CheckPassword
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
-from oslo.config import cfg
+try: from oslo_config import cfg
+except ImportError: from oslo.config import cfg
+
 CONF = cfg.CONF
 
 LOG = log.getLogger(__name__)
