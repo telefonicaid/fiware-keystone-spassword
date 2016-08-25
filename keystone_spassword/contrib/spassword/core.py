@@ -31,7 +31,7 @@ from keystone import exception
 from keystone import identity
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
-try: from oslo_utils import versionutils
+try: from oslo_log import versionutils
 except ImportError: from keystone.openstack.common import versionutils
 from keystone.common import manager
 from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
