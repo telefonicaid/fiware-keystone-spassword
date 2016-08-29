@@ -2,7 +2,7 @@ mongo:
   image: mongo:3.2
 
 orion:
-  image: telefonicaiot/fiware-orion
+  image: telefonicaiot/fiware-orion:develop
   links:
     - mongo
   ports:
@@ -22,7 +22,7 @@ mysql:
     MYSQL_PASSWORD: keypass
 
 keypass:
-  image: telefonicaiot/fiware-keypass
+  image: telefonicaiot/fiware-keypass:develop
   links:
     - mysql
   expose:
@@ -34,7 +34,7 @@ keypass:
   command: -dbhost mysql
 
 keystone:
-  image: telefonicaiot/fiware-keystone-spassword
+  image: telefonicaiot/fiware-keystone-spassword:develop
   expose:
     - "5001"
   links:
@@ -44,7 +44,7 @@ keystone:
   command: -dbhost mysql -default_pwd 4pass1w0rd -mysql_pwd iotonpremise
 
 orchestrator:
-  image: telefonicaiot/orchestrator
+  image: telefonicaiot/orchestrator:develop
   expose:
     - "8084"
   links:
@@ -56,7 +56,7 @@ orchestrator:
   command: -keystonehost keystone -keypasshost keypass -orionhost orion
 
 portal:
-  image: telefonicaiot/portal
+  image: telefonicaiot/portal:develop
   links:
     - keystone
     - orion
