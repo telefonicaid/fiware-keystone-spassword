@@ -4,8 +4,8 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-ENV KEYSTONE_SCIM_VERSION 1.1.3
-ENV KEYSTONE_SPASSWORD_VERSION 1.0.4
+ENV KEYSTONE_SCIM_VERSION 1.1.4
+ENV KEYSTONE_SPASSWORD_VERSION 1.0.5
 
 COPY ./*.sh /opt/keystone/
 
@@ -58,7 +58,7 @@ RUN \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_scim}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_scim}-${tag} && \
-    source ./${pack_scim} with_python27 && \
+    source ./${pack_scim} --with_python27 --with_version $KEYSTONE_SCIM_VERSION && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Install Keystone-SPASSWORD
     cd /opt/keystone && \
@@ -71,7 +71,7 @@ RUN \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_spassword}-${tag} && \
-    source ./${pack_spassword} with_python27 && \
+    source ./${pack_spassword} --with_python27 --with_version $KEYSTONE_SPASSWORD_VERSION && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
