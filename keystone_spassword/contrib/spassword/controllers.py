@@ -72,6 +72,12 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
 
         return super(SPasswordScimUserV3Controller, self).create_user(context,
                                                                       user=user)
+    def delete_user(self, context, user_id, **kwargs):
+        # Delete user from spassword table
+        self.identity_api.delete_user(user_id)
+        return super(SPasswordScimUserV3Controller, self).delete_user(context,
+                                                                      user_id,
+                                                                      **kwargs)
 
 
 class SPasswordUserV3Controller(UserV3, CheckPassword):
@@ -95,6 +101,13 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         return super(SPasswordUserV3Controller, self).update_user(context,
                                                                   user_id=user_id,
                                                                   user=user)
+    @controller.protected()
+    def delete_user(self, context, user_id, **kwargs):
+        # Delete user from spassword table
+        self.identity_api.delete_user(user_id)
+        return super(SPasswordScimUserV3Controller, self).delete_user(context,
+                                                                      user_id,
+                                                                      **kwargs)
 
     @controller.protected()
     def change_password(self, context, user_id, user):
