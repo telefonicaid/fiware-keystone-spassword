@@ -61,7 +61,9 @@ class SPassword(Driver):
 
     def remove_user(self, user_id):
         session = sql.get_session()
-        session.query(User).remove(user_id)
+        spassword_ref = session.query(SPasswordModel).get(user_id)
+        with session.begin():
+            session.delete(spassword_ref)
 
     def set_user_creation_time(self, user):
         session = sql.get_session()
