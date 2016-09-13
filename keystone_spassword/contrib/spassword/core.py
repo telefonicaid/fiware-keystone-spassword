@@ -76,6 +76,10 @@ class SPasswordManager(manager.Manager):
                 'user': [
                     self.user_created_callback]
                 },
+            'deleted': {
+                'user': [
+                    self.user_deleted_callback]
+                },
             }
 
         super(SPasswordManager, self).__init__(
@@ -98,6 +102,13 @@ class SPasswordManager(manager.Manager):
         LOG.debug("User %s created." % user['id'])
         if CONF.spassword.enabled:
             user_password = self.driver.set_user_creation_time(user)
+
+    def user_deleted_callback(self, service, resource_type, operation,
+                              payload):
+        user = self.driver.get_user(payload['resource_info'])
+        LOG.debug("User %s deleted." % user['id'])
+        if CONF.spassword.enabled:
+            self.driver.remove_user(user['id'])
 
 
 class Driver(object):
