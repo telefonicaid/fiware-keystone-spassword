@@ -104,8 +104,8 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
     def delete_user(self, context, user_id):
         # Delete user from spassword table
         LOG.info('deleting user %s spasswordscimusercontroller' % user_id)
-        return super(SPasswordScimUserV3Controller, self).delete_user(context,
-                                                                      user_id=user_id)
+        return super(SPasswordUserV3Controller, self).delete_user(context,
+                                                                  user_id=user_id)
 
     @controller.protected()
     def change_password(self, context, user_id, user):
