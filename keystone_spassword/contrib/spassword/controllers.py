@@ -74,6 +74,7 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
                                                                       user=user)
     def delete_user(self, context, user_id):
         # Delete user from spassword table
+        LOG.info('deleting user %s scimusercontroller' % user_id)
         return super(SPasswordScimUserV3Controller, self).delete_user(context,
                                                                       user_id)
 
@@ -102,6 +103,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
     @controller.protected()
     def delete_user(self, context, user_id):
         # Delete user from spassword table
+        LOG.info('deleting user %s spasswordscimusercontroller' % user_id)
         return super(SPasswordScimUserV3Controller, self).delete_user(context,
                                                                       user_id=user_id)
 
