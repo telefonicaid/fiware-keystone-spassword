@@ -125,6 +125,17 @@ class Driver(object):
         """
         raise exception.NotImplemented()
 
+    def remove_user(self, user_id):
+        """Removeuser
+
+        :param data: example data
+        :type data: string
+        :raises: keystone.exception,
+        :returns: None.
+
+        """
+        raise exception.NotImplemented()
+
     def set_user_creation_time(self, user):
         """Setuser
 
