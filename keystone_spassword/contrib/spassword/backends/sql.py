@@ -61,8 +61,8 @@ class SPassword(Driver):
 
     def remove_user(self, user_id):
         session = sql.get_session()
-        spassword_ref = session.query(SPasswordModel).get(user_id)
         LOG.info('removing user %s from spassword' % user_id)
+        spassword_ref = session.query(SPasswordModel).get(user_id)
         if spassword_ref:
             with session.begin():
                 session.delete(spassword_ref)

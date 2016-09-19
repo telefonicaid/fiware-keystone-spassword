@@ -105,10 +105,10 @@ class SPasswordManager(manager.Manager):
 
     def user_deleted_callback(self, service, resource_type, operation,
                               payload):
-        user = self.driver.get_user(payload['resource_info'])
-        LOG.info("User %s deleted in driver manager" % user['id'])
+        user_id = payload['resource_info']
+        LOG.info("User %s deleted in driver manager" % user_id)
         if CONF.spassword.enabled:
-            self.driver.remove_user(user['id'])
+            self.driver.remove_user(user_id)
 
 
 class Driver(object):
