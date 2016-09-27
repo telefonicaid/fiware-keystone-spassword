@@ -65,3 +65,7 @@ openstack-config --set /etc/keystone/keystone.conf \
 kill -9 $keystone_all_pid
 sleep 3
 chkconfig openstack-keystone on
+
+# Ensure db is migrated to current keystone version
+/usr/bin/keystone-manage db_sync
+/usr/bin/keystone-manage db_sync --extension spassword
