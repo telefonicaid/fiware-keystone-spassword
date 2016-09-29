@@ -33,13 +33,13 @@ class SPasswordExtension(wsgi.ExtensionRouter):
 
         # SCIM User Operations
         mapper.connect(
-            '/OS-SCIM/Users/{user_id}',
+            '/OS-SCIM/v1/Users/{user_id}',
             controller=scim_user_controller,
             action='patch_user',
             conditions=dict(method=['PATCH']))
 
         mapper.connect(
-            '/OS-SCIM/Users/{user_id}',
+            '/OS-SCIM/v1/Users/{user_id}',
             controller=scim_user_controller,
             action='put_user',
             conditions=dict(method=['PUT']))
@@ -58,6 +58,12 @@ class SPasswordExtension(wsgi.ExtensionRouter):
             conditions=dict(method=['PUT']))
 
         mapper.connect(
+            '/users',
+            controller=user_controller,
+            action='delete_user',
+            conditions=dict(method=['DELETE']))
+
+        mapper.connect(
             '/users/{user_id}/password',
             controller=user_controller,
             action='change_password',
@@ -72,7 +78,13 @@ class SPasswordExtension(wsgi.ExtensionRouter):
 
         # Create user using OS-SCIM API
         mapper.connect(
-            '/OS-SCIM/Users',
+            '/OS-SCIM/v1/Users',
             controller=scim_user_controller,
             action='create_user',
             conditions=dict(method=['POST']))
+
+        mapper.connect(
+            '/OS-SCIM/v1/Users',
+            controller=scim_user_controller,
+            action='delete_user',
+            conditions=dict(method=['DELETE']))

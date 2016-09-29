@@ -59,6 +59,14 @@ class SPassword(Driver):
             raise exception.UserNotFound(user_id=user_id)
         return user_ref
 
+    def remove_user(self, user_id):
+        session = sql.get_session()
+        LOG.info('removing user %s from spassword' % user_id)
+        spassword_ref = session.query(SPasswordModel).get(user_id)
+        if spassword_ref:
+            with session.begin():
+                session.delete(spassword_ref)
+
     def set_user_creation_time(self, user):
         session = sql.get_session()
         spassword_ref = session.query(SPasswordModel).get(user['id'])
