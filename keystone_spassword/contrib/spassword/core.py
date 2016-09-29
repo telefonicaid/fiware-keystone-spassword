@@ -31,14 +31,15 @@ from keystone import exception
 from keystone import identity
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
-from keystone.openstack.common import versionutils
+try: from oslo_log import versionutils
+except ImportError: from keystone.openstack.common import versionutils
 from keystone.common import manager
 from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
 from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
 LOG = log.getLogger(__name__)
 
-
-from oslo.config import cfg
+try: from oslo_config import cfg
+except ImportError: from oslo.config import cfg
 CONF = cfg.CONF
 CONF.register_opt(cfg.BoolOpt('enabled', default=False), group='spassword')
 CONF.register_opt(cfg.IntOpt('pwd_exp_days', default=365), group='spassword')
@@ -75,6 +76,10 @@ class SPasswordManager(manager.Manager):
                 'user': [
                     self.user_created_callback]
                 },
+            'deleted': {
+                'user': [
+                    self.user_deleted_callback]
+                },
             }
 
         super(SPasswordManager, self).__init__(
@@ -98,12 +103,30 @@ class SPasswordManager(manager.Manager):
         if CONF.spassword.enabled:
             user_password = self.driver.set_user_creation_time(user)
 
+    def user_deleted_callback(self, service, resource_type, operation,
+                              payload):
+        user_id = payload['resource_info']
+        LOG.info("User %s deleted in driver manager" % user_id)
+        if CONF.spassword.enabled:
+            self.driver.remove_user(user_id)
+
 
 class Driver(object):
     """Interface description for SPassword driver."""
 
     def get_user(self, user_id):
         """Getuser
+
+        :param data: example data
+        :type data: string
+        :raises: keystone.exception,
+        :returns: None.
+
+        """
+        raise exception.NotImplemented()
+
+    def remove_user(self, user_id):
+        """Removeuser
 
         :param data: example data
         :type data: string

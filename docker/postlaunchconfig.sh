@@ -57,6 +57,8 @@ keystone tenant-create --name=admin --description="Admin Tenant"
 keystone user-role-add --user=admin --tenant=admin --role=admin
 keystone role-create --name=service
 keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iotagent@no.com
+keystone user-create --name=nagios --pass=$KEYSTONE_ADMIN_PASSWORD --email=nagios@no.com
+keystone user-role-add --user=nagios --tenant=admin --role=admin
 
 ADMIN_TOKEN=$(\
 curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
@@ -182,6 +184,9 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/icehouse-eol/etc
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
 
+# Set another ADMIN TOKEN
+openstack-config --set /etc/keystone/keystone.conf \
+                 DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
 
 kill -9 $keystone_all_pid
 sleep 3

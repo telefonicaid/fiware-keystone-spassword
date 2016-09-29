@@ -37,7 +37,9 @@ from keystone_spassword.contrib.spassword.checker import CheckPassword
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
-from oslo.config import cfg
+try: from oslo_config import cfg
+except ImportError: from oslo.config import cfg
+
 CONF = cfg.CONF
 
 LOG = log.getLogger(__name__)
@@ -70,6 +72,11 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
 
         return super(SPasswordScimUserV3Controller, self).create_user(context,
                                                                       user=user)
+    def delete_user(self, context, user_id):
+        # Delete user from spassword table
+        LOG.info('deleting user %s spasswordscimusercontroller' % user_id)
+        return super(SPasswordScimUserV3Controller, self).delete_user(context,
+                                                                      user_id)
 
 
 class SPasswordUserV3Controller(UserV3, CheckPassword):
@@ -93,6 +100,12 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         return super(SPasswordUserV3Controller, self).update_user(context,
                                                                   user_id=user_id,
                                                                   user=user)
+    @controller.protected()
+    def delete_user(self, context, user_id):
+        # Delete user from spassword table
+        LOG.info('deleting user %s spasswordusercontroller' % user_id)
+        return super(SPasswordUserV3Controller, self).delete_user(context,
+                                                                  user_id=user_id)
 
     @controller.protected()
     def change_password(self, context, user_id, user):
