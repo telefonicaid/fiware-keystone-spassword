@@ -1,0 +1,24 @@
+1.1.2
+
+Fix prefix path about SCIM version to use by default
+
+
+1.1.1
+
+Extend get version string script
+
+
+1.1.0
+
+Set default blacklist user for spassword checks
+Set current keystone dependencies for docker version
+
+
+1.0.6
+
+Extend compatiblity with keystone liberty version
+
+
+1.0.0
+
+Initial verion

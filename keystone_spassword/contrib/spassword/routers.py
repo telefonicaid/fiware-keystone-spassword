@@ -26,6 +26,9 @@ from keystone_spassword.contrib.spassword import controllers
 
 class SPasswordExtension(wsgi.ExtensionRouter):
 
+    # For SCIM API Version 2.0 PATH_PREFIX will be '/OS-SCIM/v1'
+    PATH_PREFIX = '/OS-SCIM'
+
     def add_routes(self, mapper):
 
         scim_user_controller = controllers.SPasswordScimUserV3Controller()
@@ -33,13 +36,13 @@ class SPasswordExtension(wsgi.ExtensionRouter):
 
         # SCIM User Operations
         mapper.connect(
-            '/OS-SCIM/v1/Users/{user_id}',
+            self.PATH_PREFIX + '/Users/{user_id}',
             controller=scim_user_controller,
             action='patch_user',
             conditions=dict(method=['PATCH']))
 
         mapper.connect(
-            '/OS-SCIM/v1/Users/{user_id}',
+            self.PATH_PREFIX + '/Users/{user_id}',
             controller=scim_user_controller,
             action='put_user',
             conditions=dict(method=['PUT']))
@@ -78,13 +81,13 @@ class SPasswordExtension(wsgi.ExtensionRouter):
 
         # Create user using OS-SCIM API
         mapper.connect(
-            '/OS-SCIM/v1/Users',
+            self.PATH_PREFIX + '/Users',
             controller=scim_user_controller,
             action='create_user',
             conditions=dict(method=['POST']))
 
         mapper.connect(
-            '/OS-SCIM/v1/Users',
+            self.PATH_PREFIX + '/Users',
             controller=scim_user_controller,
             action='delete_user',
             conditions=dict(method=['DELETE']))
