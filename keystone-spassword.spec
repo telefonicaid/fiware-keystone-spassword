@@ -69,7 +69,8 @@ fi
 
 if ! grep -q -F "[spassword]" "%{keystone_conf}"; then
     echo "Adding spassword config "
-    echo "[spassword]
+    echo "
+[spassword]
 enabled=true
 pwd_max_tries=5
 pwd_block_minutes=30
