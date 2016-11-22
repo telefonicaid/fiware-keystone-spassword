@@ -18,12 +18,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import time
-import datetime
-
 import datetime
 from keystone.common import sql
-from keystone.openstack.common import timeutils
+try: from oslo_utils import timeutils
+except ImportError: from keystone.openstack.common import timeutils
 from keystone import exception
 from keystone.identity.backends.sql import User, Identity
 from keystone_spassword.contrib.spassword import Driver
