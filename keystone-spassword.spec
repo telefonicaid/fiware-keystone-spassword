@@ -49,23 +49,11 @@ else
   echo "SPASSWORD extension already configured. Skipping."
 fi
 
-if ! grep -q -F "password=keystone_spassword.contrib.spassword.SPassword" "%{keystone_conf}"; then
-  echo "Adding new spassword plugin module."
-  sed -i \
-      -e 's/\#password=keystone.auth.plugins.password.Password$/password=keystone_spassword.contrib.spassword.SPassword\n&/' \
-    %{keystone_conf}
-else
-  echo "Already installed spassword SPassword plugin module. Skipping."
-fi
+openstack-config --set /etc/keystone/keystone.conf \
+                 auth password keystone_spassword.contrib.spassword.SPassword
 
-if ! grep -q -F "driver=keystone_spassword.contrib.spassword.backends.sql.Identity" "%{keystone_conf}"; then
-  echo "Adding new spassword plugin module."
-  sed -i \
-      -e 's/\#driver=keystone.identity.backends.sql.Identity$/driver=keystone_spassword.contrib.spassword.backends.sql.Identity\n&/' \
-    %{keystone_conf}
-else
-  echo "Already installed spassword Identity plugin module. Skipping."
-fi
+openstack-config --set /etc/keystone/keystone.conf \
+                 identity driver keystone_spassword.contrib.spassword.backends.sql.Identity
 
 if ! grep -q -F "[spassword]" "%{keystone_conf}"; then
     echo "Adding spassword config "
