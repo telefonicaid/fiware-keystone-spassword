@@ -88,7 +88,7 @@ The following steps are needed to populate a LDAP with users and groups.
 
 ## Configure Keystone
 
-- Disable SELinux auth config
+- Conf SELinux:
 
 ```
  $ setsebool -P authlogin_nsswitch_use_ldap on
