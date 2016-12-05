@@ -1,7 +1,7 @@
 # Integrate LDAP into IoTP Keystone
 
 
-* [Solution](#solution)
+* [Describe Solution](#describe-solution)
 * [Requirements](#requirements)
 * [Install LDAP](#install-ldap)
 * [Configure LDAP](#configure-ldap)
@@ -17,7 +17,7 @@ This solution assumes that:
 - IoTPlatform uses Orchestrator and Keystone.
 - Orchestrator is used to provision new services. This way orchestrator creates role, groups and policies when a new service (keystone domain) is created.
 - Keystone with SCIM and SPASSWORD plugins.
-- Specific details about keystone usage in IoTP was described in [here](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html)
+- Specific details about keystone usage in IoTP was described in [rtd](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html).
 
 The solution will use a Read Only LDAP for authentication.
 
@@ -66,21 +66,21 @@ https://wiki.openstack.org/wiki/OpenLDAP
 
 ### Populate LDAP
 
-The following steps are needed to populate a LDAP with users and groups:
+The following steps are needed to populate a LDAP with users and groups.
 
-- Configuracion schema
+- Configuracion schema [keystone_ldap_schema](./keystone_ldap_schema.py)
 ```
  $ python ./keystone_ldap_schema.py cn=openstack,cn=org openstack > /tmp/openstack_schema.ldif
  $ ldapadd -x -W -D"cn=admin,dc=openstack,dc=org" -f /tmp/openstack_schema.ldif
 ``` 
 
-- Add a new User to LDAP:
+- Add a new User to LDAP: [user template](./user.ldif)
 ```
  $ ldapadd -x -W -D "cn=admin,dc=openstack,dc=org" -f user.ldif
  $ ldappasswd -s 4pass1w0rd -W -D "cn=admin,dc=openstack,dc=org" -x "uid=adm1,ou=users,dc=openstack,dc=org"
 ```
 
-- Add a new Group to LDAP with their users
+- Add a new Group to LDAP with their users [group template](./group.ldif)
 ```
  $ ldapadd -x -W -D "cn=admin,dc=openstack,dc=org" -f group.ldif
 ``` 
