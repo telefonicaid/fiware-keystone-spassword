@@ -60,6 +60,8 @@ keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iot
 keystone user-create --name=nagios --pass=$KEYSTONE_ADMIN_PASSWORD --email=nagios@no.com
 keystone user-role-add --user=nagios --tenant=admin --role=admin
 
+IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
+
 ADMIN_TOKEN=$(\
 curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
          -s                                   \
@@ -187,6 +189,10 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/icehouse-eol/etc
 # Set another ADMIN TOKEN
 openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
+
+# Exclude some users from spassword
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID
 
 kill -9 $keystone_all_pid
 sleep 3
