@@ -9,7 +9,7 @@ except ImportError: from keystone.openstack.common import log
 
 LOG = log.getLogger(__name__)
 
-@dependency.requires('identity_api')
+@dependency.requires('identity_api', 'id_generator_api')
 class IdGroupLdapMapping(Mapping):
 
     def get_public_id(self, local_entity):
@@ -38,3 +38,14 @@ class IdGroupLdapMapping(Mapping):
         else:
             return super(Mapping, self).get_public_id(local_entity)
 
+    def get_id_mapping(self, public_id):
+        return super(Mapping, self).get_id_mapping(public_id)
+
+    def create_id_mapping(self, local_entity, public_id=None):
+        return super(Mapping, self).create_id_mapping(local_entity, public_id)
+
+    def delete_id_mapping(self, public_id):
+        return super(Mapping, self).delete_id_mapping(public_id)
+
+    def purge_mappings(self, purge_filter):
+        return super(Mapping, self).purge_mapping(purge_filter)

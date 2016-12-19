@@ -119,7 +119,7 @@ The following steps are needed to populate a LDAP with users and groups.
    $ chown keystone.keystone /etc/keystone/domains/*
 ```
 
-  Copy driver [id_group_ldap.py](./id_group_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory.
+  Copy driver [sql_ldap.py](./sql_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory.
 
 - Define Generic LDAP configuration:
 
@@ -156,6 +156,8 @@ The following steps are needed to populate a LDAP with users and groups.
                    ldap auth_pool_size 100
    $ openstack-config --set /etc/keystone/keystone.conf \
                    ldap auth_pool_connection_lifetime 60
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping
 
 ```
 
