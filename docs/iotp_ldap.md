@@ -120,7 +120,7 @@ The following steps are needed to populate a LDAP with users and groups.
 
 ```
    $ openstack-config --set /etc/keystone/keystone.conf \
-                   ldap url ldap://YOUR_LDAP_IP
+                   ldap url ldap://<YOUR_LDAP_IP>
    $ openstack-config --set /etc/keystone/keystone.conf \
                    ldap user dc=admin,dc=openstack,dc=org
    $ openstack-config --set /etc/keystone/keystone.conf \
@@ -128,7 +128,6 @@ The following steps are needed to populate a LDAP with users and groups.
    $ openstack-config --set /etc/keystone/keystone.conf \
                    ldap suffix openstack,dc=org
 ```
-
   These and other values can be modified by editing [keystone.conf](http://docs.openstack.org/liberty/config-reference/content/section_keystone.conf.html).
 
 - Restart Keystone
