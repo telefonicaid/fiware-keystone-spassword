@@ -168,7 +168,8 @@ class Identity(Identity):
                         datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                     res['extras'] = {
                         "password_creation_time": timeutils.isotime(spassword_ref['creation_time']),
-                        "password_expiration_time": timeutils.isotime(expiration_date)
+                        "password_expiration_time": timeutils.isotime(expiration_date),
+                        "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist
                     }
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = datetime.datetime.utcnow()
@@ -190,7 +191,8 @@ class Identity(Identity):
                         datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                     res['extras'] = {
                         "password_creation_time": timeutils.isotime(data_user['creation_time']),
-                        "password_expiration_time": timeutils.isotime(expiration_date)
+                        "password_expiration_time": timeutils.isotime(expiration_date),
+                        "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist
                     }
                 spassword_ref = SPasswordModel.from_dict(data_user)
 
