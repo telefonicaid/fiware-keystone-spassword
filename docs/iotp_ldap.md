@@ -108,13 +108,18 @@ The following steps are needed to populate a LDAP with users and groups.
    $ mkdir /etc/keystone/domains
    $ chown keystone.keystone /etc/keystone/domains
    $ openstack-config --set /etc/keystone/keystone.conf \
-                   identity domain_scpecific_drivers enabled
+                   identity domain_specific_drivers_enabled true
    $ openstack-config --set /etc/keystone/keystone.conf \
                    identity domain_config_dir /etc/keystone/domains
 ```
-  Copy your DOMAIN_NAME.conf into /etc/keystone/domains. Use [keystone.smartcity.conf](./keystone.smartcity.conf) as a template.
+  Copy your keystone.DOMAIN_NAME.conf into /etc/keystone/domains. Use [keystone.smartcity.conf](./keystone.smartcity.conf) as a template.
 
-  Copy driver [id_group_lda.py](./id_group_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory.
+
+```
+   $ chown keystone.keystone /etc/keystone/domains/*
+```
+
+  Copy driver [id_group_ldap.py](./id_group_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory.
 
 - Define Generic LDAP configuration:
 
@@ -127,7 +132,43 @@ The following steps are needed to populate a LDAP with users and groups.
                    ldap password 4pass1w0rd
    $ openstack-config --set /etc/keystone/keystone.conf \
                    ldap suffix openstack,dc=org
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap query_scope sub
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap page_size 0
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap alias_dereferencing default
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap use_pool true
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap pool_size 10
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap pool_retry_max 3
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap pool_retry_delay 0.1
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap pool_connection_timeout -1
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap pool_connection_lifetime 600
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap use_auth_pool false
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap auth_pool_size 100
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   ldap auth_pool_connection_lifetime 60
+
 ```
+
+- Truncate id_mapping table:
+
+  In order to force mapping based on id groups is better to clean previous mapping entries.
+
+```
+   $ mysql -h iot-mysql -u root -p
+   SQL> use keystone;
+   SQL> truncate table id_mapping;
+```
+
   These and other values can be modified by editing [keystone.conf](http://docs.openstack.org/liberty/config-reference/content/section_keystone.conf.html).
 
 - Restart Keystone
