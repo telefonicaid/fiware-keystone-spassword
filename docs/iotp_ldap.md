@@ -49,7 +49,7 @@ This solution about integrate LDAP with Keystone expects:
 
 OpenLDAP is a free, open source implementation of the Lightweight Directory Access Protocol (LDAP) developed by the OpenLDAP Project. It is released under its own BSD-style license called the OpenLDAP Public License.
 
-#### Debian/Ubuntu): sldap
+#### Debian/Ubuntu: sldap
 ```
  $ sudo apt-get install sldap
 ```
@@ -114,7 +114,7 @@ The following steps are needed to populate a LDAP with users and groups.
 ```
   Copy your DOMAIN_NAME.conf into /etc/keystone/domains. Use [keystone.smartcity.conf](./keystone.smartcity.conf) as a template.
 
-  Copy driver (id_group_lda.py)[./id_group_ldap.py] into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory.
+  Copy driver [id_group_lda.py](./id_group_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory.
 
 - Define Generic LDAP configuration:
 
