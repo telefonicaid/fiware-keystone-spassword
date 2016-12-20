@@ -36,8 +36,9 @@ openstack-config --set /etc/keystone/keystone.conf \
 openstack-config --set /etc/keystone/keystone.conf \
               ldap auth_pool_size 100
 openstack-config --set /etc/keystone/keystone.conf \
-                 ldap auth_pool_connection_lifetime 60
-
+              ldap auth_pool_connection_lifetime 60
+openstack-config --set /etc/keystone/keystone.conf \
+              identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping
               
 openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT debug true

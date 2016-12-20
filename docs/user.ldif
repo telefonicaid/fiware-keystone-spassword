@@ -9,7 +9,7 @@ uidNumber: 16859
 gidNumber: 100
 homeDirectory: /home/adm
 loginShell: /bin/bash
-gecos: adm2
+gecos: adm
 userPassword: {crypt}x
 shadowLastChange: 0
 shadowMax: 0

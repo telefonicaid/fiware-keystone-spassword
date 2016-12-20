@@ -12,6 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
+# This file is the sql_ldap mapping id driver for Liberty or uppper versions of Keystone
+
 from keystone.common import dependency
 from keystone.common import sql
 from keystone import identity
