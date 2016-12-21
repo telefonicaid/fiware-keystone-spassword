@@ -48,7 +48,7 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/liberty-eol/etc/
      | .["identity:get_domain"]=""
      | .admin_and_user_filter="role:admin and \"%\":%(user.id)%"
      | .admin_and_project_filter="role:admin and \"%\":%(scope.project.id)%"
-     | .["identity:list_role_assignments"]="rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter"
+     | .["identity:list_role_assignments"]="rule:cloud_admin or rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter"
      | .["identity:list_projects"]="rule:cloud_admin or rule:admin_and_matching_domain_id or rule:cloud_service"
      | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
