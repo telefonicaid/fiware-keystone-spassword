@@ -61,14 +61,14 @@ OpenLDAP is a free, open source implementation of the Lightweight Directory Acce
 
 ### Configure LDAP
 
-#### Debian/Ubuntu):
+#### Debian/Ubuntu:
 Set Domain Name to "openstack.org and set organization to "openstack".
 
 ```
  $ dpkg-reconfigure slapd
 ```
 
-#### Centos/RedHat 7
+#### Centos/RedHat 7:
 Follow this guide about [install an OpenLDAP for Keystone](https://wiki.openstack.org/wiki/OpenLDAP).
 
 
