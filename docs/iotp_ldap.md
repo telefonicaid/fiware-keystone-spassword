@@ -121,6 +121,11 @@ The following steps are needed to populate a LDAP with users and groups.
 
   Copy driver [sql_ldap.py](./sql_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory.
 
+```
+   $ cp sql_ldap.py  /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends
+```
+
+
 - Define Generic LDAP configuration:
 
 ```
