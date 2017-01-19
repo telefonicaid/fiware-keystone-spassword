@@ -131,6 +131,6 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 ```
 
 
-
+## [LDAP integration](docs/iotp_ldap.md)
 
 
