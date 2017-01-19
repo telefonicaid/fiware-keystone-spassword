@@ -45,7 +45,7 @@ This solution about integrate LDAP with Keystone expects:
   - External LDAP: [OpenLDAP](http://www.openldap.org) 2.4.40 or upper.
 
 
-## Install and configure an LDAP
+## Install and configure an LDAP (no exists previous LDAP)
 
 This procedure describe how to install from the scratch and configure a new LDAP instance in order to be used as external LDAP for keystone autentication.
 
@@ -96,9 +96,9 @@ The following steps are needed to populate a LDAP with users and groups.
  $ ldapadd -x -W -D "cn=admin,dc=openstack,dc=org" -f group.ldif
 ```
 
-### Adapt existing LDAP (creating needed groups)
+## Adapt existing LDAP (creating needed groups)
 
-In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies:
+In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies (described in [rtd](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html#users-and-permissions)()
 
   - ServiceCustomerGroup
   - SubServiceCustomerGroup
@@ -114,10 +114,13 @@ For achive that you have to create that groups, with that names, in your LDAP. F
 
 ## Configure Keystone
 
+In order to configure keystone for LDAP integration you shuuld get into Keystone host and perform the following steps:
+
+
 - Configure SELinux values:
 
 ```
- $ setsebool -P authlogin_nsswitch_use_ldap on
+   $ setsebool -P authlogin_nsswitch_use_ldap on
 ```
 
 - Enable Domain Specific Configuration in Keystone
@@ -196,6 +199,12 @@ For achive that you have to create that groups, with that names, in your LDAP. F
    SQL> truncate table id_mapping;
 ```
 
-  These and other values can be modified by editing [keystone.conf](http://docs.openstack.org/liberty/config-reference/content/section_keystone.conf.html).
+  These and other values can be modified by editing [/etc/keystone/keystone.conf](http://docs.openstack.org/liberty/config-reference/content/section_keystone.conf.html).
 
-- Restart Keystone
+- Restart Keystone:
+  Depending on your deploy, it could be a simple service restart:
+
+```
+  $ sudo service openstack-keystone restart
+```
+  or a docker container restart
