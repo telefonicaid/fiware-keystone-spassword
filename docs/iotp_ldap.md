@@ -27,10 +27,10 @@ User authentication will be done throght LDAP directory.
 This solution about integrate LDAP with Keystone expects:
 - Users are in LDAP for autentication: name, description, email, password.
 - The following groups are defined in LDAP:
-  - ServiceCustomerGroup
-  - SubServiceCustomerGroup
-  - SubServiceAdminGroup
-  - AdminGroup
+  - ServiceCustomerGroup: role ServiceCustomer service.
+  - SubServiceCustomerGroup: role SubServiceCustomer in all posible subservices
+  - SubServiceAdminGroup: role SubServiceAdmin in all posible subservices
+  - AdminGroup: roles admin in service and SubServiceAdmin in all posible subservices
   These groups has been provisioned automatically by IoTP Orchestrator in each Service.
 - Users in LDAP belongs to the defined LDAP Groups.
 
@@ -45,9 +45,12 @@ This solution about integrate LDAP with Keystone expects:
   - External LDAP: [OpenLDAP](http://www.openldap.org) 2.4.40 or upper.
 
 
-## Install and configure LDAP
+## Install and configure an LDAP
+
+This procedure describe how to install from the scratch and configure a new LDAP instance in order to be used as external LDAP for keystone autentication.
 
 OpenLDAP is a free, open source implementation of the Lightweight Directory Access Protocol (LDAP) developed by the OpenLDAP Project. It is released under its own BSD-style license called the OpenLDAP Public License.
+
 
 #### Debian/Ubuntu: sldap
 ```
@@ -72,7 +75,7 @@ Set Domain Name to "openstack.org and set organization to "openstack".
 Follow this guide about [install an OpenLDAP for Keystone](https://wiki.openstack.org/wiki/OpenLDAP).
 
 
-## Populate LDAP
+### Populate LDAP
 
 The following steps are needed to populate a LDAP with users and groups.
 
@@ -91,6 +94,21 @@ The following steps are needed to populate a LDAP with users and groups.
 - Add a new Group to LDAP with their users [group template](./group.ldif)
 ```
  $ ldapadd -x -W -D "cn=admin,dc=openstack,dc=org" -f group.ldif
+```
+
+### Adapt existing LDAP (creating needed groups)
+
+In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies:
+
+  - ServiceCustomerGroup
+  - SubServiceCustomerGroup
+  - SubServiceAdminGroup
+  - AdminGroup
+
+For achive that you have to create that groups, with that names, in your LDAP. For example, if you have adm and foo users in your LDAP and you want to that users belongs to AdminGroup, then in a one step you can create AdminGroup and assign users to that group:
+
+```
+ $ ldapadd -x -W -D "cn=admin,dc=openstack,dc=org" -f add_admin_group.ldif
 ```
 
 
@@ -114,12 +132,14 @@ The following steps are needed to populate a LDAP with users and groups.
 ```
   Copy your keystone.DOMAIN_NAME.conf into /etc/keystone/domains. Use [keystone.smartcity.conf](./keystone.smartcity.conf) as a template.
 
+  You will need such a keystone.smartcity.conf files as services (keystone domains) will use LDAP authentication.
+
 
 ```
    $ chown keystone.keystone /etc/keystone/domains/*
 ```
 
-  Copy driver [sql_ldap.py](./sql_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory.
+  Copy driver [sql_ldap.py](./sql_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory. This driver is unique for all services (keystone domains) that use LDAP authentication.
 
 ```
    $ cp sql_ldap.py  /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends
