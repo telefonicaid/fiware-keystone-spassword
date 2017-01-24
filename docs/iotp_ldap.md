@@ -201,6 +201,23 @@ In order to configure keystone for LDAP integration you shuuld get into Keystone
 
   These and other values can be modified by editing [/etc/keystone/keystone.conf](http://docs.openstack.org/liberty/config-reference/content/section_keystone.conf.html).
 
+- Enable debug mode for logging:
+
+  In order to allow an easy debug you can change Keystone logging level to DEBUG:
+
+```
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   DEFAULT debug true
+```
+
+  or to INFO level:
+```
+   $ openstack-config --set /etc/keystone/keystone.conf \
+                   DEFAULT verbose true
+```
+
+
+
 - Restart Keystone:
   Depending on your deploy, it could be a simple service restart:
 
