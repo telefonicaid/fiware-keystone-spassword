@@ -1,3 +1,7 @@
+1.2.0
+
+Update Docker to use keystone liberty version
+
 1.1.2
 
 Fix prefix path about SCIM version to use by default
