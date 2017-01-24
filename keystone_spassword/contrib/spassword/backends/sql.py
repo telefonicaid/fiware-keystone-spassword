@@ -143,7 +143,7 @@ class Identity(Identity):
                     if (spassword_ref['last_login_attempt_time'] > \
                         datetime.datetime.utcnow() - \
                         datetime.timedelta(minutes=CONF.spassword.pwd_block_minutes)):
-                        LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
+                        LOG.warn('max number of tries reach for login %s' % spassword_ref['user_name'])
                         auth_error_msg = ('Password temporarily blocked for user %s due to reach' +
                                           ' max number of tries. Contact with your ' +
                                           ' admin') % spassword_ref['user_name']
