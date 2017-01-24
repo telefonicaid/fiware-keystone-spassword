@@ -48,7 +48,7 @@ RUN \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     #  chown root.root /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
-    ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-paste-dist.ini && \
+    ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
