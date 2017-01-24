@@ -14,9 +14,9 @@ This document describe how to integrate a LDAP with IoTPlatform Identity Managem
 
 This solution assumes that:
 - IoTPlatform uses Orchestrator and Keystone.
-- Orchestrator is used to provision new services. This way orchestrator creates role, groups and policies when a new service (keystone domain) is created.
+- Orchestrator is used to provision new services. This way Orchestrator creates roles, groups and policies when a new service (keystone domain) is created.
 - Keystone with SCIM and SPASSWORD plugins.
-- Specific details about keystone usage in IoTP was described in [rtd](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html).
+- Specific details about keystone usage in IoTP was described in [fiware-iot-stack.readthedocs](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html).
 
 The solution will use a Read Only LDAP for keystone authentication feature and a SQL driver for Keystone assignment feature.
 The solution will enable [Domain Specific Configuration](http://docs.openstack.org/admin-guide/identity-domain-specific-config.html) for Keystone which imples that each domain could use a different configuration. In this case each domain will have a specific LDAP configuration (endpoint, connection values, etc).
@@ -25,9 +25,9 @@ LDAP will provide Users and Groups. Groups are handled and provisioned in Keysto
 User authentication will be done throght LDAP directory.
 
 This solution about integrate LDAP with Keystone expects:
-- Users are in LDAP for autentication: name, description, email, password.
+- Users are in LDAP for authentication: name, description, email, password.
 - The following groups are defined in LDAP:
-  - ServiceCustomerGroup: role ServiceCustomer service.
+  - ServiceCustomerGroup: role ServiceCustomer in service.
   - SubServiceCustomerGroup: role SubServiceCustomer in all posible subservices
   - SubServiceAdminGroup: role SubServiceAdmin in all posible subservices
   - AdminGroup: roles admin in service and SubServiceAdmin in all posible subservices
@@ -39,15 +39,15 @@ This solution about integrate LDAP with Keystone expects:
 
 ### Software Requirements:
   - [OpenStack Keystone](http://docs.openstack.org/developer/keystone) version Liberty.
-  - [Keystone SPASSWORD plugin](https://github.com/telefonicaid/fiware-keystone-spassword) plugin 1.1.2 or upper.
+  - [Keystone SPASSWORD plugin](https://github.com/telefonicaid/fiware-keystone-spassword) plugin 1.2.0 or upper.
   - [Keystone SCIM plugin](https://github.com/telefonicaid/fiware-keystone-scim) plugin version 1.1.7 or upper.
   - [IoTP Orchestrator](https://github.com/telefonicaid/orchestrator) version 1.5.0 or upper.
   - External LDAP: [OpenLDAP](http://www.openldap.org) 2.4.40 or upper.
 
 
-## Install and configure an LDAP (no exists previous LDAP)
+## Install and configure an LDAP (not exists previous LDAP)
 
-This procedure describe how to install from the scratch and configure a new LDAP instance in order to be used as external LDAP for keystone autentication.
+This procedure describe how to install from the scratch and configure a new LDAP instance in order to be used as external LDAP for keystone authentication.
 
 OpenLDAP is a free, open source implementation of the Lightweight Directory Access Protocol (LDAP) developed by the OpenLDAP Project. It is released under its own BSD-style license called the OpenLDAP Public License.
 
@@ -98,7 +98,7 @@ The following steps are needed to populate a LDAP with users and groups.
 
 ## Adapt existing LDAP (creating needed groups)
 
-In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies (described in [rtd](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html#users-and-permissions)()
+In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies (described in [fiware-iot-stack.readthedocs.io](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html#users-and-permissions)()
 
   - ServiceCustomerGroup
   - SubServiceCustomerGroup
@@ -114,7 +114,7 @@ For achive that you have to create that groups, with that names, in your LDAP. F
 
 ## Configure Keystone
 
-In order to configure keystone for LDAP integration you shuuld get into Keystone host and perform the following steps:
+In order to configure keystone for LDAP integration you should get into Keystone host and perform the following steps:
 
 
 - Configure SELinux values:
