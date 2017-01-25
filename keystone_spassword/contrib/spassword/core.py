@@ -20,27 +20,24 @@
 
 """Extensions supporting Strong Passwords."""
 
-import uuid
 
-from keystone import auth
 from keystone.auth.plugins import password
 from keystone.common import dependency
-from keystone.common import extension
 from keystone.common import wsgi
 from keystone import exception
-from keystone import identity
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 try: from oslo_log import versionutils
 except ImportError: from keystone.openstack.common import versionutils
 from keystone.common import manager
-from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
-from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
+
 LOG = log.getLogger(__name__)
 
 try: from oslo_config import cfg
 except ImportError: from oslo.config import cfg
+
 CONF = cfg.CONF
+
 CONF.register_opt(cfg.BoolOpt('enabled', default=False), group='spassword')
 CONF.register_opt(cfg.IntOpt('pwd_exp_days', default=365), group='spassword')
 CONF.register_opt(cfg.IntOpt('pwd_max_tries', default=3), group='spassword')

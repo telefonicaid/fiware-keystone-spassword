@@ -20,15 +20,10 @@
 
 """Extensions supporting Strong Passwords."""
 
-import copy
 import uuid
 
 from keystone.common import controller
-from keystone.common import dependency
-from keystone.common import extension
-from keystone.common import wsgi
 from keystone import exception
-from keystone import identity
 from keystone.identity.controllers import UserV3
 from keystone_scim.contrib.scim.controllers import ScimUserV3Controller
 from keystone_scim.contrib.scim import converter as conv
