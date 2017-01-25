@@ -31,7 +31,7 @@ This solution about integrate LDAP with Keystone expects:
   - SubServiceCustomerGroup: role SubServiceCustomer in all posible subservices
   - SubServiceAdminGroup: role SubServiceAdmin in all posible subservices
   - AdminGroup: roles admin in service and SubServiceAdmin in all posible subservices
-  These groups has been provisioned automatically by IoTP Orchestrator in each Service.
+  These groups have been provisioned automatically in each Service by IoTP Orchestrator since version 1.5.0 or upper. If Service was created with a previous version of Orchestrator make sure that needed Groups are created before.
 - Users in LDAP belongs to the defined LDAP Groups.
 
 
