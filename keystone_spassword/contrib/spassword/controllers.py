@@ -23,7 +23,6 @@
 import copy
 import uuid
 
-from keystone import config
 from keystone.common import controller
 from keystone.common import dependency
 from keystone.common import extension

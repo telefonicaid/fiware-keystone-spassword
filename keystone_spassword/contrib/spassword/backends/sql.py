@@ -27,8 +27,8 @@ from keystone.identity.backends.sql import User, Identity
 from keystone_spassword.contrib.spassword import Driver
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
-try: from oslo.config import cfg
-except ImportError: from keystone import config as cfg
+try: from oslo_config import cfg
+except ImportError: from oslo.config import cfg
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -51,23 +51,36 @@ class SPasswordModel(sql.ModelBase, sql.DictBase):
 class SPassword(Driver):
 
     def get_user(self, user_id):
-        session = sql.get_session()
-        user_ref = session.query(User).get(user_id)
+        try:
+            session = sql.get_session()
+            user_ref = session.query(User).get(user_id)
+        except AttributeError:
+            with sql.session_for_read() as session:
+                user_ref = session.query(User).get(user_id)
         if not user_ref:
             raise exception.UserNotFound(user_id=user_id)
         return user_ref
 
     def remove_user(self, user_id):
-        session = sql.get_session()
+        try:
+            session = sql.get_session()
+            spassword_ref = session.query(SPasswordModel).get(user_id)
+        except AttributeError:
+            with sql.session_for_read() as session:
+                spassword_ref = session.query(SPasswordModel).get(user_id)
         LOG.info('removing user %s from spassword' % user_id)
-        spassword_ref = session.query(SPasswordModel).get(user_id)
+
         if spassword_ref:
             with session.begin():
                 session.delete(spassword_ref)
 
     def set_user_creation_time(self, user):
-        session = sql.get_session()
-        spassword_ref = session.query(SPasswordModel).get(user['id'])
+        try:
+            session = sql.get_session()
+            spassword_ref = session.query(SPasswordModel).get(user['id'])
+        except AttributeError:
+            with sql.session_for_write() as session:
+                spassword_ref = session.query(SPasswordModel).get(user['id'])
         LOG.debug('set user creation time for %s' % user['id'])
         if not spassword_ref:
             data_user = {}
@@ -89,8 +102,12 @@ class SPassword(Driver):
         return spassword_ref.to_dict()
 
     def update_user_modification_time(self, user):
-        session = sql.get_session()
-        spassword_ref = session.query(SPasswordModel).get(user['id'])
+        try:
+            session = sql.get_session()
+            spassword_ref = session.query(SPasswordModel).get(user['id'])
+        except AttributeError:
+            with sql.session_for_write() as session:
+                spassword_ref = session.query(SPasswordModel).get(user['id'])
         LOG.debug('update user modification time for %s' % user['id'])
         if spassword_ref:
             spassword_ref['creation_time'] = datetime.datetime.utcnow()
@@ -111,8 +128,12 @@ class Identity(Identity):
     def _check_password(self, password, user_ref):
         if CONF.spassword.enabled:
             # Check if password has been expired
-            session = sql.get_session()
-            spassword_ref = session.query(SPasswordModel).get(user_ref['id'])
+            try:
+                session = sql.get_session()
+                spassword_ref = session.query(SPasswordModel).get(user_ref['id'])
+            except AttributeError:
+                with sql.session_for_read() as session:
+                    spassword_ref = session.query(SPasswordModel).get(user_ref['id'])
             if (not (spassword_ref == None)) and \
                 (not user_ref['id'] in CONF.spassword.pwd_user_blacklist):
                 # Check password time
@@ -134,8 +155,12 @@ class Identity(Identity):
 
         if CONF.spassword.enabled and \
            not (user_id in CONF.spassword.pwd_user_blacklist):
-            session = sql.get_session()
-            spassword_ref = session.query(SPasswordModel).get(user_id)
+            try:
+                session = sql.get_session()
+                spassword_ref = session.query(SPasswordModel).get(user_id)
+            except AttributeError:
+                with sql.session_for_read() as session:
+                    spassword_ref = session.query(SPasswordModel).get(user_id)
 
             if spassword_ref:
                 if spassword_ref['login_attempts'] > CONF.spassword.pwd_max_tries:
@@ -155,8 +180,12 @@ class Identity(Identity):
             auth_error_msg = 'Invalid username or password'
 
         if CONF.spassword.enabled:
-            session = sql.get_session()
-            spassword_ref = session.query(SPasswordModel).get(user_id)
+            try:
+                session = sql.get_session()
+                spassword_ref = session.query(SPasswordModel).get(user_id)
+            except AttributeError:
+                with sql.session_for_write() as session:
+                    spassword_ref = session.query(SPasswordModel).get(user_id)
 
             if spassword_ref:
                 if not res:
