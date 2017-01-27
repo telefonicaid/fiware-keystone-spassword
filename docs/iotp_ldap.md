@@ -54,18 +54,18 @@ OpenLDAP is a free, open source implementation of the Lightweight Directory Acce
 
 #### Debian/Ubuntu: sldap
 ```
- $ sudo apt-get install sldap
+ $ sudo apt-get install slapd
 ```
 
 #### Centos/RedHat 7: openldap-servers
 ```
- $ sudo yum install opensldap-server
+ $ sudo yum install openldap-servers
 ```
 
 ### Configure LDAP
 
 #### Debian/Ubuntu:
-Set Domain Name to "openstack.org and set organization to "openstack".
+Set Domain Name to "openstack.org", set organization to "openstack" and give a password.
 
 ```
  $ dpkg-reconfigure slapd
@@ -73,6 +73,10 @@ Set Domain Name to "openstack.org and set organization to "openstack".
 
 #### Centos/RedHat 7:
 Follow this guide about [install an OpenLDAP for Keystone](https://wiki.openstack.org/wiki/OpenLDAP).
+
+
+#### Docker container:
+You can also easily deploy a openldap container:
 
 
 ### Populate LDAP
@@ -117,7 +121,7 @@ For achive that you have to create that groups, with that names, in your LDAP. F
 In order to configure keystone for LDAP integration you should get into Keystone host and perform the following steps:
 
 
-- Configure SELinux values:
+- Configure SELinux values (if SElinux is running):
 
 ```
    $ setsebool -P authlogin_nsswitch_use_ldap on
@@ -133,7 +137,7 @@ In order to configure keystone for LDAP integration you should get into Keystone
    $ openstack-config --set /etc/keystone/keystone.conf \
                    identity domain_config_dir /etc/keystone/domains
 ```
-  Copy your keystone.DOMAIN_NAME.conf into /etc/keystone/domains. Use [keystone.smartcity.conf](./keystone.smartcity.conf) as a template.
+  Copy your keystone.DOMAIN_NAME.conf into /etc/keystone/domains. Use [keystone.smartcity.conf](./keystone.smartcity.conf) as a template. Remember change <YOUR_LDAP_IP> with a proper IP on that file.
 
   You will need such a keystone.smartcity.conf files as services (keystone domains) will use LDAP authentication.
 
