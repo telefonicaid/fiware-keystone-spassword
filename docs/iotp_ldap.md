@@ -77,10 +77,6 @@ Follow this guide about [install an OpenLDAP for Keystone](https://wiki.openstac
 ```
  $ slappasswd -h {SSHA} -s <password>
  $ sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f ./manager.ldif
- $ python ./keystone_ldap_schema.py dc=openstack,dc=org openstack > /tmp/keystone_ldap_schema.ldif
- $ ldapadd -x -W -D"dc=admin,dc=openstack,dc=org" -f /tmp/keystone_ldap_schema.ldif
- $ ldapadd -x -c -W -D"dc=admin,dc=openstack,dc=org" -f /tmp/keystone_ldap_schema.ldif
- $ ldapsearch -x -W -D"cn=admin,dc=openstack,dc=org" -b dc=openstack,dc=org
 ```
 
 
@@ -91,7 +87,7 @@ You can also easily deploy a openldap container:
  $ sudo docker run --name my-openldap-container \
           --env LDAP_ORGANISATION="openstack" \
           --env LDAP_DOMAIN="openstack.org" \
-          --env LDAP_ADMIN_PASSWORD="4pass1w0rd" \
+          --env LDAP_ADMIN_PASSWORD="<ldap_admin_password>" \
           --detach osixia/openldap:1.1.7
 ```
 
@@ -108,7 +104,7 @@ The following steps are needed to populate a LDAP with users and groups.
 - Add a new User to LDAP: [user template](./user.ldif)
 ```
  $ ldapadd -x -c -W -D "cn=admin,dc=openstack,dc=org" -f user.ldif
- $ ldappasswd -s 4pass1w0rd -W -D "cn=admin,dc=openstack,dc=org" -x "uid=adm,ou=users,dc=openstack,dc=org"
+ $ ldappasswd -s <ldap_admin_password> -W -D "cn=admin,dc=openstack,dc=org" -x "uid=adm,ou=users,dc=openstack,dc=org"
 ```
 
 - Add a new Group to LDAP with their users [group template](./group.ldif)
@@ -129,23 +125,23 @@ The following steps are the same that above but for the case of LDAP is in a doc
 
 - Check ldap docker container configuration:
 ```
- $ sudo docker exec my-openldap-container ldapsearch -x -h localhost -b dc=openstack,dc=org -D "cn=admin,dc=openstack,dc=org" -w 4pass1w0rd
+ $ sudo docker exec my-openldap-container ldapsearch -x -h localhost -b dc=openstack,dc=org -D "cn=admin,dc=openstack,dc=org" -w <ldap_admin_password>
 ```
 
 - Populate:
 ```
- $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -f /tmp/openstack_schema.ldif
+ $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w <ldap_admin_password> -D "cn=admin,dc=openstack,dc=org" -f /tmp/openstack_schema.ldif
 
- $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -f /tmp/user.ldif
+ $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w <ldap_admin_password> -D "cn=admin,dc=openstack,dc=org" -f /tmp/user.ldif
 
- $ sudo docker exec my-openldap-container ldappasswd -s 4pass1w0rd -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -x "uid=adm,ou=users,dc=openstack,dc=org"
+ $ sudo docker exec my-openldap-container ldappasswd -s <ldap_admin_password> -h localhost -w <ldap_admin_password> -D "cn=admin,dc=openstack,dc=org" -x "uid=adm,ou=users,dc=openstack,dc=org"
 
- $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -f /tmp/group.ldif
+ $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w <ldap_admin_password> -D "cn=admin,dc=openstack,dc=org" -f /tmp/group.ldif
 ```
 
 - Check ldap docker final ldap configuration:
 ```
- $ sudo docker exec my-openldap-container ldapsearch -x -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -b "dc=openstack,dc=org" "(objectclass=*)"
+ $ sudo docker exec my-openldap-container ldapsearch -x -h localhost -w <ldap_admin_password> -D "cn=admin,dc=openstack,dc=org" -b "dc=openstack,dc=org" "(objectclass=*)"
 
 ```
 
@@ -211,7 +207,7 @@ In order to configure keystone for LDAP integration you should get into Keystone
    $ openstack-config --set /etc/keystone/keystone.conf \
                    ldap user dc=admin,dc=openstack,dc=org
    $ openstack-config --set /etc/keystone/keystone.conf \
-                   ldap password 4pass1w0rd
+                   ldap password <ldap_admin_password>
    $ openstack-config --set /etc/keystone/keystone.conf \
                    ldap suffix openstack,dc=org
    $ openstack-config --set /etc/keystone/keystone.conf \
