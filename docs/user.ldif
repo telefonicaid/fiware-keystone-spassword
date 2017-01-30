@@ -1,4 +1,4 @@
-dn: uid=adm,ou=Users,dc=openstack,dc=org
+dn: uid=adm,ou=users,dc=openstack,dc=org
 objectClass: top
 objectClass: account
 objectClass: posixAccount

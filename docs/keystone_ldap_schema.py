@@ -19,25 +19,24 @@ subtree=sys.argv[1]
 organization=sys.argv[2]
 ldif_file="""
 dn: {0}
-dc: {1}
 objectClass: dcObject
-objectClass: organizationalUnit
-ou: {1}
+objectClass: organization
+o: {1}
+dc: {1}
 
-dn: ou=Groups,{0}
-objectClass: top
+dn: ou=groups,{0}
 objectClass: organizationalUnit
+objectClass: top
 ou: groups
 
-dn: ou=Users,{0}
-objectClass: top
+dn: ou=users,{0}
 objectClass: organizationalUnit
+objectClass: top
 ou: users
 
-dn: ou=Roles,{0}
-objectClass: top
+dn: ou=roles,{0}
 objectClass: organizationalUnit
-ou: roles
-"""
+objectClass: top
+ou: roles"""
 
 print ldif_file.format(subtree,organization)

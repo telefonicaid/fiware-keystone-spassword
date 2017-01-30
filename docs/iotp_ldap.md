@@ -74,10 +74,26 @@ Set Domain Name to "openstack.org", set organization to "openstack" and give a p
 #### Centos/RedHat 7:
 Follow this guide about [install an OpenLDAP for Keystone](https://wiki.openstack.org/wiki/OpenLDAP).
 
+```
+ $ slappasswd -h {SSHA} -s <password>
+ $ sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f ./manager.ldif
+ $ python ./keystone_ldap_schema.py dc=openstack,dc=org openstack > /tmp/keystone_ldap_schema.ldif
+ $ ldapadd -x -W -D"dc=admin,dc=openstack,dc=org" -f /tmp/keystone_ldap_schema.ldif
+ $ ldapadd -x -c -W -D"dc=admin,dc=openstack,dc=org" -f /tmp/keystone_ldap_schema.ldif
+ $ ldapsearch -x -W -D"cn=admin,dc=openstack,dc=org" -b dc=openstack,dc=org
+```
+
 
 #### Docker container:
 You can also easily deploy a openldap container:
 
+```
+ $ sudo docker run --name my-openldap-container \
+          --env LDAP_ORGANISATION="openstack" \
+          --env LDAP_DOMAIN="openstack.org" \
+          --env LDAP_ADMIN_PASSWORD="4pass1w0rd" \
+          --detach osixia/openldap:1.1.7
+```
 
 ### Populate LDAP
 
@@ -85,20 +101,54 @@ The following steps are needed to populate a LDAP with users and groups.
 
 - Configuracion schema [keystone_ldap_schema](./keystone_ldap_schema.py)
 ```
- $ python ./keystone_ldap_schema.py cn=openstack,cn=org openstack > /tmp/openstack_schema.ldif
- $ ldapadd -x -W -D"cn=admin,dc=openstack,dc=org" -f /tmp/openstack_schema.ldif
+ $ python ./keystone_ldap_schema.py dc=openstack,dc=org openstack > /tmp/openstack_schema.ldif
+ $ ldapadd -x -c -W -D"cn=admin,dc=openstack,dc=org" -f /tmp/openstack_schema.ldif
 ```
 
 - Add a new User to LDAP: [user template](./user.ldif)
 ```
- $ ldapadd -x -W -D "cn=admin,dc=openstack,dc=org" -f user.ldif
- $ ldappasswd -s 4pass1w0rd -W -D "cn=admin,dc=openstack,dc=org" -x "uid=adm1,ou=users,dc=openstack,dc=org"
+ $ ldapadd -x -c -W -D "cn=admin,dc=openstack,dc=org" -f user.ldif
+ $ ldappasswd -s 4pass1w0rd -W -D "cn=admin,dc=openstack,dc=org" -x "uid=adm,ou=users,dc=openstack,dc=org"
 ```
 
 - Add a new Group to LDAP with their users [group template](./group.ldif)
 ```
- $ ldapadd -x -W -D "cn=admin,dc=openstack,dc=org" -f group.ldif
+ $ ldapadd -x -c -W -D "cn=admin,dc=openstack,dc=org" -f group.ldif
 ```
+
+#### Populate LDAP (for ldap in a docker container)
+
+The following steps are the same that above but for the case of LDAP is in a docker like proposed:
+
+- Copy ldif files to container:
+```
+ $ sudo docker cp /tmp/openstack_schema.ldif my-openldap-container:/tmp
+ $ sudo docker cp group.ldif my-openldap-container:/tmp
+ $ sudo docker cp user.ldif my-openldap-container:/tmp
+```
+
+- Check ldap docker container configuration:
+```
+ $ sudo docker exec my-openldap-container ldapsearch -x -h localhost -b dc=openstack,dc=org -D "cn=admin,dc=openstack,dc=org" -w 4pass1w0rd
+```
+
+- Populate:
+```
+ $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -f /tmp/openstack_schema.ldif
+
+ $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -f /tmp/user.ldif
+
+ $ sudo docker exec my-openldap-container ldappasswd -s 4pass1w0rd -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -x "uid=adm,ou=users,dc=openstack,dc=org"
+
+ $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -f /tmp/group.ldif
+```
+
+- Check ldap docker final ldap configuration:
+```
+ $ sudo docker exec my-openldap-container ldapsearch -x -h localhost -w 4pass1w0rd -D "cn=admin,dc=openstack,dc=org" -b "dc=openstack,dc=org" "(objectclass=*)"
+
+```
+
 
 ## Adapt existing LDAP (creating needed groups)
 
