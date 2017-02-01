@@ -84,11 +84,12 @@ Follow this guide about [install an OpenLDAP for Keystone](https://wiki.openstac
 You can also easily deploy a openldap container:
 
 ```
- $ sudo docker run --name my-openldap-container \
+ $ sudo docker run \
+          --name my-openldap-container \
           --env LDAP_ORGANISATION="openstack" \
           --env LDAP_DOMAIN="openstack.org" \
           --env LDAP_ADMIN_PASSWORD="<ldap_admin_password>" \
-          --detach osixia/openldap:1.1.7
+          --detach -p 389:389 osixia/openldap:1.1.7
 ```
 
 ### Populate LDAP
@@ -128,7 +129,7 @@ The following steps are the same that above but for the case of LDAP is in a doc
  $ sudo docker exec my-openldap-container ldapsearch -x -h localhost -b dc=openstack,dc=org -D "cn=admin,dc=openstack,dc=org" -w <ldap_admin_password>
 ```
 
-- Populate:
+- Configure and populate:
 ```
  $ sudo docker exec my-openldap-container ldapadd -x -c -h localhost -w <ldap_admin_password> -D "cn=admin,dc=openstack,dc=org" -f /tmp/openstack_schema.ldif
 
