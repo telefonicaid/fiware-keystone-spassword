@@ -78,7 +78,7 @@ sudo service openstack-keystone restart
 
 Uncompress tgz file plugin into python site-packages directory.
 Make a soft link from keystone contrib directory to that directory.
-For deep details follow [RPM spec steps ][./keystone-spassword.spec).
+For more details see [RPM spec steps ][./keystone-spassword.spec).
 
 
 ### Install Keystone
