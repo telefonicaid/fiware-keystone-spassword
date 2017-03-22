@@ -83,7 +83,7 @@ For deep details follow [RPM spec steps ][./keystone-spassword.spec).
 
 ### Install Keystone
 
-There is a complete guide to install step by step keystone:
+There is a complete guide to install step by step keystone por development purposes:
 
 https://github.com/telefonicaid/fiware-pep-steelskin/blob/master/keystoneInstallation.md
 
