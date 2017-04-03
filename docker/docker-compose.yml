@@ -32,6 +32,8 @@ keypass:
     - "17070:7070"
     - "7071:7071"
   command: -dbhost mysql
+  environment:
+    - DBTIMEOUT=200
 
 keystone:
   image: telefonicaiot/fiware-keystone-spassword
@@ -42,6 +44,8 @@ keystone:
   ports:
     - "5001:5001"
   command: -dbhost mysql -default_pwd 4pass1w0rd -mysql_pwd iotonpremise
+  environment:
+    - DBTIMEOUT=200
 
 orchestrator:
   image: telefonicaiot/orchestrator
