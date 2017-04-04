@@ -39,7 +39,7 @@ sleep 5
 
 # TODO: Get admin id
 
-export OS_SERVICE_TOKEN=ADMIN
+export OS_SERVICE_TOKEN=${KEYSTONE_ADMIN_PASSWORD}
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
@@ -75,3 +75,4 @@ chkconfig openstack-keystone on
 # Ensure db is migrated to current keystone version
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
+

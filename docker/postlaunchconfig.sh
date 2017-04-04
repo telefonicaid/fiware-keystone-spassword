@@ -28,9 +28,12 @@ if [ "${MYSQL_PASSWORD_ARG}" == "-mysql_pwd" ]; then
     MYSQL_ROOT_PASSWORD="${MYSQL_PASSWORD_VALUE}"
 fi
 
+# Set admin token correctly before
+openstack-config --set /etc/keystone/keystone.conf DEFAULT admin_token ${KEYSTONE_ADMIN_PASSWORD}
+
 if [ "${DB_HOST_ARG}" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-    database connection mysql://keystone:${KEYSTONE_ADMIN_PASSWORD}@${DB_HOST_VALUE}/keystone;
+    database connection mysql://keystone:${KEYSTONE_ADMIN_PASSWORD}@${DB_HOST_VALUE}/keystone
     # Ensure previous keystone database does not exist. Needed MySQL root access
     mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_ROOT_PASSWORD} -e 'exit'
     if [ $? == 0 ]; then
@@ -42,6 +45,7 @@ EOF
         mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_ROOT_PASSWORD} <<EOF
 CREATE DATABASE keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY '${KEYSTONE_ADMIN_PASSWORD}';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' IDENTIFIED BY '${KEYSTONE_ADMIN_PASSWORD}';
 EOF
     else
         echo "INFO: No access MySQL root access"
@@ -65,16 +69,18 @@ EOF
 
 fi
 
+echo "INFO: Launch /usr/bin/keystone-manage db_sync"
 /usr/bin/keystone-manage db_sync
+echo "INFO: Launch /usr/bin/keystone-manage db_sync --extension spassword"
 /usr/bin/keystone-manage db_sync --extension spassword
 
 /usr/bin/keystone-all &
 keystone_all_pid=`echo $!`
 sleep 5
 
-# Create Services
+echo "INFO: Create Services"
 
-export OS_SERVICE_TOKEN=ADMIN
+export OS_SERVICE_TOKEN=${KEYSTONE_ADMIN_PASSWORD}
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
@@ -224,3 +230,4 @@ openstack-config --set /etc/keystone/keystone.conf \
 kill -9 ${keystone_all_pid}
 sleep 3
 chkconfig openstack-keystone on
+

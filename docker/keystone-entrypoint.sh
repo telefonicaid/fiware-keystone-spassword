@@ -84,3 +84,4 @@ fi
 echo "INFO: keystone entrypoint - keystone-all"
 /usr/bin/keystone-all &
 tail -f /var/log/keystone/keystone.log
+
