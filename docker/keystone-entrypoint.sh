@@ -36,13 +36,47 @@ if [ "${DB_HOST_ARG}" == "-dbhost" ]; then
 
     # Check if postlaunchconfig was executed
     chkconfig openstack-keystone --level 3
-    if [ "$?" == "1" ]; then
-        # Check if previous DB data exists
-        mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_PASSWORD_VALUE} -e 'use keystone'
-        if [ "$?" == "1" ]; then
-            /opt/keystone/postlaunchconfig.sh ${DB_HOST_ARG} ${DB_HOST_VALUE} ${DEFAULT_PASSWORD_ARG} ${DEFAULT_PASSWORD_VALUE} ${MYSQL_PASSWORD_ARG} ${MYSQL_PASSWORD_VALUE}
+    if [ $? == 1 ]; then
+        # Check if you have MySQL root access
+        mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_PASSWORD_VALUE} -e 'exit'
+        if [ $? == 0 ]; then
+            echo "INFO: You have MySQL root access"
+            # Check if you have a user and database created
+            mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -ukeystone --password=${DEFAULT_PASSWORD_VALUE} -e 'use keystone'
+            if [ $? == 0 ]; then
+                echo "INFO: You have keystone MySQL database and user"
+                # Check if keystone is installed
+                mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -ukeystone --password=${DEFAULT_PASSWORD_VALUE} -e 'use keystone; select count(*) from user'
+                if [ $? == 0 ]; then
+                    echo "INFO: Keystone is already installed"
+                    /opt/keystone/postlaunchconfig_update.sh ${DB_HOST_ARG} ${DB_HOST_VALUE} ${DEFAULT_PASSWORD_ARG} ${DEFAULT_PASSWORD_VALUE} ${MYSQL_PASSWORD_ARG} ${MYSQL_PASSWORD_VALUE}
+                else
+                    echo "INFO: Keystone is not installed"
+                    /opt/keystone/postlaunchconfig.sh ${DB_HOST_ARG} ${DB_HOST_VALUE} ${DEFAULT_PASSWORD_ARG} ${DEFAULT_PASSWORD_VALUE} ${MYSQL_PASSWORD_ARG} ${MYSQL_PASSWORD_VALUE}
+                fi
+            else
+                echo "INFO: You don't have keystone MySQL database and user"
+                /opt/keystone/postlaunchconfig.sh ${DB_HOST_ARG} ${DB_HOST_VALUE} ${DEFAULT_PASSWORD_ARG} ${DEFAULT_PASSWORD_VALUE} ${MYSQL_PASSWORD_ARG} ${MYSQL_PASSWORD_VALUE}
+            fi
         else
-            /opt/keystone/postlaunchconfig_update.sh ${DB_HOST_ARG} ${DB_HOST_VALUE} ${DEFAULT_PASSWORD_ARG} ${DEFAULT_PASSWORD_VALUE} ${MYSQL_PASSWORD_ARG} ${MYSQL_PASSWORD_VALUE}
+            echo "INFO: No access MySQL root access"
+            # Check if you have a user and database created
+            mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -ukeystone --password=${DEFAULT_PASSWORD_VALUE} -e 'use keystone'
+            if [ $? == 0 ]; then
+                echo "INFO: You have keystone MySQL database and user"
+                # Check if keystone is installed
+                mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -ukeystone --password=${DEFAULT_PASSWORD_VALUE} -e 'use keystone; select count(*) from user'
+                if [ $? == 0 ]; then
+                    echo "INFO: Keystone is already installed"
+                    /opt/keystone/postlaunchconfig_update.sh ${DB_HOST_ARG} ${DB_HOST_VALUE} ${DEFAULT_PASSWORD_ARG} ${DEFAULT_PASSWORD_VALUE} ${MYSQL_PASSWORD_ARG} ${MYSQL_PASSWORD_VALUE}
+                else
+                    echo "INFO: Keystone is not installed"
+                    /opt/keystone/postlaunchconfig.sh ${DB_HOST_ARG} ${DB_HOST_VALUE} ${DEFAULT_PASSWORD_ARG} ${DEFAULT_PASSWORD_VALUE} ${MYSQL_PASSWORD_ARG} ${MYSQL_PASSWORD_VALUE}
+                fi
+            else
+                echo "ERROR: You don't have keystone MySQL database and user and cannot create"
+                exit 2
+            fi
         fi
     fi
 fi

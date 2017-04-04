@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "INFO: postlaunchconfig INI"
+
 KEYSTONE_ADMIN_PASSWORD=keystone
 MYSQL_ROOT_PASSWORD=""
 
@@ -29,14 +31,38 @@ fi
 if [ "${DB_HOST_ARG}" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql://keystone:${KEYSTONE_ADMIN_PASSWORD}@${DB_HOST_VALUE}/keystone;
-    # Ensure previous keystone database does not exist
-    mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_ROOT_PASSWORD} <<EOF
+    # Ensure previous keystone database does not exist. Needed MySQL root access
+    mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_ROOT_PASSWORD} -e 'exit'
+    if [ $? == 0 ]; then
+        echo "INFO: You have MySQL root access. Try to drop keystone user and database and create new"
+        mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_ROOT_PASSWORD} <<EOF
 DROP DATABASE keystone;
+DROP USER 'keystone'@'%';
 EOF
-    mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_ROOT_PASSWORD} <<EOF
+        mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_ROOT_PASSWORD} <<EOF
 CREATE DATABASE keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY '${KEYSTONE_ADMIN_PASSWORD}';
 EOF
+    else
+        echo "INFO: No access MySQL root access"
+        # Check if you have a user and database created
+        mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -ukeystone --password=${KEYSTONE_ADMIN_PASSWORD} -e 'use keystone'
+        if [ $? == 0 ]; then
+            echo "INFO: You have keystone MySQL database and user"
+            # Check if keystone is installed
+            mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -ukeystone --password=${KEYSTONE_ADMIN_PASSWORD} -e 'use keystone; select count(*) from user'
+            if [ $? == 0 ]; then
+                echo "ERROR: No access MySQL root access and keystone is installed. The keystone user and database should be deleted from MySQL database manually"
+                exit 2
+            else
+                echo "INFO: Keystone is not installed"
+            fi
+        else
+            echo "ERROR: You don't have keystone MySQL database and user and cannot create"
+            exit 2
+        fi
+    fi
+
 fi
 
 /usr/bin/keystone-manage db_sync

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "INFO: postlaunchconfig_update INI"
+
 KEYSTONE_ADMIN_PASSWORD=keystone
 MYSQL_ROOT_PASSWORD=""
 
@@ -28,7 +30,7 @@ fi
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-    database connection mysql://keystone:${KEYSTONE_ADMIN_PASSWORD}@$${DB_HOST_VALUE}/keystone;
+    database connection mysql://keystone:${KEYSTONE_ADMIN_PASSWORD}@${DB_HOST_VALUE}/keystone;
 fi
 
 /usr/bin/keystone-all &
@@ -41,7 +43,7 @@ export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
-ID_ADMIN_DOMAIN=`mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -uroot --password=${MYSQL_PASSWORD_VALUE} -e 'use keystone; select * from domain where name="admin_domain";' | awk '$2=="admin_domain" {print $1}'`
+ID_ADMIN_DOMAIN=`mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -ukeystone --password=${KEYSTONE_ADMIN_PASSWORD} -e 'use keystone; select * from domain where name="admin_domain";' | awk '$2=="admin_domain" {print $1}'`
 
 curl -s -L --insecure https://github.com/openstack/keystone/raw/liberty-eol/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
