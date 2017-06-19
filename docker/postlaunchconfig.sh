@@ -74,6 +74,7 @@ echo "INFO: Launch /usr/bin/keystone-manage db_sync"
 echo "INFO: Launch /usr/bin/keystone-manage db_sync --extension spassword"
 /usr/bin/keystone-manage db_sync --extension spassword
 
+echo "INFO: First start of /usr/bin/keystone-all"
 /usr/bin/keystone-all &
 keystone_all_pid=`echo $!`
 sleep 5
@@ -84,15 +85,24 @@ export OS_SERVICE_TOKEN=${KEYSTONE_ADMIN_PASSWORD}
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
+echo "INFO: Create user admin"
 keystone user-create --name=admin --pass=${KEYSTONE_ADMIN_PASSWORD} --email=admin@no.com 
+echo "INFO: Create role admin"
 keystone role-create --name=admin
+echo "INFO: Create tenant admin"
 keystone tenant-create --name=admin --description="Admin Tenant"
+echo "INFO: Add role admin to user admin and tenant admin"
 keystone user-role-add --user=admin --tenant=admin --role=admin
+echo "INFO: Create role service"
 keystone role-create --name=service
+echo "INFO: Create user iotagent"
 keystone user-create --name=iotagent --pass=${KEYSTONE_ADMIN_PASSWORD} --email=iotagent@no.com
+echo "INFO: Create user nagios"
 keystone user-create --name=nagios --pass=${KEYSTONE_ADMIN_PASSWORD} --email=nagios@no.com
+echo "INFO: Add role admin to user nagios and tenant admin"
 keystone user-role-add --user=nagios --tenant=admin --role=admin
 
+echo "INFO: Obtain user list and find iotagent user"
 IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
 
 ADMIN_TOKEN=$(\
@@ -184,6 +194,7 @@ curl "http://${KEYSTONE_HOST}/v3/roles?name=admin" \
     | jq .roles[0].id | tr -d '"' )
 echo "ADMIN_ROLE_ID: ${ADMIN_ROLE_ID}"
 
+echo "INFO: Create domain admin_domain user cloud_admin role admin"
 curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_ADMIN}/roles/${ADMIN_ROLE_ID} \
     -s                                   \
     -i                                   \
@@ -197,12 +208,14 @@ curl "http://${KEYSTONE_HOST}/v3/roles?name=service" \
     | jq .roles[0].id | tr -d '"' )
 echo "SERVICE_ROLE_ID: ${SERVICE_ROLE_ID}"
 
+echo "INFO: Create domain admin_domain user pep role service"
 curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_SERVICE}/roles/${SERVICE_ROLE_ID} \
     -s                                   \
     -i                                   \
     -H "X-Auth-Token: ${ADMIN_TOKEN}"    \
     -H "Content-Type: application/json"
 
+echo "INFO: Create and update policies"
 curl -s -L --insecure https://github.com/openstack/keystone/raw/liberty-eol/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
        | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
@@ -219,15 +232,17 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/liberty-eol/etc/
        | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
        | tee /etc/keystone/policy.json
 
-# Set another ADMIN TOKEN
+echo "INFO: Set another ADMIN TOKEN"
 openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT admin_token ${KEYSTONE_ADMIN_PASSWORD}
 
-# Exclude some users from spassword
+echo "INFO: Exclude some users from spassword"
 openstack-config --set /etc/keystone/keystone.conf \
     spassword pwd_user_blacklist ${ID_CLOUD_ADMIN},${ID_CLOUD_SERVICE},${IOTAGENT_ID}
 
+echo "INFO: Kill /usr/bin/keystone-all"
 kill -9 ${keystone_all_pid}
 sleep 3
+echo "INFO: Set openstack-keystone to start at boot"
 chkconfig openstack-keystone on
 

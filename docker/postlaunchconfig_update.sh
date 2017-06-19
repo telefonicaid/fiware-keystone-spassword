@@ -33,6 +33,7 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     database connection mysql://keystone:${KEYSTONE_ADMIN_PASSWORD}@${DB_HOST_VALUE}/keystone;
 fi
 
+echo "INFO: First start of /usr/bin/keystone-all"
 /usr/bin/keystone-all &
 keystone_all_pid=`echo $!`
 sleep 5    
@@ -44,7 +45,9 @@ export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
 ID_ADMIN_DOMAIN=`mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -ukeystone --password=${KEYSTONE_ADMIN_PASSWORD} -e 'use keystone; select * from domain where name="admin_domain";' | awk '$2=="admin_domain" {print $1}'`
+echo "ID_ADMIN_DOMAIN: ${ID_ADMIN_DOMAIN}"
 
+echo "INFO: Create and update policies"
 curl -s -L --insecure https://github.com/openstack/keystone/raw/liberty-eol/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
        | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
@@ -61,18 +64,20 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/liberty-eol/etc/
        | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
        | tee /etc/keystone/policy.json
 
+echo "INFO: Launch /usr/bin/keystone-manage db_sync"
 /usr/bin/keystone-manage db_sync
 
-# Set another ADMIN TOKEN
+echo "INFO: Set another ADMIN TOKEN"
 openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT admin_token ${KEYSTONE_ADMIN_PASSWORD}
 
-
+echo "INFO: Kill /usr/bin/keystone-all"
 kill -9 ${keystone_all_pid}
 sleep 3
+echo "INFO: Set openstack-keystone to start at boot"
 chkconfig openstack-keystone on
 
-# Ensure db is migrated to current keystone version
+echo "INFO: Ensure db is migrated to current keystone version"
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
 
