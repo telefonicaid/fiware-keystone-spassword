@@ -40,8 +40,8 @@ sleep 5
 
 # TODO: Get admin id
 
-export OS_SERVICE_TOKEN=${KEYSTONE_ADMIN_PASSWORD}
-export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
+export SERVICE_TOKEN=${KEYSTONE_ADMIN_PASSWORD}
+export SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
 ID_ADMIN_DOMAIN=`mysql -s -h ${DB_HOST_NAME} -P ${DB_HOST_PORT} -ukeystone --password=${KEYSTONE_ADMIN_PASSWORD} -e 'use keystone; select * from domain where name="admin_domain";' | awk '$2=="admin_domain" {print $1}'`

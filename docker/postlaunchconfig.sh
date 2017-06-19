@@ -81,8 +81,8 @@ sleep 5
 
 echo "INFO: Create Services"
 
-export OS_SERVICE_TOKEN=${KEYSTONE_ADMIN_PASSWORD}
-export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
+export SERVICE_TOKEN=${KEYSTONE_ADMIN_PASSWORD}
+export SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
 echo "INFO: Create user admin"
