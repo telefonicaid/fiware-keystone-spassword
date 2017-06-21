@@ -77,13 +77,24 @@ echo "INFO: Launch /usr/bin/keystone-manage db_sync --extension spassword"
 echo "INFO: First start of /usr/bin/keystone-all"
 /usr/bin/keystone-all &
 keystone_all_pid=`echo $!`
-sleep 5
 
-echo "INFO: Create Services"
-
+# Keystone variables for command line use
 export SERVICE_TOKEN=${KEYSTONE_ADMIN_PASSWORD}
 export SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
+
+echo "INFO: Wait until SERVICE_ENDPOINT is up or exit if timeout of <${DBTIMEOUT}>"
+# Current time in seconds
+STARTTIME=$(date +%s)
+while ! tcping -q -t 1 127.0.0.1 35357
+do
+  [[ $(($(date +%s) - ${DBTIMEOUT})) -lt ${STARTTIME} ]] || { echo "ERROR: Timeout SERVICE_ENDPOINT <127.0.0.1:35357> Exceeds <${DBTIMEOUT}>" >&2; exit 3; }
+  echo "INFO: Wait for SERVICE_ENDPOINT <${DB_HOST_NAME}:${DB_HOST_PORT}>"
+  sleep 1
+done
+echo "INFO: It took $(($(date +%s) - ${STARTTIME})) seconds to startup"
+
+echo "INFO: Create Services"
 
 echo "INFO: Create user admin"
 keystone user-create --name=admin --pass=${KEYSTONE_ADMIN_PASSWORD} --email=admin@no.com 
@@ -242,7 +253,6 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 echo "INFO: Kill /usr/bin/keystone-all"
 kill -9 ${keystone_all_pid}
-sleep 3
 echo "INFO: Set openstack-keystone to start at boot"
 chkconfig openstack-keystone on
 
