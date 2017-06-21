@@ -24,15 +24,16 @@ if [ "${DB_HOST_ARG}" == "-dbhost" ]; then
     echo "INFO: DB_HOST_NAME <${DB_HOST_NAME}>"
     echo "INFO: DB_HOST_PORT <${DB_HOST_PORT}>"
     [[ "${DB_HOST_NAME}" == "" ]] && echo "ERROR: MySQL hostname not provided" >&2 && exit 2
-    # Wait until DB is up or exit if timeout
+    echo "INFO: Wait until DB is up or exit if timeout of <${DBTIMEOUT}>"
     # Current time in seconds
     STARTTIME=$(date +%s)
-    while ! tcping -t 1 ${DB_HOST_NAME} ${DB_HOST_PORT}
+    while ! tcping -q -t 1 ${DB_HOST_NAME} ${DB_HOST_PORT}
     do
-        [[ $(($(date +%s) - ${DBTIMEOUT})) -lt ${STARTTIME} ]] || { echo "ERROR: Timeout MySQL endpoint <${DB_HOST_NAME}:${DB_HOST_PORT}>" >&2; exit 3; }
+        [[ $(($(date +%s) - ${DBTIMEOUT})) -lt ${STARTTIME} ]] || { echo "ERROR: Timeout MySQL endpoint <${DB_HOST_NAME}:${DB_HOST_PORT}> Exceeds <${DBTIMEOUT}" >&2; exit 3; }
         echo "INFO: Wait for MySQL endpoint <${DB_HOST_NAME}:${DB_HOST_PORT}>"
         sleep 2
     done
+    echo "INFO: It took $(($(date +%s) - ${STARTTIME})) seconds to startup"
 
     # Check if postlaunchconfig was executed
     chkconfig openstack-keystone --level 3
