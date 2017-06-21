@@ -24,7 +24,7 @@ RUN \
     yum -y install rpm-build tar findutils && \
     yum -y install python python27  && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-liberty/rdo-release-liberty-5.noarch.rpm?raw=true' > rdo-release-liberty-5.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-liberty-5.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-liberty-5.noarch.rpm && rm -f rdo-release-liberty-5.noarch.rpm && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install unzip tcping jq  && \
