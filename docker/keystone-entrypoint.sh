@@ -3,8 +3,12 @@ echo "[ keystone-entrypoint - starts... ] "
 
 # Check argument DB_HOST
 DB_HOST_ARG=${1}
+# DB_HOST_VALUE can be hostname[:port]
 DB_HOST_VALUE=${2}
-DB_HOST_PORT=3306
+DB_HOST_NAME="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $1}')"
+DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
+# Default MySQL port 3306
+[[ "${DB_HOST_PORT}" == "" ]] && DB_HOST_PORT=3306
 
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
