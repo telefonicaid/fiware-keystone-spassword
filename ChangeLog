@@ -1,5 +1,3 @@
-Allow mysql db port in docker arg --dbhost
-
 1.2.0
 
 Update Docker to use keystone liberty version
