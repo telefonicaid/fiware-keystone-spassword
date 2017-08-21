@@ -1,3 +1,4 @@
+Use mysql db port in docker postlauchconfig script
 Allow mysql db port in docker arg --dbhost
 
 1.2.0

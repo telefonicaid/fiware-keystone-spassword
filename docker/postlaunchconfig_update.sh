@@ -4,7 +4,12 @@ KEYSTONE_ADMIN_PASSWORD=4pass1w0rd
 MYSQL_ROOT_PASSWORD="iotonpremise"
 
 DB_HOST_ARG=${1}
+# DB_HOST_VALUE can be hostname[:port]
 DB_HOST_VALUE=${2}
+DB_HOST_NAME="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $1}')"
+DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
+# Default MySQL port 3306
+[[ "${DB_HOST_PORT}" == "" ]] && DB_HOST_PORT=3306
 
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
@@ -22,7 +27,7 @@ fi
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     database connection mysql://keystone:keystone@$DB_HOST_VALUE/keystone;
+                     database connection mysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
 
 fi
 
@@ -36,7 +41,7 @@ export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
-ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_VALUE -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from domain where name="admin_domain";' | awk '$2=="admin_domain" {print $1}'`
+ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from domain where name="admin_domain";' | awk '$2=="admin_domain" {print $1}'`
 
 curl -s -L --insecure https://github.com/openstack/keystone/raw/liberty-eol/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
