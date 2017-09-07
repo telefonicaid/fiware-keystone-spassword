@@ -119,7 +119,7 @@ class Identity(Identity):
                 expiration_date = datetime.datetime.utcnow() - \
                   datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                 if (spassword_ref['creation_time'] < expiration_date):
-                    LOG.info('password of user %s %s expired ' % (user_ref['id'],
+                    LOG.warn('password of user %s %s expired ' % (user_ref['id'],
                                                                   user_ref['name']))
                     res = False
                     auth_error_msg = ('Password expired for user %s. Contact with your ' +
@@ -143,7 +143,7 @@ class Identity(Identity):
                     if (spassword_ref['last_login_attempt_time'] > \
                         datetime.datetime.utcnow() - \
                         datetime.timedelta(minutes=CONF.spassword.pwd_block_minutes)):
-                        LOG.debug('max number of tries reach for login %s' % spassword_ref['user_name'])
+                        LOG.warn('max number of tries reach for login %s' % spassword_ref['user_name'])
                         auth_error_msg = ('Password temporarily blocked for user %s due to reach' +
                                           ' max number of tries. Contact with your ' +
                                           ' admin') % spassword_ref['user_name']

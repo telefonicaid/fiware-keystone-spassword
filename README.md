@@ -36,7 +36,18 @@ smtp_from = 'smtpuser'
 
 keystone-spassword enables two new authentication and identity plugins, which extends
 default provided plugins to ensure the use of strong passwords, to check expiration time
-and to control the number of tries that an user can use badly their password before be blocked
+and to control the number of tries that an user can use badly their password before be blocked.
+This way keystone-spassword extend token data returned from keystone to user by
+"POST /v3/auth/tokens", including new fields in 'extra' dictionary of 'token':
+
+```
+ "extras": {
+     "password_creation_time": "2016-12-01T08:55:34Z",
+     "pwd_user_in_blacklist": false,
+     "password_expiration_time": "2017-12-01T08:55:34Z"
+     },
+```
+
 
 ```
 [auth]
@@ -65,7 +76,16 @@ sudo service openstack-keystone restart
 
 ### TGZ installaton
 
-**TBD**
+Uncompress tgz file plugin into python site-packages directory.
+Make a soft link from keystone contrib directory to that directory.
+For more details see [RPM spec steps ][./keystone-spassword.spec).
+
+
+### Install Keystone
+
+There is a complete guide to install step by step keystone for development purposes:
+
+https://github.com/telefonicaid/fiware-pep-steelskin/blob/master/keystoneInstallation.md
 
 ## Usage
 
@@ -131,6 +151,6 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 ```
 
 
-
+## [LDAP integration](docs/iotp_ldap.md)
 
 
