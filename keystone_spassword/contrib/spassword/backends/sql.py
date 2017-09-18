@@ -157,9 +157,9 @@ class Identity(Identity):
         if CONF.spassword.enabled:
             session = sql.get_session()
             spassword_ref = session.query(SPasswordModel).get(user_id)
+            current_attempt_time = datetime.datetime.utcnow()
 
             if spassword_ref:
-                current_attempt_time = datetime.datetime.utcnow()
                 if not res:
                     LOG.debug('wrong password provided at login %s' % spassword_ref['user_name'])
                     spassword_ref['login_attempts'] += 1
@@ -170,7 +170,7 @@ class Identity(Identity):
                     res['extras'] = {
                         "password_creation_time": timeutils.isotime(spassword_ref['creation_time']),
                         "password_expiration_time": timeutils.isotime(expiration_date),
-                        "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist
+                        "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist,
                         "last_login_attempt_time": current_attempt_time
                     }
                 # Update login attempt time
@@ -183,8 +183,8 @@ class Identity(Identity):
                 data_user['user_id'] = user['id']
                 data_user['user_name'] = user['name']
                 data_user['domain_id'] = user['domain_id']
-                data_user['creation_time'] = datetime.datetime.utcnow()
-                data_user['last_login_attempt_time'] = datetime.datetime.utcnow()
+                data_user['creation_time'] = current_attempt_time
+                data_user['last_login_attempt_time'] = current_attempt_time
                 if not res:
                     data_user['login_attempts'] = 1
                 else:
