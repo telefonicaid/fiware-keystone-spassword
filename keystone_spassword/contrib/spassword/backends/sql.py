@@ -159,6 +159,7 @@ class Identity(Identity):
             spassword_ref = session.query(SPasswordModel).get(user_id)
 
             if spassword_ref:
+                current_attempt_time = datetime.datetime.utcnow()
                 if not res:
                     LOG.debug('wrong password provided at login %s' % spassword_ref['user_name'])
                     spassword_ref['login_attempts'] += 1
@@ -170,9 +171,10 @@ class Identity(Identity):
                         "password_creation_time": timeutils.isotime(spassword_ref['creation_time']),
                         "password_expiration_time": timeutils.isotime(expiration_date),
                         "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist
+                        "last_login_attempt_time": current_attempt_time
                     }
                 # Update login attempt time
-                spassword_ref['last_login_attempt_time'] = datetime.datetime.utcnow()
+                spassword_ref['last_login_attempt_time'] = current_attempt_time
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
