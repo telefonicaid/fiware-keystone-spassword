@@ -1,5 +1,7 @@
+1.2.1
 Use mysql db port in docker postlauchconfig script
 Allow mysql db port in docker arg --dbhost
+Support for integrate with LDAP
 
 1.2.0
 
