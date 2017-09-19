@@ -1,3 +1,6 @@
+
+Set centos mirror to 7.3.1611 for docker image
+	
 1.2.1
 Use mysql db port in docker postlauchconfig script
 Allow mysql db port in docker arg --dbhost
