@@ -171,7 +171,7 @@ class Identity(Identity):
                         "password_creation_time": timeutils.isotime(spassword_ref['creation_time']),
                         "password_expiration_time": timeutils.isotime(expiration_date),
                         "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist,
-                        "last_login_attempt_time": current_attempt_time
+                        "last_login_attempt_time": spassword_ref['last_login_attempt_time']
                     }
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
