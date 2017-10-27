@@ -1,4 +1,4 @@
-FROM centos:centos7.3.1611
+FROM centos:centos7
 
 MAINTAINER IoT team
 
@@ -22,8 +22,8 @@ RUN \
     yum -y install python python27  && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-liberty/rdo-release-liberty-5.noarch.rpm?raw=true' > rdo-release-liberty-5.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-liberty-5.noarch.rpm && \
-    # Set Centos mirror to 7.3 to ensure openstack liberty version
-    sed -i 's/7/7.3.1611/g' /etc/yum.repos.d/rdo-release.repo && \
+    # Set Centos mirror to ctinetworks to ensure openstack liberty version
+    sed -i 's/mirror.centos.org/distro.ctinetworks.com\/mirror/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install unzip tcping jq  && \
