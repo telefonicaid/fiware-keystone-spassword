@@ -4,7 +4,12 @@ KEYSTONE_ADMIN_PASSWORD=4pass1w0rd
 MYSQL_ROOT_PASSWORD="iotonpremise"
 
 DB_HOST_ARG=${1}
+# DB_HOST_VALUE can be hostname[:port]
 DB_HOST_VALUE=${2}
+DB_HOST_NAME="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $1}')"
+DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
+# Default MySQL port 3306
+[[ "${DB_HOST_PORT}" == "" ]] && DB_HOST_PORT=3306
 
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
@@ -23,12 +28,12 @@ fi
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     database connection mysql://keystone:keystone@$DB_HOST_VALUE/keystone;
+                     database connection mysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
     # Ensure previous keystone database does not exist
-    mysql -h $DB_HOST_VALUE -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
+    mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
 DROP DATABASE keystone;
 EOF
-    mysql -h $DB_HOST_VALUE -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
+    mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
 CREATE DATABASE keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
     IDENTIFIED BY 'keystone';
