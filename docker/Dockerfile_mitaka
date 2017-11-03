@@ -79,11 +79,18 @@ RUN \
     cd ${dir}/${repo_spassword}-task-upgrade_to_mitaka && \
     source ./${pack_spassword} --with-python27 --with-version 1.4.0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # Patching Mitaka...
+    cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
+    patch -f -p0 < /opt/keystone/common.patch && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
     rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
-    rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm && \
-    patch -f -p0 < /opt/keystone/common.patch
+    rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm
 
+
+# Define the entry point
+ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
+
+EXPOSE 5001
 
