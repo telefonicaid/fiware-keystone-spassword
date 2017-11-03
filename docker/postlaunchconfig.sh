@@ -176,7 +176,7 @@ curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLO
       -H "X-Auth-Token: $ADMIN_TOKEN"    \
       -H "Content-Type: application/json"
 
-curl -s -L --insecure https://github.com/openstack/keystone/raw/mitaka-eol/etc/policy.v3cloudsample.json \
+curl -s -L --insecure https://github.com/openstack/keystone/raw/newton-eol/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
