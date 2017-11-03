@@ -20,8 +20,10 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python python27  && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-mitaka/rdo-release-mitaka-6.noarch.rpm?raw=true' > rdo-release-mitaka-6.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-mitaka-6.noarch.rpm && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-mitaka/rdo-release-mitaka-7.noarch.rpm?raw=true' > rdo-release-mitaka-7.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-mitaka-7.noarch.rpm && \
+    # Set Centos mirror to ctinetworks to ensure openstack Mitaka version
+    sed -i 's/mirror.centos.org/distro.ctinetworks.com\/mirror/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install unzip tcping jq  && \
