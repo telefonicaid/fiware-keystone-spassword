@@ -1,5 +1,5 @@
---- /usr/lib/python2.7/site-packages/keystone/token/providers/common.py	2017-11-03 12:23:48.935963698 +0000
-+++ /usr/lib/python2.7/site-packages/keystone/token/providers/common.py_new	2017-11-03 12:30:33.426329981 +0000
+--- common.py	2017-11-03 12:23:48.935963698 +0000
++++ common.py_new	2017-11-03 12:30:33.426329981 +0000
 @@ -498,11 +498,13 @@
              LOG.error(msg)
              raise exception.UnexpectedError(msg)
