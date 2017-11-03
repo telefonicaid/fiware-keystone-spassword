@@ -7,7 +7,7 @@ ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 #ENV KEYSTONE_SCIM_VERSION 1.1.7
 ENV KEYSTONE_SCIM_VERSION task/add_compability_with_mitaka_version
 #ENV KEYSTONE_SPASSWORD_VERSION 1.3.0
-ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
+ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_mitaka
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
@@ -23,8 +23,10 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python python27  && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \    
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-mitaka/rdo-release-mitaka-7.noarch.rpm?raw=true' > rdo-release-mitaka-7.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-mitaka-7.noarch.rpm && \
+    # Set Centos mirror to ctinetworks to ensure openstack Mitaka version
+    sed -i 's/mirror.centos.org/distro.ctinetworks.com\/mirror/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install unzip tcping jq  && \
@@ -74,10 +76,10 @@ RUN \
     dir=~/fiware-keystone && \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
-    cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \
+    cd ${dir}/${repo_spassword}-task-upgrade_to_mitaka && \
     source ./${pack_spassword} --with-python27 --with-version 1.4.0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
-    # Patching Newton...
+    # Patching Mitaka...
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
     patch -f -p0 < /opt/keystone/common.patch && \
     # Cleaning unused files...
