@@ -43,6 +43,7 @@ EOF
 
 fi
 
+/usr/bin/keystone-manage bootstrap
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
 
