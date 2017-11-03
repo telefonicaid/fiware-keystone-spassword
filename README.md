@@ -44,7 +44,8 @@ This way keystone-spassword extend token data returned from keystone to user by
  "extras": {
      "password_creation_time": "2016-12-01T08:55:34Z",
      "pwd_user_in_blacklist": false,
-     "password_expiration_time": "2017-12-01T08:55:34Z"
+     "password_expiration_time": "2017-12-01T08:55:34Z",
+     "last_login_attempt_time": "2017-05-01T06:45:00Z"
      },
 ```
 
