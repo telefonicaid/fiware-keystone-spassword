@@ -26,7 +26,10 @@ RUN \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \    
     # Install keystone dependencies
-    yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
+    yum -y install openstack-utils openstack-keystone python-keystoneclient && \
+    yum -y install httpd mod_wsgi python-openstackclient && \
+    # https://docs.openstack.org/newton/install-guide-rdo/keystone-install.html
+    ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
     yum -y install unzip tcping jq  && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
