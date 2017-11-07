@@ -24,7 +24,8 @@ try: from oslo_utils import timeutils
 except ImportError: from keystone.openstack.common import timeutils
 from keystone import exception
 from keystone.identity.backends.sql import Identity
-from keystone.identity.backends.sql_model import User
+try: keystone.identity.backends.sql import User
+except ImportError: from keystone.identity.backends.sql_model import User
 from keystone_spassword.contrib.spassword import Driver
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
