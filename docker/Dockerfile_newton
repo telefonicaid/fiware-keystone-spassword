@@ -29,7 +29,10 @@ RUN \
     yum -y install openstack-utils openstack-keystone python-keystoneclient && \
     yum -y install httpd mod_wsgi python-openstackclient && \
     # https://docs.openstack.org/newton/install-guide-rdo/keystone-install.html
+    #sed -i 's/ / /g' /etc/httpd/conf/httpd.conf && \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
+    systemctl enable httpd.service && \
+    systemctl start httpd.service && \
     yum -y install unzip tcping jq  && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
