@@ -29,7 +29,7 @@ RUN \
     sed -i 's/mirror.centos.org/distro.ctinetworks.com\/mirror/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
-    yum -y install unzip tcping jq  && \
+    yum -y install unzip tcping jq && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
@@ -41,14 +41,10 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    cache enabled true  && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.fernet.Provider && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.uuid.Provider && \
-    openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql://keystone:keystone@$DB_HOST/keystone && \
     # Set keystone SSL configuration
+    openstack-config --set /etc/keystone/keystone.conf \
+    token provider keystone.token.providers.uuid.Provider && \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
@@ -91,7 +87,6 @@ RUN \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
     rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
     rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm
-
 
 # Define the entry point
 ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
