@@ -4,10 +4,11 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-ENV KEYSTONE_SCIM_VERSION 1.1.7
-ENV KEYSTONE_SPASSWORD_VERSION 1.3.0
+ENV KEYSTONE_SCIM_VERSION 1.1.8
+ENV KEYSTONE_SPASSWORD_VERSION 1.4.0
 
 COPY ./*.sh /opt/keystone/
+COPY ./*.patch /opt/keystone/
 
 WORKDIR /opt/keystone
 
@@ -38,10 +39,10 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.uuid.Provider && \
-    openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql://keystone:keystone@$DB_HOST/keystone && \
     # Set keystone SSL configuration
+    openstack-config --set /etc/keystone/keystone.conf \
+    token provider keystone.token.providers.uuid.Provider && \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
@@ -76,6 +77,9 @@ RUN \
     cd ${dir}/${repo_spassword}-${tag} && \
     source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # Patching Mitaka to enable extra fields in token response
+    cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
+    patch -f -p0 < /opt/keystone/common.patch && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
