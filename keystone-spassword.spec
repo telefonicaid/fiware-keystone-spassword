@@ -33,6 +33,7 @@ cp -a %{_root}/keystone_spassword $RPM_BUILD_ROOT/%{python_lib}
 find $RPM_BUILD_ROOT/%{python_lib}/keystone_spassword -name "*.pyc" -delete
 
 %files
+%defattr(644,root,root,755)
 %{python_lib}/keystone_spassword/*
 
 %post
