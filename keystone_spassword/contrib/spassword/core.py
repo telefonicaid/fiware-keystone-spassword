@@ -53,6 +53,9 @@ CONF.register_opt(cfg.StrOpt('smtp_user', default='user'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_password', default='password'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
 
+CONF.register_opt(cfg.BoolOpt('2fa', default=False), group='spassword')
+CONF.register_opt(cfg.BoolOpt('2fa_verify_enable', default=False), group='spassword')
+CONF.register_opt(cfg.IntOpt('2fa_time_window', default=24), group='spassword')
 
 @dependency.provider('spassword_api')
 class SPasswordManager(manager.Manager):
@@ -109,6 +112,34 @@ class SPasswordManager(manager.Manager):
         LOG.info("User %s deleted in driver manager" % user_id)
         if CONF.spassword.enabled:
             self.driver.remove_user(user_id)
+
+    def user_check_2fa_code(self, user_id, code):
+        user_id = payload['resource_info']
+        LOG.info("User %s check 2fa code in driver manager" % user_id)
+
+        if CONF.spassword.enabled and CONF.spassword.2fa_enabled:
+            if self.driver.already_email_checked(user):
+                return self.driver.check_2fa_code(user, code)
+            else:
+                LOG.debug("User %s has no email checked" % user_id)
+                return False
+
+    def user_ask_check_email_code(self, user_id):
+        user_id = payload['resource_info']
+        LOG.info("User %s ask for a check email code in driver manager" % user_id)
+
+        if CONF.spassword.enabled and CONF.spassword.2fa_enabled:
+            self.driver.already_email_checked(user)
+            code = uuid.uuid4().hex
+            self.driver.set_check_email_code(user, code)
+
+    def user_check_email_code(self, user_id, code):
+        user_id = payload['resource_info']
+        LOG.info("User %s check email code in driver manager" % user_id)
+
+        if CONF.spassword.enabled and CONF.spassword.2fa_enabled:
+            self.driver.already_email_checked(user)
+            return self.driver.check_email_code(user, code)
 
 
 class Driver(object):

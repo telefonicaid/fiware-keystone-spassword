@@ -63,12 +63,16 @@ pwd_max_tries=5
 pwd_block_minutes=30
 pwd_exp_days=365
 pwd_user_blacklist=
-#smtp_server='0.0.0.0'
-#smtp_port=587
-#smtp_tls=true
-#smtp_user='smtpuser@yourdomain.com'
-#smtp_password='yourpassword'
-#smtp_from='smtpuser'">> %{keystone_conf}
+smtp_server='0.0.0.0'
+smtp_port=587
+smtp_tls=true
+smtp_user='smtpuser@yourdomain.com'
+smtp_password='yourpassword'
+smtp_from='smtpuser'
+2fa_enabled=true
+2fa_verify_email=true
+2fa_time_window=24
+">> %{keystone_conf}
 fi
 
 ln -fs %{python_lib}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib

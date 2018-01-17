@@ -79,6 +79,7 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
                                                                       user_id)
 
 
+@dependency.requires('spassword_api')
 class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def __init__(self):
@@ -198,3 +199,37 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
             server.quit()
 
         LOG.info('recover password email sent to %s' % user_email)
+
+
+    def check_2fa_code(self, context, user_id, code):
+        """Perform user 2fa code check """
+
+        if CONF.spassword.enabled and CONF.spassword.2fa_enabled:
+            user_info = self.identity_api.get_user(user_id)
+            LOG.debug('check 2fa code invoked for user %s %s' % (user_info['id'],
+                                                                  user_info['name']))
+            res = self.spassword_api.user_check_2fa_code(user_id, code)
+            LOG.debug('result %s' % res);
+            # TODO  ?
+
+    def ask_for_check_email_code(self, context, user_id):
+        """Ask a code for user email check """
+
+        if CONF.spassword.enabled and CONF.spassword.2fa_enabled:
+            user_info = self.identity_api.get_user(user_id)
+            LOG.debug('verify 2fa code invoked for user %s %s' % (user_info['id'],
+                                                                  user_info['name']))
+            res = self.spassword_api.user_ask_check_email_code(user_id)
+            LOG.debug('result %s' % res);
+            # TODO  ?
+
+    def check_email_code(self, context, user_id, code):
+        """Check a code for for user email check """
+
+        if CONF.spassword.enabled and CONF.spassword.2fa_enabled:
+            user_info = self.identity_api.get_user(user_id)
+            LOG.debug('verify 2fa code invoked for user %s %s' % (user_info['id'],
+                                                                  user_info['name']))
+            res = self.spassword_api.user_check_email_code(user_id, code)
+            LOG.debug('result %s' % res);
+            # TODO  ?

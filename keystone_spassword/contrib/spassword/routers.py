@@ -91,3 +91,22 @@ class SPasswordExtension(wsgi.ExtensionRouter):
             controller=scim_user_controller,
             action='delete_user',
             conditions=dict(method=['DELETE']))
+
+        # 2FA User operations:
+        mapper.connect(
+            '/users/{user_id}/2fa/{code}',
+            controller=user_controller,
+            action='check_2fa_code',
+            conditions=dict(method=['GET']))
+
+        mapper.connect(
+            '/users/{user_id}/checkemail',
+            controller=user_controller,
+            action='ask_for_check_email_code',
+            conditions=dict(method=['GET']))
+
+        mapper.connect(
+            '/users/{user_id}/checkemail/{code}',
+            controller=user_controller,
+            action='check_email_code',
+            conditions=dict(method=['GET']))

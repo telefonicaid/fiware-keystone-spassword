@@ -32,7 +32,15 @@ def upgrade(migrate_engine):
         sql.Column('creation_time', sql.DateTime()),
         sql.Column('login_attempts', sql.Integer),
         sql.Column('last_login_attempt_time', sql.DateTime()),
-        sql.Column('extra', sql.Text()))
+        sql.Column('extra', sql.Text()),
+        # 2fa
+        sql.Column('2fa', sql.Boolean()),
+        sql.Column('2fa_last', sql.DateTime()),
+        sql.Column('2fa_code', sql.String(32)),
+        sql.Column('2fa_time_code', sql.DateTime()),
+        sql.Column('2fa_email', sql.Boolean()),
+        sql.Column('2fa_email_code', sql.String(32)),
+        )
     service_table.create(migrate_engine, checkfirst=True)
 
 
