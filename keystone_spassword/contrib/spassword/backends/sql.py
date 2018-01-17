@@ -57,6 +57,7 @@ class SPasswordModel(sql.ModelBase, sql.DictBase):
     sndfa_email_code = sql.Column(sql.String(32), default=None)
 
 
+
 class SPassword(Driver):
 
     def get_user(self, user_id):
@@ -129,12 +130,11 @@ class SPassword(Driver):
 
     # sndfa
     def set_user_sndfa_code(self, user, newcode):
-
         # set new code into sndfa_code
         # set current time into sndfa_time_code
         session = sql.get_session()
         spassword_ref = session.query(SPasswordModel).get(user['id'])
-        LOG.debug('set user sndfa code %s for 5s' % (newcode, user['id']))
+        LOG.debug('set user sndfa code %s for user %s' % (newcode, user['id']))
         if spassword_ref:
             if 'sndfa' in spassword_ref:
                 if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
@@ -157,7 +157,6 @@ class SPassword(Driver):
                     session.add(spassword_ref)
         else:
             LOG.warn('user %s still has not spassword data' % user_id)
-
 
     def check_sndfa_code(self, user, code):
         session = sql.get_session()
@@ -303,7 +302,22 @@ class Identity(Identity):
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
 
-                # TODO: check if sndfa
+                # Check if sndfa
+                if 'sndfa' in spassword_ref:
+                    if spassword_ref['sndfa']:
+                        if spassword_ref['sndfa_email']:
+                            if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
+                                datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
+                                LOG.debug('user %s was validated with 2fa' % user_id)
+                                res = res and True
+                            else:
+                                # Should retr code that was sent email
+                                LOG.debug('user %s was not validated with 2fa due to code' % user_id)
+                                res = False
+                        else:
+                            # Should return that emails is not validated
+                            LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
+                            res = False
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
