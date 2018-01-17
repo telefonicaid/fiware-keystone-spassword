@@ -201,23 +201,23 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         LOG.info('recover password email sent to %s' % user_email)
 
 
-    def check_2fa_code(self, context, user_id, code):
-        """Perform user 2fa code check """
+    def check_sndfa_code(self, context, user_id, code):
+        """Perform user sndfa code check """
 
-        if CONF.spassword.enabled and CONF.spassword.2fa_enabled:
+        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
             user_info = self.identity_api.get_user(user_id)
-            LOG.debug('check 2fa code invoked for user %s %s' % (user_info['id'],
+            LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                   user_info['name']))
-            res = self.spassword_api.user_check_2fa_code(user_id, code)
+            res = self.spassword_api.user_check_sndfa_code(user_id, code)
             LOG.debug('result %s' % res);
             # TODO  ?
 
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
 
-        if CONF.spassword.enabled and CONF.spassword.2fa_enabled:
+        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
             user_info = self.identity_api.get_user(user_id)
-            LOG.debug('verify 2fa code invoked for user %s %s' % (user_info['id'],
+            LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
                                                                   user_info['name']))
             res = self.spassword_api.user_ask_check_email_code(user_id)
             LOG.debug('result %s' % res);
@@ -226,9 +226,9 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
 
-        if CONF.spassword.enabled and CONF.spassword.2fa_enabled:
+        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
             user_info = self.identity_api.get_user(user_id)
-            LOG.debug('verify 2fa code invoked for user %s %s' % (user_info['id'],
+            LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
                                                                   user_info['name']))
             res = self.spassword_api.user_check_email_code(user_id, code)
             LOG.debug('result %s' % res);

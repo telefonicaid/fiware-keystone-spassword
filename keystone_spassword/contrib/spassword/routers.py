@@ -92,11 +92,11 @@ class SPasswordExtension(wsgi.ExtensionRouter):
             action='delete_user',
             conditions=dict(method=['DELETE']))
 
-        # 2FA User operations:
+        # SNDFA User operations:
         mapper.connect(
-            '/users/{user_id}/2fa/{code}',
+            '/users/{user_id}/sndfa/{code}',
             controller=user_controller,
-            action='check_2fa_code',
+            action='check_sndfa_code',
             conditions=dict(method=['GET']))
 
         mapper.connect(

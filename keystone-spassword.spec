@@ -69,9 +69,9 @@ smtp_tls=true
 smtp_user='smtpuser@yourdomain.com'
 smtp_password='yourpassword'
 smtp_from='smtpuser'
-2fa_enabled=true
-2fa_verify_email=true
-2fa_time_window=24
+sndfa_enabled=false
+sndfa_verify_email=false
+sndfa_time_window=24
 ">> %{keystone_conf}
 fi
 
