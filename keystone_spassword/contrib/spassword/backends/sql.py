@@ -303,23 +303,23 @@ class Identity(Identity):
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
 
-                # # Check if sndfa
-                # # CONF.spassword.sn2fa
-                # if 'sndfa' in spassword_ref:
-                #     if spassword_ref['sndfa']:
-                #         if spassword_ref['sndfa_email']:
-                #             if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
-                #                 datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
-                #                 LOG.debug('user %s was validated with 2fa' % user_id)
-                #                 res = res and True
-                #             else:
-                #                 # Should retr code that was sent email
-                #                 LOG.debug('user %s was not validated with 2fa due to code' % user_id)
-                #                 res = False
-                #         else:
-                #             # Should return that emails is not validated
-                #             LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
-                #             res = False
+                # Check if sndfa
+                # CONF.spassword.sn2fa
+                if 'sndfa' in spassword_ref:
+                    if spassword_ref['sndfa']:
+                        if spassword_ref['sndfa_email']:
+                            if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
+                                datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
+                                LOG.debug('user %s was validated with 2fa' % user_id)
+                                res = res and True
+                            else:
+                                # Should retr code that was sent email
+                                LOG.debug('user %s was not validated with 2fa due to code' % user_id)
+                                res = False
+                        else:
+                            # Should return that emails is not validated
+                            LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
+                            res = False
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
@@ -330,12 +330,12 @@ class Identity(Identity):
                 data_user['domain_id'] = user['domain_id']
                 data_user['creation_time'] = current_attempt_time
                 data_user['last_login_attempt_time'] = current_attempt_time
-                # data_user['sndfa'] = False
-                # data_user['sndfa_last'] = None
-                # data_user['sndfa_code'] = None
-                # data_user['sndfa_time_code'] = None
-                # data_user['sndfa_email'] = False
-                # data_user['sndfa_email_code'] = None
+                data_user['sndfa'] = False
+                data_user['sndfa_last'] = None
+                data_user['sndfa_code'] = None
+                data_user['sndfa_time_code'] = None
+                data_user['sndfa_email'] = False
+                data_user['sndfa_email_code'] = None
                 if not res:
                     data_user['login_attempts'] = 1
                 else:
