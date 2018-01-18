@@ -212,24 +212,24 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
             LOG.debug('result %s' % res);
             # TODO  ?
 
-    # def ask_for_check_email_code(self, context, user_id):
-    #     """Ask a code for user email check """
+    def ask_for_check_email_code(self, context, user_id):
+        """Ask a code for user email check """
 
-    #     if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
-    #         user_info = self.identity_api.get_user(user_id)
-    #         LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
-    #                                                               user_info['name']))
-    #         res = self.spassword_api.user_ask_check_email_code(user_id)
-    #         LOG.debug('result %s' % res);
-    #         # TODO  ?
+        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
+            user_info = self.identity_api.get_user(user_id)
+            LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
+                                                                   user_info['name']))
+            res = self.spassword_api.user_ask_check_email_code(user_id)
+            LOG.debug('result %s' % res);
+            # TODO  ?
 
-    # def check_email_code(self, context, user_id, code):
-    #     """Check a code for for user email check """
+    def check_email_code(self, context, user_id, code):
+        """Check a code for for user email check """
 
-    #     if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
-    #         user_info = self.identity_api.get_user(user_id)
-    #         LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
-    #                                                               user_info['name']))
-    #         res = self.spassword_api.user_check_email_code(user_id, code)
-    #         LOG.debug('result %s' % res);
-    #         # TODO  ?
+        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
+            user_info = self.identity_api.get_user(user_id)
+            LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
+                                                                   user_info['name']))
+            res = self.spassword_api.user_check_email_code(user_id, code)
+            LOG.debug('result %s' % res);
+            # TODO  ?
