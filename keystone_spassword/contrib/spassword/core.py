@@ -112,33 +112,33 @@ class SPasswordManager(manager.Manager):
         if CONF.spassword.enabled:
             self.driver.remove_user(user_id)
 
-    def user_check_sndfa_code(self, user_id, code):
-        user_id = payload['resource_info']
-        LOG.info("User %s check sndfa code in driver manager" % user_id)
+    # def user_check_sndfa_code(self, user_id, code):
+    #     user_id = payload['resource_info']
+    #     LOG.info("User %s check sndfa code in driver manager" % user_id)
 
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            if self.driver.already_email_checked(user):
-                return self.driver.check_sndfa_code(user, code)
-            else:
-                LOG.debug("User %s has no email checked" % user_id)
-        return False
+    #     if CONF.spassword.enabled and CONF.spassword.sndfa:
+    #         if self.driver.already_email_checked(user):
+    #             return self.driver.check_sndfa_code(user, code)
+    #         else:
+    #             LOG.debug("User %s has no email checked" % user_id)
+    #     return False
 
-    def user_ask_check_email_code(self, user_id):
-        user_id = payload['resource_info']
-        LOG.info("User %s ask for a check email code in driver manager" % user_id)
+    # def user_ask_check_email_code(self, user_id):
+    #     user_id = payload['resource_info']
+    #     LOG.info("User %s ask for a check email code in driver manager" % user_id)
 
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            self.driver.already_email_checked(user)
-            code = uuid.uuid4().hex
-            self.driver.set_check_email_code(user, code)
+    #     if CONF.spassword.enabled and CONF.spassword.sndfa:
+    #         self.driver.already_email_checked(user)
+    #         code = uuid.uuid4().hex
+    #         self.driver.set_check_email_code(user, code)
 
-    def user_check_email_code(self, user_id, code):
-        user_id = payload['resource_info']
-        LOG.info("User %s check email code in driver manager" % user_id)
+    # def user_check_email_code(self, user_id, code):
+    #     user_id = payload['resource_info']
+    #     LOG.info("User %s check email code in driver manager" % user_id)
 
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            self.driver.already_email_checked(user)
-            return self.driver.check_email_code(user, code)
+    #     if CONF.spassword.enabled and CONF.spassword.sndfa:
+    #         self.driver.already_email_checked(user)
+    #         return self.driver.check_email_code(user, code)
 
 
 class Driver(object):

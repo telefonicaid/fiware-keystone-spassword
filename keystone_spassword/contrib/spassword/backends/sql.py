@@ -39,7 +39,8 @@ class SPasswordModel(sql.ModelBase, sql.DictBase):
     attributes = ['user_id', 'user_name', 'domain_id', 'creation_time',
                   'login_attempts', 'last_login_attempt_time',
                   'sndfa', 'sndfa_last','sndfa_code','sndfa_time_code',
-                  'sndfa_email','sndfa_code']
+                  'sndfa_email','sndfa_code'
+                  ]
     user_id = sql.Column(sql.String(64), primary_key=True)
     user_name = sql.Column(sql.String(255), default=None)
     domain_id = sql.Column(sql.String(64), default=None)
@@ -85,12 +86,12 @@ class SPassword(Driver):
             data_user['user_name'] = user['name']
             data_user['creation_time'] = datetime.datetime.utcnow()
             data_user['domain_id'] = user['domain_id']
-            data_user['sndfa'] = False
-            data_user['sndfa_last'] = None
-            data_user['sndfa_code'] = None
-            data_user['sndfa_time_code'] = None
-            data_user['sndfa_email'] = False
-            data_user['sndfa_email_code'] = None
+            # data_user['sndfa'] = False
+            # data_user['sndfa_last'] = None
+            # data_user['sndfa_code'] = None
+            # data_user['sndfa_time_code'] = None
+            # data_user['sndfa_email'] = False
+            # data_user['sndfa_email_code'] = None
             spassword_ref = SPasswordModel.from_dict(data_user)
         else:
             # TODO: Never reached?
@@ -117,120 +118,120 @@ class SPassword(Driver):
             data_user['user_name'] = user['name']
             data_user['domain_id'] = user['domain_id']
             data_user['creation_time'] = datetime.datetime.utcnow()
-            data_user['sndfa'] = False
-            data_user['sndfa_last'] = None
-            data_user['sndfa_code'] = None
-            data_user['sndfa_time_code'] = None
-            data_user['sndfa_email'] = False
-            data_user['sndfa_email_code'] = None
+            # data_user['sndfa'] = False
+            # data_user['sndfa_last'] = None
+            # data_user['sndfa_code'] = None
+            # data_user['sndfa_time_code'] = None
+            # data_user['sndfa_email'] = False
+            # data_user['sndfa_email_code'] = None
             spassword_ref = SPasswordModel.from_dict(data_user)
             spassword_ref['login_attempts'] = 0
         with session.begin():
             session.add(spassword_ref)
 
-    # sndfa
-    def set_user_sndfa_code(self, user, newcode):
-        # set new code into sndfa_code
-        # set current time into sndfa_time_code
-        session = sql.get_session()
-        spassword_ref = session.query(SPasswordModel).get(user['id'])
-        LOG.debug('set user sndfa code %s for user %s' % (newcode, user['id']))
-        if spassword_ref:
-            if 'sndfa' in spassword_ref:
-                if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
-                    spassword_ref['sndfa_time_code'] = datetime.datetime.utcnow()
-                    spassword_ref['sndfa_code'] = newcode
-                    with session.begin():
-                        session.add(spassword_ref)
-                else:
-                    LOG.warn('user %s still has not sndfa enabled or email verified' % user['id'])
-            else:
-                data_user = {}
-                data_user['sndfa'] = False
-                data_user['sndfa_last'] = None
-                data_user['sndfa_code'] = None
-                data_user['sndfa_time_code'] = None
-                data_user['sndfa_email'] = False
-                data_user['sndfa_email_code'] = None
-                spassword_ref = SPasswordModel.from_dict(data_user)
-                with session.begin():
-                    session.add(spassword_ref)
-        else:
-            LOG.warn('user %s still has not spassword data' % user['id'])
+    # # sndfa
+    # def set_user_sndfa_code(self, user, newcode):
+    #     # set new code into sndfa_code
+    #     # set current time into sndfa_time_code
+    #     session = sql.get_session()
+    #     spassword_ref = session.query(SPasswordModel).get(user['id'])
+    #     LOG.debug('set user sndfa code %s for user %s' % (newcode, user['id']))
+    #     if spassword_ref:
+    #         if 'sndfa' in spassword_ref:
+    #             if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
+    #                 spassword_ref['sndfa_time_code'] = datetime.datetime.utcnow()
+    #                 spassword_ref['sndfa_code'] = newcode
+    #                 with session.begin():
+    #                     session.add(spassword_ref)
+    #             else:
+    #                 LOG.warn('user %s still has not sndfa enabled or email verified' % user['id'])
+    #         else:
+    #             data_user = {}
+    #             data_user['sndfa'] = False
+    #             data_user['sndfa_last'] = None
+    #             data_user['sndfa_code'] = None
+    #             data_user['sndfa_time_code'] = None
+    #             data_user['sndfa_email'] = False
+    #             data_user['sndfa_email_code'] = None
+    #             spassword_ref = SPasswordModel.from_dict(data_user)
+    #             with session.begin():
+    #                 session.add(spassword_ref)
+    #     else:
+    #         LOG.warn('user %s still has not spassword data' % user['id'])
 
-    def check_sndfa_code(self, user, code):
-        session = sql.get_session()
-        spassword_ref = session.query(SPasswordModel).get(user['id'])
-        if spassword_ref:
-            if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
-                return spassword_ref['sndfa_code'] == code
-            else:
-                LOG.warn('user %s still has not sndfa enabled or email verified' % user['id'])
-        else:
-            LOG.warn('user %s still has not spassword data' % user['id'])
-        return False
+    # def check_sndfa_code(self, user, code):
+    #     session = sql.get_session()
+    #     spassword_ref = session.query(SPasswordModel).get(user['id'])
+    #     if spassword_ref:
+    #         if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
+    #             return spassword_ref['sndfa_code'] == code
+    #         else:
+    #             LOG.warn('user %s still has not sndfa enabled or email verified' % user['id'])
+    #     else:
+    #         LOG.warn('user %s still has not spassword data' % user['id'])
+    #     return False
 
-    def already_sndfa_signed(self, user):
-        session = sql.get_session()
-        spassword_ref = session.query(SPasswordModel).get(user['id'])
-        if spassword_ref:
-            if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
-                if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
-                      datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
-                    LOG.debug('user %s sndfa verified' % user['id'])
-                    return True
-                else:
-                    LOG.debug('user %s sndfa expired' % user['id'])
-        else:
-            LOG.warn('user %s still has not spassword data' % user['id'])
-        return False
+    # def already_sndfa_signed(self, user):
+    #     session = sql.get_session()
+    #     spassword_ref = session.query(SPasswordModel).get(user['id'])
+    #     if spassword_ref:
+    #         if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
+    #             if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
+    #                   datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
+    #                 LOG.debug('user %s sndfa verified' % user['id'])
+    #                 return True
+    #             else:
+    #                 LOG.debug('user %s sndfa expired' % user['id'])
+    #     else:
+    #         LOG.warn('user %s still has not spassword data' % user['id'])
+    #     return False
 
-    def set_check_email_code(self, user, newcode):
-        session = sql.get_session()
-        spassword_ref = session.query(SPasswordModel).get(user['id'])
-        if spassword_ref:
-            spassword_ref['sndfa_email_code'] = newcode
-            spassword_ref['sndfa_email'] = False
-            with session.begin():
-                session.add(spassword_ref)
-        else:
-            LOG.warn('user %s still has not spassword data' % user['id'])
+    # def set_check_email_code(self, user, newcode):
+    #     session = sql.get_session()
+    #     spassword_ref = session.query(SPasswordModel).get(user['id'])
+    #     if spassword_ref:
+    #         spassword_ref['sndfa_email_code'] = newcode
+    #         spassword_ref['sndfa_email'] = False
+    #         with session.begin():
+    #             session.add(spassword_ref)
+    #     else:
+    #         LOG.warn('user %s still has not spassword data' % user['id'])
 
-    def check_email_code(self, user, code):
-        session = sql.get_session()
-        spassword_ref = session.query(SPasswordModel).get(user['id'])
-        check = False
-        if spassword_ref:
-            if spassword_ref['sndfa_email_code']:
-                spassword_ref['sndfa_email'] = spassword_ref['sndfa_email_code'] == code
-                check = spassword_ref['sndfa_email']
-                with session.begin():
-                    session.add(spassword_ref) 
-        else:
-            LOG.warn('user %s still has not spassword data' % user['id'])
-        return check
+    # def check_email_code(self, user, code):
+    #     session = sql.get_session()
+    #     spassword_ref = session.query(SPasswordModel).get(user['id'])
+    #     check = False
+    #     if spassword_ref:
+    #         if spassword_ref['sndfa_email_code']:
+    #             spassword_ref['sndfa_email'] = spassword_ref['sndfa_email_code'] == code
+    #             check = spassword_ref['sndfa_email']
+    #             with session.begin():
+    #                 session.add(spassword_ref)
+    #     else:
+    #         LOG.warn('user %s still has not spassword data' % user['id'])
+    #     return check
 
-    def already_email_checked(self, user):
-        session = sql.get_session()
-        spassword_ref = session.query(SPasswordModel).get(user['id'])
-        if spassword_ref:
-            if 'sndfa_email' in spassword_ref:
-                return spassword_ref['sndfa_email']
-            else:
-                LOG.warn('user %s still has not sndfa_email data' % user['id'])
-                data_user = {}
-                data_user['sndfa'] = False
-                data_user['sndfa_last'] = None
-                data_user['sndfa_code'] = None
-                data_user['sndfa_time_code'] = None
-                data_user['sndfa_email'] = False
-                data_user['sndfa_email_code'] = None
-                spassword_ref = SPasswordModel.from_dict(data_user)
-                with session.begin():
-                    session.add(spassword_ref)
-        else:
-            LOG.warn('user %s still has not spassword data' % user['id'])
-        return False
+    # def already_email_checked(self, user):
+    #     session = sql.get_session()
+    #     spassword_ref = session.query(SPasswordModel).get(user['id'])
+    #     if spassword_ref:
+    #         if 'sndfa_email' in spassword_ref:
+    #             return spassword_ref['sndfa_email']
+    #         else:
+    #             LOG.warn('user %s still has not sndfa_email data' % user['id'])
+    #             data_user = {}
+    #             data_user['sndfa'] = False
+    #             data_user['sndfa_last'] = None
+    #             data_user['sndfa_code'] = None
+    #             data_user['sndfa_time_code'] = None
+    #             data_user['sndfa_email'] = False
+    #             data_user['sndfa_email_code'] = None
+    #             spassword_ref = SPasswordModel.from_dict(data_user)
+    #             with session.begin():
+    #                 session.add(spassword_ref)
+    #     else:
+    #         LOG.warn('user %s still has not spassword data' % user['id'])
+    #     return False
 
 
 class Identity(Identity):
@@ -302,23 +303,23 @@ class Identity(Identity):
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
 
-                # Check if sndfa
-                # CONF.spassword.sn2fa
-                if 'sndfa' in spassword_ref:
-                    if spassword_ref['sndfa']:
-                        if spassword_ref['sndfa_email']:
-                            if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
-                                datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
-                                LOG.debug('user %s was validated with 2fa' % user_id)
-                                res = res and True
-                            else:
-                                # Should retr code that was sent email
-                                LOG.debug('user %s was not validated with 2fa due to code' % user_id)
-                                res = False
-                        else:
-                            # Should return that emails is not validated
-                            LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
-                            res = False
+                # # Check if sndfa
+                # # CONF.spassword.sn2fa
+                # if 'sndfa' in spassword_ref:
+                #     if spassword_ref['sndfa']:
+                #         if spassword_ref['sndfa_email']:
+                #             if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
+                #                 datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
+                #                 LOG.debug('user %s was validated with 2fa' % user_id)
+                #                 res = res and True
+                #             else:
+                #                 # Should retr code that was sent email
+                #                 LOG.debug('user %s was not validated with 2fa due to code' % user_id)
+                #                 res = False
+                #         else:
+                #             # Should return that emails is not validated
+                #             LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
+                #             res = False
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
@@ -329,12 +330,12 @@ class Identity(Identity):
                 data_user['domain_id'] = user['domain_id']
                 data_user['creation_time'] = current_attempt_time
                 data_user['last_login_attempt_time'] = current_attempt_time
-                data_user['sndfa'] = False
-                data_user['sndfa_last'] = None
-                data_user['sndfa_code'] = None
-                data_user['sndfa_time_code'] = None
-                data_user['sndfa_email'] = False
-                data_user['sndfa_email_code'] = None
+                # data_user['sndfa'] = False
+                # data_user['sndfa_last'] = None
+                # data_user['sndfa_code'] = None
+                # data_user['sndfa_time_code'] = None
+                # data_user['sndfa_email'] = False
+                # data_user['sndfa_email_code'] = None
                 if not res:
                     data_user['login_attempts'] = 1
                 else:
