@@ -176,7 +176,7 @@ class SPassword(Driver):
         if spassword_ref:
             if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
                 if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
-                      atetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
+                      datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
                     LOG.debug('user %s sndfa verified' % user['id'])
                     return True
                 else:
