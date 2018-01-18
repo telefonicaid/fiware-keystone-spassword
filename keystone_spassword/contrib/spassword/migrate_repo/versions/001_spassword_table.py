@@ -32,7 +32,7 @@ def upgrade(migrate_engine):
         sql.Column('creation_time', sql.DateTime()),
         sql.Column('login_attempts', sql.Integer),
         sql.Column('last_login_attempt_time', sql.DateTime()),
-        sql.Column('extra', sql.Text()),
+        sql.Column('extra', sql.Text())
         # # sndfa
         # sql.Column('sndfa', sql.Boolean()),
         # sql.Column('sndfa_last', sql.DateTime()),
