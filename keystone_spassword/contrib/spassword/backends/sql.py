@@ -39,7 +39,7 @@ class SPasswordModel(sql.ModelBase, sql.DictBase):
     attributes = ['user_id', 'user_name', 'domain_id', 'creation_time',
                   'login_attempts', 'last_login_attempt_time',
                   'sndfa', 'sndfa_last','sndfa_code','sndfa_time_code',
-                  'sndfa_email','sndfa_code'
+                  'sndfa_email','sndfa_email_code'
                   ]
     user_id = sql.Column(sql.String(64), primary_key=True)
     user_name = sql.Column(sql.String(255), default=None)
