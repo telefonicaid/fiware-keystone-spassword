@@ -37,9 +37,10 @@ LOG = log.getLogger(__name__)
 class SPasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
     attributes = ['user_id', 'user_name', 'domain_id', 'creation_time',
-                  'login_attempts', 'last_login_attempt_time',
-                  'sndfa', 'sndfa_last','sndfa_code','sndfa_time_code',
-                  'sndfa_email','sndfa_code'
+                  'login_attempts', 'last_login_attempt_time'
+                  # ,
+                  # 'sndfa', 'sndfa_last','sndfa_code','sndfa_time_code',
+                  # 'sndfa_email','sndfa_code'
                   ]
     user_id = sql.Column(sql.String(64), primary_key=True)
     user_name = sql.Column(sql.String(255), default=None)
@@ -49,13 +50,13 @@ class SPasswordModel(sql.ModelBase, sql.DictBase):
     last_login_attempt_time = sql.Column(sql.DateTime(), default=None)
     # bad_attempts
     extra = sql.Column(sql.JsonBlob())
-    # sndfa
-    sndfa = sql.Column(sql.Boolean(), default=False)
-    sndfa_last = sql.Column(sql.DateTime(), default=None)
-    sndfa_code = sql.Column(sql.String(32), default=None)
-    sndfa_time_code = sql.Column(sql.DateTime(), default=None)
-    sndfa_email = sql.Column(sql.Boolean(), default=False)
-    sndfa_email_code = sql.Column(sql.String(32), default=None)
+    # # sndfa
+    # sndfa = sql.Column(sql.Boolean(), default=False)
+    # sndfa_last = sql.Column(sql.DateTime(), default=None)
+    # sndfa_code = sql.Column(sql.String(32), default=None)
+    # sndfa_time_code = sql.Column(sql.DateTime(), default=None)
+    # sndfa_email = sql.Column(sql.Boolean(), default=False)
+    # sndfa_email_code = sql.Column(sql.String(32), default=None)
 
 
 

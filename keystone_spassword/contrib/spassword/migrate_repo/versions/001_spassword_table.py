@@ -33,13 +33,13 @@ def upgrade(migrate_engine):
         sql.Column('login_attempts', sql.Integer),
         sql.Column('last_login_attempt_time', sql.DateTime()),
         sql.Column('extra', sql.Text()),
-        # sndfa
-        sql.Column('sndfa', sql.Boolean()),
-        sql.Column('sndfa_last', sql.DateTime()),
-        sql.Column('sndfa_code', sql.String(32)),
-        sql.Column('sndfa_time_code', sql.DateTime()),
-        sql.Column('sndfa_email', sql.Boolean()),
-        sql.Column('sndfa_email_code', sql.String(32))
+        # # sndfa
+        # sql.Column('sndfa', sql.Boolean()),
+        # sql.Column('sndfa_last', sql.DateTime()),
+        # sql.Column('sndfa_code', sql.String(32)),
+        # sql.Column('sndfa_time_code', sql.DateTime()),
+        # sql.Column('sndfa_email', sql.Boolean()),
+        # sql.Column('sndfa_email_code', sql.String(32))
         )
     service_table.create(migrate_engine, checkfirst=True)
 
