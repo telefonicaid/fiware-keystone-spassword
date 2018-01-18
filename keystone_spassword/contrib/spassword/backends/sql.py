@@ -143,7 +143,7 @@ class SPassword(Driver):
                     with session.begin():
                         session.add(spassword_ref)
                 else:
-                    LOG.warn('user %s still has not sndfa enabled or email verified' % user_id)
+                    LOG.warn('user %s still has not sndfa enabled or email verified' % user['id'])
             else:
                 data_user = {}
                 data_user['sndfa'] = False
@@ -156,7 +156,7 @@ class SPassword(Driver):
                 with session.begin():
                     session.add(spassword_ref)
         else:
-            LOG.warn('user %s still has not spassword data' % user_id)
+            LOG.warn('user %s still has not spassword data' % user['id'])
 
     def check_sndfa_code(self, user, code):
         session = sql.get_session()
@@ -165,9 +165,9 @@ class SPassword(Driver):
             if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
                 return spassword_ref['sndfa_code'] == code
             else:
-                LOG.warn('user %s still has not sndfa enabled or email verified' % user_id)
+                LOG.warn('user %s still has not sndfa enabled or email verified' % user['id'])
         else:
-            LOG.warn('user %s still has not spassword data' % user_id)
+            LOG.warn('user %s still has not spassword data' % user['id'])
         return False
 
     def already_sndfa_signed(self, user):
@@ -177,12 +177,12 @@ class SPassword(Driver):
             if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
                 if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
                       atetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
-                    LOG.debug('user %s sndfa verified' % user_id)
+                    LOG.debug('user %s sndfa verified' % user['id'])
                     return True
                 else:
-                    LOG.debug('user %s sndfa expired' % user_id)
+                    LOG.debug('user %s sndfa expired' % user['id'])
         else:
-            LOG.warn('user %s still has not spassword data' % user_id)
+            LOG.warn('user %s still has not spassword data' % user['id'])
         return False
 
     def set_check_email_code(self, user, newcode):
@@ -194,7 +194,7 @@ class SPassword(Driver):
             with session.begin():
                 session.add(spassword_ref)
         else:
-            LOG.warn('user %s still has not spassword data' % user_id)
+            LOG.warn('user %s still has not spassword data' % user['id'])
 
     def check_email_code(self, user, code):
         session = sql.get_session()
@@ -205,9 +205,9 @@ class SPassword(Driver):
                 spassword_ref['sndfa_email'] = spassword_ref['sndfa_email_code'] == code
                 check = spassword_ref['sndfa_email']
                 with session.begin():
-                    session.add(spassword_ref)
+                    session.add(spassword_ref) 
         else:
-            LOG.warn('user %s still has not spassword data' % user_id)
+            LOG.warn('user %s still has not spassword data' % user['id'])
         return check
 
     def already_email_checked(self, user):
@@ -217,7 +217,7 @@ class SPassword(Driver):
             if 'sndfa_email' in spassword_ref:
                 return spassword_ref['sndfa_email']
             else:
-                LOG.warn('user %s still has not sndfa_email data' % user_id)
+                LOG.warn('user %s still has not sndfa_email data' % user['id'])
                 data_user = {}
                 data_user['sndfa'] = False
                 data_user['sndfa_last'] = None
@@ -229,7 +229,7 @@ class SPassword(Driver):
                 with session.begin():
                     session.add(spassword_ref)
         else:
-            LOG.warn('user %s still has not spassword data' % user_id)
+            LOG.warn('user %s still has not spassword data' % user['id'])
         return False
 
 
@@ -303,6 +303,7 @@ class Identity(Identity):
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
 
                 # Check if sndfa
+                # CONF.spassword.sn2fa
                 if 'sndfa' in spassword_ref:
                     if spassword_ref['sndfa']:
                         if spassword_ref['sndfa_email']:
