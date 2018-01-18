@@ -52,7 +52,6 @@ CONF.register_opt(cfg.BoolOpt('smtp_tls', default=True), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_user', default='user'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_password', default='password'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
-
 CONF.register_opt(cfg.BoolOpt('sndfa', default=False), group='spassword')
 CONF.register_opt(cfg.BoolOpt('sndfa_verify_enable', default=False), group='spassword')
 CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword')
@@ -117,18 +116,18 @@ class SPasswordManager(manager.Manager):
         user_id = payload['resource_info']
         LOG.info("User %s check sndfa code in driver manager" % user_id)
 
-        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
+        if CONF.spassword.enabled and CONF.spassword.sndfa:
             if self.driver.already_email_checked(user):
                 return self.driver.check_sndfa_code(user, code)
             else:
                 LOG.debug("User %s has no email checked" % user_id)
-                return False
+        return False
 
     def user_ask_check_email_code(self, user_id):
         user_id = payload['resource_info']
         LOG.info("User %s ask for a check email code in driver manager" % user_id)
 
-        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
+        if CONF.spassword.enabled and CONF.spassword.sndfa:
             self.driver.already_email_checked(user)
             code = uuid.uuid4().hex
             self.driver.set_check_email_code(user, code)
@@ -137,7 +136,7 @@ class SPasswordManager(manager.Manager):
         user_id = payload['resource_info']
         LOG.info("User %s check email code in driver manager" % user_id)
 
-        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
+        if CONF.spassword.enabled and CONF.spassword.sndfa:
             self.driver.already_email_checked(user)
             return self.driver.check_email_code(user, code)
 
