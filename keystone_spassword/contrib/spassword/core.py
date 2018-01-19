@@ -34,8 +34,8 @@ except ImportError: from keystone.openstack.common import log
 try: from oslo_log import versionutils
 except ImportError: from keystone.openstack.common import versionutils
 from keystone.common import manager
-#from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
-#from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
+from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
+from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
 LOG = log.getLogger(__name__)
 
 try: from oslo_config import cfg
