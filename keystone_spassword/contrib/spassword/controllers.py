@@ -162,9 +162,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
     def send_email(self, to, subject, text)
         import smtplib
 
-        TO = [to] # must be a list
-        SUBJECT = subject
-        TEXT = text
+        dest = [to] # must be a list
 
         #
         # Prepare actual message
@@ -172,11 +170,11 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         mail_headers = ("From: \"%s\" <%s>\r\nTo: %s\r\n"
                         % (CONF.spassword.smtp_from,
                            CONF.spassword.smtp_from,
-                           ", ".join(TO)))
+                           ", ".join(dest)))
 
         msg = mail_headers
-        msg += ("Subject: %s\r\n\r\n" % SUBJECT)
-        msg += TEXT
+        msg += ("Subject: %s\r\n\r\n" % subject)
+        msg += text
 
         #
         # Send the mail
@@ -187,7 +185,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                                   CONF.spassword.smtp_port)
         except smtplib.socket.gaierror:
             LOG.error('SMTP socket error')
-            return False
+            return
 
         server.ehlo()
         server.starttls()
@@ -198,28 +196,28 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                          CONF.spassword.smtppassword)
         except smtplib.SMTPAuthenticationError:
             LOG.error('SMTP autentication error')
-            return False
+            return
 
         try:
-            server.sendmail(CONF.spassword.smtp_from, TO, msg)
+            server.sendmail(CONF.spassword.smtp_from, dest, msg)
         except Exception:  # try to avoid catching Exception unless you have too
             LOG.error('SMTP autentication error')
-            return False
+            return
         finally:
             server.quit()
-        LOG.debug('email sent')
+        LOG.info('email was sent')
 
 
     def check_sndfa_code(self, context, user_id, code):
         """Perform user sndfa code check """
-
+        res = True
         if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
             user_info = self.identity_api.get_user(user_id)
             LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                   user_info['name']))
             res = self.spassword_api.user_check_sndfa_code(user_id, code)
             LOG.debug('result %s' % res);
-            # TODO  ?
+        return res
 
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
@@ -230,15 +228,20 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                                                                    user_info['name']))
             res = self.spassword_api.user_ask_check_email_code(user_id)
             LOG.debug('result %s' % res);
+
+            TO = [user_email] # must be a list
+            SUBJECT = "IoT Platform recovery password"
+            TEXT = "Your new password is %s" % user_password
+            send_email(TO, SUBJECT, TEXT)
             # TODO  ?
 
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
-
+        res = False
         if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
             user_info = self.identity_api.get_user(user_id)
-            LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
+            LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                    user_info['name']))
             res = self.spassword_api.user_check_email_code(user_id, code)
             LOG.debug('result %s' % res);
-            # TODO  ?
+        return res
