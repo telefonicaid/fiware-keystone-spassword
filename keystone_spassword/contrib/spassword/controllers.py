@@ -1,3 +1,4 @@
+
 #
 # Copyright 2015 Telefonica Investigacion y Desarrollo, S.A.U
 #
@@ -151,11 +152,19 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                                           new_password)
 
     def send_recovery_password_email(self, user_email, user_password):
-        import smtplib
-
         TO = [user_email] # must be a list
         SUBJECT = "IoT Platform recovery password"
         TEXT = "Your new password is %s" % user_password
+        send_email(TO, SUBJECT, TEXT)
+        LOG.info('recover password email sent to %s' % user_email)
+
+
+    def send_email(self, to, subject, text)
+        import smtplib
+
+        TO = [to] # must be a list
+        SUBJECT = subject
+        TEXT = text
 
         #
         # Prepare actual message
@@ -173,6 +182,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         # Send the mail
         #
         try:
+            # TODO: server must be initialized by current class
             server = smtplib.SMTP(CONF.spassword.smtp_server,
                                   CONF.spassword.smtp_port)
         except smtplib.socket.gaierror:
@@ -197,8 +207,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
             return False
         finally:
             server.quit()
-
-        LOG.info('recover password email sent to %s' % user_email)
+        LOG.debug('email sent')
 
 
     def check_sndfa_code(self, context, user_id, code):
