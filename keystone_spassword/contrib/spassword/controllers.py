@@ -135,6 +135,13 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
             LOG.error('%s' % msg)
             raise exception.Unauthorized(msg)
 
+        # Check if user has a email validated
+        if not self.spassword_api.already_user_check_email(user_id):
+            msg = 'User %s %s has no email verified' % (user_info['id'],
+                                                        user_info['name'])
+            LOG.error('%s' % msg)
+            raise exception.Unauthorized(msg)
+
         # Create a new password randonly
         new_password = uuid.uuid4().hex
 
@@ -211,7 +218,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
     def check_sndfa_code(self, context, user_id, code):
         """Perform user sndfa code check """
         res = True
-        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
+        if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
             LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                   user_info['name']))
@@ -222,7 +229,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
 
-        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
+        if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
             LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
                                                                    user_info['name']))
@@ -238,7 +245,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
         res = False
-        if CONF.spassword.enabled and CONF.spassword.sndfa_enabled:
+        if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
             LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                    user_info['name']))
