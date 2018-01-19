@@ -159,7 +159,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         LOG.info('recover password email sent to %s' % user_email)
 
 
-    def send_email(self, to, subject, text)
+    def send_email(self, to, subject, text):
         import smtplib
 
         dest = [to] # must be a list
