@@ -35,7 +35,7 @@ from keystone.identity.controllers import UserV3
 from keystone_scim.contrib.scim.controllers import ScimUserV3Controller
 from keystone_scim.contrib.scim import converter as conv
 from keystone_spassword.contrib.spassword.checker import CheckPassword
-from keystone_spassword.contrib.spassword.core import SPasswordManager
+from keystone_spassword.contrib.spassword import SPasswordManager
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
