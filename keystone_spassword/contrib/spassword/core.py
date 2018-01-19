@@ -57,7 +57,7 @@ CONF.register_opt(cfg.BoolOpt('sndfa_verify_enable', default=False), group='spas
 CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword')
 
 @dependency.provider('spassword_api')
-class SPasswordManager(manager.Manager):
+class Manager(manager.Manager):
     """SPassword Manager.
 
     See :mod:`keystone.common.manager.Manager` for more details on
@@ -84,7 +84,7 @@ class SPasswordManager(manager.Manager):
                 },
             }
 
-        super(SPasswordManager, self).__init__(
+        super(Manager, self).__init__(
             'keystone_spassword.contrib.spassword.backends.sql.SPassword')
 
     def user_updated_callback(self, service, resource_type, operation,
@@ -199,7 +199,7 @@ class SPasswordMiddleware(wsgi.Middleware):
     def __init__(self, *args, **kwargs):
         LOG.debug("SPasswordMiddleware INIT")
         try:
-            self.spassword_api = SPasswordManager()
+            self.spassword_api = Manager()
         except Exception:
             LOG.debug("SPasswordMiddleware already registered")
         return super(SPasswordMiddleware, self).__init__(*args, **kwargs)

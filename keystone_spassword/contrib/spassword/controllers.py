@@ -35,7 +35,7 @@ from keystone.identity.controllers import UserV3
 from keystone_scim.contrib.scim.controllers import ScimUserV3Controller
 from keystone_scim.contrib.scim import converter as conv
 from keystone_spassword.contrib.spassword.checker import CheckPassword
-from keystone_spassword.contrib.spassword import core
+from keystone_spassword.contrib.spassword import Manager
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
@@ -50,7 +50,7 @@ LOG = log.getLogger(__name__)
 class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
 
     def __init__(self):
-        self.spassword_api = core.SPasswordManager()
+        self.spassword_api = Manager()
         super(SPasswordScimUserV3Controller, self).__init__()
 
     def patch_user(self, context, user_id, **kwargs):
