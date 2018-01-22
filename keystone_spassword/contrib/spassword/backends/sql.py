@@ -137,8 +137,9 @@ class SPassword(Driver):
         spassword_ref = session.query(SPasswordModel).get(user['id'])
         LOG.debug('set user sndfa code %s for user %s' % (newcode, user['id']))
         if spassword_ref:
-            if 'sndfa' in spassword_ref:
-                if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
+            spassword = spassword_ref.to_dict()
+            if 'sndfa' in spassword:
+                if spassword['sndfa'] and spassword['sndfa_email']:
                     spassword_ref['sndfa_time_code'] = datetime.datetime.utcnow()
                     spassword_ref['sndfa_code'] = newcode
                     with session.begin():
@@ -163,8 +164,9 @@ class SPassword(Driver):
         session = sql.get_session()
         spassword_ref = session.query(SPasswordModel).get(user_id)
         if spassword_ref:
-            if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
-                return spassword_ref['sndfa_code'] == code
+            spassword = spassword_ref.to_dict()
+            if spassword['sndfa'] and spassword['sndfa_email']:
+                return spassword['sndfa_code'] == code
             else:
                 LOG.warn('user %s still has not sndfa enabled or email verified' % user_id)
         else:
@@ -175,8 +177,9 @@ class SPassword(Driver):
         session = sql.get_session()
         spassword_ref = session.query(SPasswordModel).get(user['id'])
         if spassword_ref:
-            if spassword_ref['sndfa'] and spassword_ref['sndfa_email']:
-                if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
+            spassword = spassword_ref.to_dict()
+            if spassword['sndfa'] and spassword['sndfa_email']:
+                if (spassword['sndfa_last'] < datetime.datetime.utcnow() + \
                       datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
                     LOG.debug('user %s sndfa verified' % user['id'])
                     return True
@@ -202,9 +205,11 @@ class SPassword(Driver):
         spassword_ref = session.query(SPasswordModel).get(user_id)
         check = False
         if spassword_ref:
-            if spassword_ref['sndfa_email_code']:
-                spassword_ref['sndfa_email'] = spassword_ref['sndfa_email_code'] == code
-                check = spassword_ref['sndfa_email']
+            spassword = spassword_ref.to_dict()
+            if spassword['sndfa_email_code']:
+                LOG.debug('check email code user_id %s code %s sndfa_email_code %s ' % (user_id, code, spassword['sndfa_email_code']))
+                check = spassword['sndfa_email_code'] == code
+                spassword_ref['sndfa_email'] = check
                 with session.begin():
                     session.add(spassword_ref)
         else:
@@ -215,8 +220,9 @@ class SPassword(Driver):
         session = sql.get_session()
         spassword_ref = session.query(SPasswordModel).get(user_id)
         if spassword_ref:
-            if 'sndfa_email' in spassword_ref:
-                return spassword_ref['sndfa_email']
+            spassword = spassword_ref.to_dict()
+            if 'sndfa_email' in spassword:
+                return spassword['sndfa_email']
             else:
                 LOG.warn('user %s still has not sndfa_email data' % user_id)
                 data_user = {}

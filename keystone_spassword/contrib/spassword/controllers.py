@@ -163,10 +163,10 @@ class SPasswordV3Controller(controller.V3Controller):
                                           new_password)
 
     def send_recovery_password_email(self, user_email, user_password):
-        TO = user_email # must be a list
-        SUBJECT = "IoT Platform recovery password"
-        TEXT = "Your new password is %s" % user_password
-        self.send_email(TO, SUBJECT, TEXT)
+        to = user_email
+        subject = "IoT Platform recovery password"
+        text = "Your new password is %s" % user_password
+        self.send_email(to, subject, text)
         LOG.info('recover password email sent to %s' % user_email)
 
 
@@ -203,10 +203,10 @@ class SPasswordV3Controller(controller.V3Controller):
         server.ehlo
 
         try:
-            server.login(CONF.spassword.smtpuser,
-                         CONF.spassword.smtppassword)
+            server.login(CONF.spassword.smtp_user,
+                         CONF.spassword.smtp_password)
         except smtplib.SMTPAuthenticationError:
-            LOG.error('SMTP autentication error')
+            LOG.error('SMTP authentication error')
             return
 
         try:
@@ -224,7 +224,7 @@ class SPasswordV3Controller(controller.V3Controller):
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
             LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
-                                                                  user_info['name']))
+                                                                   user_info['name']))
             res = self.spassword_api.user_check_sndfa_code(user_id, code)
             LOG.debug('result %s' % res);
         return res
@@ -234,15 +234,15 @@ class SPasswordV3Controller(controller.V3Controller):
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
             LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
-                                                                   user_info['name']))
+                                                                    user_info['name']))
             LOG.debug('user_info %s', user_info)
             code = self.spassword_api.user_ask_check_email_code(user_id)
             LOG.debug('result %s' % code);
             if code:
-                TO = user_info['email'] # must be a list
-                SUBJECT = "IoT Platform verify email "
-                TEXT = "The code for verify your email is %s" % code
-                self.send_email(TO, SUBJECT, TEXT)
+                to = user_info['email'] # must be a list
+                subject = "IoT Platform verify email "
+                text = "The code for verify your email is %s" % code
+                self.send_email(to, subject, text)
 
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """

@@ -138,8 +138,8 @@ class SPasswordManager(manager.Manager):
         LOG.info("User %s check email code in driver manager" % user_id)
 
         if CONF.spassword.enabled and CONF.spassword.sndfa:
-            self.driver.already_email_checked(user_id)
-            return self.driver.check_email_code(user_id, code)
+            if not self.driver.already_email_checked(user_id)
+                return self.driver.check_email_code(user_id, code)
 
     def already_user_check_email(self, user_id):
         LOG.info("User %s check email code in driver manager" % user_id)
