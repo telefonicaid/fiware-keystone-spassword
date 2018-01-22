@@ -235,14 +235,14 @@ class SPasswordV3Controller(controller.V3Controller):
             user_info = self.identity_api.get_user(user_id)
             LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
                                                                    user_info['name']))
-            res = self.spassword_api.user_ask_check_email_code(user_id)
-            LOG.debug('result %s' % res);
-            if res:
-                TO = [user_info['user_email']] # must be a list
-                SUBJECT = "IoT Platform recovery password"
-                TEXT = "Your new password is %s" % user_password
+            LOG.debug('user_info %s', user_info)
+            code = self.spassword_api.user_ask_check_email_code(user_id)
+            LOG.debug('result %s' % code);
+            if code:
+                TO = [user_info['email']] # must be a list
+                SUBJECT = "IoT Platform verify email "
+                TEXT = "The code for verify your email is %s" % code
                 send_email(TO, SUBJECT, TEXT)
-
 
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """

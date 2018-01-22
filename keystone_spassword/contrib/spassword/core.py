@@ -127,7 +127,7 @@ class SPasswordManager(manager.Manager):
 
     def user_ask_check_email_code(self, user_id):
         LOG.info("User %s ask for a check email code in driver manager" % user_id)
-        code = ""
+        code = None
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             self.driver.already_email_checked(user_id)
             code = uuid.uuid4().hex
