@@ -197,7 +197,7 @@ class SPassword(Driver):
         else:
             LOG.warn('user %s still has not spassword data' % user_id)
 
-    def check_email_code(self, user, code):
+    def check_email_code(self, user_id, code):
         session = sql.get_session()
         spassword_ref = session.query(SPasswordModel).get(user_id)
         check = False

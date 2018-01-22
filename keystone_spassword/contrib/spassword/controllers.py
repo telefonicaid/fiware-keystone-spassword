@@ -35,7 +35,7 @@ from keystone.identity.controllers import UserV3
 from keystone_scim.contrib.scim.controllers import ScimUserV3Controller
 from keystone_scim.contrib.scim import converter as conv
 from keystone_spassword.contrib.spassword.checker import CheckPassword
-from keystone_spassword.contrib.spassword import Manager as PSManager
+#from keystone_spassword.contrib.spassword import SPasswordManager as PSManager
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
@@ -50,7 +50,6 @@ LOG = log.getLogger(__name__)
 class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
 
     def __init__(self):
-        self.spassword_api = PSManager()
         super(SPasswordScimUserV3Controller, self).__init__()
 
     def patch_user(self, context, user_id, **kwargs):
@@ -121,7 +120,9 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                                                                       user=user)
     def recover_password(self, context, user_id):
         """Perform user password recover procedure."""
-
+        #from keystone_spassword.contrib.spassword import SPasswordManager as PSManager
+        from keystone.contrib.spassword import SPasswordManager as PSManager
+        self.spassword_api = PSManager()
         if not CONF.spassword.enabled:
             raise exception.NotImplemented()
 
@@ -163,7 +164,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         TO = [user_email] # must be a list
         SUBJECT = "IoT Platform recovery password"
         TEXT = "Your new password is %s" % user_password
-        send_email(TO, SUBJECT, TEXT)
+        self.send_email(TO, SUBJECT, TEXT)
         LOG.info('recover password email sent to %s' % user_email)
 
 
@@ -217,6 +218,8 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def check_sndfa_code(self, context, user_id, code):
         """Perform user sndfa code check """
+        from keystone.contrib.spassword import SPasswordManager as PSManager
+        self.spassword_api = PSManager()
         res = True
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
@@ -228,7 +231,8 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
-
+        from keystone.contrib.spassword import SPasswordManager as PSManager
+        self.spassword_api = PSManager()
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
             LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
@@ -244,6 +248,8 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
+        from keystone.contrib.spassword import SPasswordManager as PSManager
+        self.spassword_api = PSManager()        
         res = False
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
