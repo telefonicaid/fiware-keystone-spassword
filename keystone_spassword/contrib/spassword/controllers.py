@@ -163,7 +163,7 @@ class SPasswordV3Controller(controller.V3Controller):
                                           new_password)
 
     def send_recovery_password_email(self, user_email, user_password):
-        TO = [user_email] # must be a list
+        TO = user_email # must be a list
         SUBJECT = "IoT Platform recovery password"
         TEXT = "Your new password is %s" % user_password
         self.send_email(TO, SUBJECT, TEXT)
@@ -239,10 +239,10 @@ class SPasswordV3Controller(controller.V3Controller):
             code = self.spassword_api.user_ask_check_email_code(user_id)
             LOG.debug('result %s' % code);
             if code:
-                TO = [user_info['email']] # must be a list
+                TO = user_info['email'] # must be a list
                 SUBJECT = "IoT Platform verify email "
                 TEXT = "The code for verify your email is %s" % code
-                send_email(TO, SUBJECT, TEXT)
+                self.send_email(TO, SUBJECT, TEXT)
 
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
