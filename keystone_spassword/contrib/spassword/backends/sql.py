@@ -251,12 +251,13 @@ class Identity(Identity):
                 # Check password time
                 expiration_date = datetime.datetime.utcnow() - \
                   datetime.timedelta(days=CONF.spassword.pwd_exp_days)
-                if (spassword_ref['creation_time'] < expiration_date):
+                spassword = spassword_ref.to_dict()
+                if (spassword['creation_time'] < expiration_date):
                     LOG.warn('password of user %s %s expired ' % (user_ref['id'],
                                                                   user_ref['name']))
                     res = False
                     auth_error_msg = ('Password expired for user %s. Contact with your ' +
-                                      'admin') % spassword_ref['user_name']
+                                      'admin') % spassword['user_name']
                     raise exception.Unauthorized(auth_error_msg)
 
         res = super(Identity, self)._check_password(password, user_ref)
@@ -271,15 +272,16 @@ class Identity(Identity):
             spassword_ref = session.query(SPasswordModel).get(user_id)
 
             if spassword_ref:
-                if spassword_ref['login_attempts'] > CONF.spassword.pwd_max_tries:
+                spassword = spassword_ref.to_dict()
+                if spassword['login_attempts'] > CONF.spassword.pwd_max_tries:
                     # Check last block attempt
-                    if (spassword_ref['last_login_attempt_time'] > \
+                    if (spassword['last_login_attempt_time'] > \
                         datetime.datetime.utcnow() - \
                         datetime.timedelta(minutes=CONF.spassword.pwd_block_minutes)):
-                        LOG.warn('max number of tries reach for login %s' % spassword_ref['user_name'])
+                        LOG.warn('max number of tries reach for login %s' % spassword['user_name'])
                         auth_error_msg = ('Password temporarily blocked for user %s due to reach' +
                                           ' max number of tries. Contact with your ' +
-                                          ' admin') % spassword_ref['user_name']
+                                          ' admin') % spassword['user_name']
                         raise exception.Unauthorized(auth_error_msg)
         try:
             res = super(Identity, self).authenticate(user_id, password)
@@ -293,28 +295,29 @@ class Identity(Identity):
             current_attempt_time = datetime.datetime.utcnow()
 
             if spassword_ref:
+                spassword = spassword_ref.to_dict()
                 if not res:
-                    LOG.debug('wrong password provided at login %s' % spassword_ref['user_name'])
+                    LOG.debug('wrong password provided at login %s' % spassword['user_name'])
                     spassword_ref['login_attempts'] += 1
                 else:
                     spassword_ref['login_attempts'] = 0
                     expiration_date = spassword_ref['creation_time'] + \
                         datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                     res['extras'] = {
-                        "password_creation_time": timeutils.isotime(spassword_ref['creation_time']),
+                        "password_creation_time": timeutils.isotime(spassword['creation_time']),
                         "password_expiration_time": timeutils.isotime(expiration_date),
                         "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist,
-                        "last_login_attempt_time": spassword_ref['last_login_attempt_time']
+                        "last_login_attempt_time": spassword['last_login_attempt_time']
                     }
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
 
                 # Check if sndfa
                 # CONF.spassword.sn2fa
-                if 'sndfa' in spassword_ref:
-                    if spassword_ref['sndfa']:
-                        if spassword_ref['sndfa_email']:
-                            if (spassword_ref['sndfa_last'] < datetime.datetime.utcnow() + \
+                if 'sndfa' in spassword:
+                    if spassword['sndfa']:
+                        if spassword['sndfa_email']:
+                            if (spassword['sndfa_last'] < datetime.datetime.utcnow() + \
                                 datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
                                 LOG.debug('user %s was validated with 2fa' % user_id)
                                 res = res and True
