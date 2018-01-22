@@ -36,6 +36,7 @@ except ImportError: from keystone.openstack.common import versionutils
 from keystone.common import manager
 from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
 from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
+from keystone_spassword.contrib.spassword.controllers import SPasswordV3Controller
 LOG = log.getLogger(__name__)
 
 try: from oslo_config import cfg
@@ -56,6 +57,7 @@ CONF.register_opt(cfg.BoolOpt('sndfa', default=False), group='spassword')
 CONF.register_opt(cfg.BoolOpt('sndfa_verify_enable', default=False), group='spassword')
 CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword')
 
+
 @dependency.provider('spassword_api')
 class SPasswordManager(manager.Manager):
     """SPassword Manager.
@@ -64,6 +66,7 @@ class SPasswordManager(manager.Manager):
     how this dynamically calls the backend.
 
     """
+    driver_namespace = 'keystone.contrib.spassword'
 
     def __init__(self):
         LOG.debug("Manager INIT")
@@ -117,7 +120,7 @@ class SPasswordManager(manager.Manager):
 
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             if self.driver.already_email_checked(user_id):
-                return self.driver.check_sndfa_code(user, code)
+                return self.driver.check_sndfa_code(user_id, code)
             else:
                 LOG.debug("User %s has no email checked" % user_id)
         return False
@@ -137,7 +140,6 @@ class SPasswordManager(manager.Manager):
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             self.driver.already_email_checked(user_id)
             return self.driver.check_email_code(user_id, code)
-
 
     def already_user_check_email(self, user_id):
         LOG.info("User %s check email code in driver manager" % user_id)
@@ -194,15 +196,15 @@ class Driver(object):
         raise exception.NotImplemented()
 
 
-class SPasswordMiddleware(wsgi.Middleware):
+# class SPasswordMiddleware(wsgi.Middleware):
 
-    def __init__(self, *args, **kwargs):
-        LOG.debug("SPasswordMiddleware INIT")
-        try:
-            self.spassword_api = SPasswordManager()
-        except Exception:
-            LOG.debug("SPasswordMiddleware already registered")
-        return super(SPasswordMiddleware, self).__init__(*args, **kwargs)
+#     def __init__(self, *args, **kwargs):
+#         LOG.debug("SPasswordMiddleware INIT")
+#         try:
+#             self.spassword_api = SPasswordManager()
+#         except Exception:
+#             LOG.debug("SPasswordMiddleware already registered")
+#         return super(SPasswordMiddleware, self).__init__(*args, **kwargs)
 
 
 @dependency.requires('identity_api')

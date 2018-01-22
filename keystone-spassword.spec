@@ -91,7 +91,7 @@ if grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
       -e "/\[filter:spassword_checker\]/,+2 d" \
       -e "/\[filter:spassword_time\]/,+2 d" \
   -e 's/spassword_checker //g' \
-  -e 's/spassword_time //g' \
+#  -e 's/spassword_time //g' \
   %{keystone_paste}
 else
   echo "SPASSWORD extension not configured. Skipping."

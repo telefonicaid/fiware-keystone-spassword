@@ -1,4 +1,3 @@
-
 #
 # Copyright 2015 Telefonica Investigacion y Desarrollo, S.A.U
 #
@@ -35,7 +34,6 @@ from keystone.identity.controllers import UserV3
 from keystone_scim.contrib.scim.controllers import ScimUserV3Controller
 from keystone_scim.contrib.scim import converter as conv
 from keystone_spassword.contrib.spassword.checker import CheckPassword
-#from keystone_spassword.contrib.spassword import SPasswordManager as PSManager
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
@@ -81,7 +79,6 @@ class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
                                                                       user_id)
 
 
-#@dependency.requires('spassword_api')
 class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def __init__(self):
@@ -118,11 +115,16 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         return super(SPasswordUserV3Controller, self).change_password(context,
                                                                       user_id=user_id,
                                                                       user=user)
+
+@dependency.requires('spassword_api', 'identity_api')
+class SPasswordV3Controller(controller.V3Controller):
+
+    def __init__(self):
+        super(SPasswordV3Controller, self).__init__()
+
+    @controller.protected()
     def recover_password(self, context, user_id):
         """Perform user password recover procedure."""
-        #from keystone_spassword.contrib.spassword import SPasswordManager as PSManager
-        from keystone.contrib.spassword import SPasswordManager as PSManager
-        self.spassword_api = PSManager()
         if not CONF.spassword.enabled:
             raise exception.NotImplemented()
 
@@ -218,8 +220,6 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def check_sndfa_code(self, context, user_id, code):
         """Perform user sndfa code check """
-        from keystone.contrib.spassword import SPasswordManager as PSManager
-        self.spassword_api = PSManager()
         res = True
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
@@ -231,25 +231,21 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
 
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
-        from keystone.contrib.spassword import SPasswordManager as PSManager
-        self.spassword_api = PSManager()
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
             LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
                                                                    user_info['name']))
             res = self.spassword_api.user_ask_check_email_code(user_id)
             LOG.debug('result %s' % res);
+            if res:
+                TO = [user_info['user_email']] # must be a list
+                SUBJECT = "IoT Platform recovery password"
+                TEXT = "Your new password is %s" % user_password
+                send_email(TO, SUBJECT, TEXT)
 
-            TO = [user_email] # must be a list
-            SUBJECT = "IoT Platform recovery password"
-            TEXT = "Your new password is %s" % user_password
-            send_email(TO, SUBJECT, TEXT)
-            # TODO  ?
 
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
-        from keystone.contrib.spassword import SPasswordManager as PSManager
-        self.spassword_api = PSManager()        
         res = False
         if CONF.spassword.enabled and CONF.spassword.sndfa:
             user_info = self.identity_api.get_user(user_id)
