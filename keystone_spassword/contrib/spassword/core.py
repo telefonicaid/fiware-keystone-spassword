@@ -117,35 +117,27 @@ class SPasswordManager(manager.Manager):
 
     def user_check_sndfa_code(self, user_id, code):
         LOG.info("User %s check sndfa code in driver manager" % user_id)
+        return self.driver.check_sndfa_code(user_id, code)
 
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            if self.driver.already_email_checked(user_id):
-                return self.driver.check_sndfa_code(user_id, code)
-            else:
-                LOG.debug("User %s has no email checked" % user_id)
-        return False
+    def user_modify_sndfa(self, user_id, enable):
+        LOG.info("User %s modify sndfa in driver manager" % user_id)
+        return self.driver.modify_sndfa(user_id, enable)
 
     def user_ask_check_email_code(self, user_id):
         LOG.info("User %s ask for a check email code in driver manager" % user_id)
-        code = None
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            self.driver.already_email_checked(user_id)
-            code = uuid.uuid4().hex
-            self.driver.set_check_email_code(user_id, code)
+        # Ensure sndfa_email exists in user
+        self.driver.already_email_checked(user_id)
+        code = uuid.uuid4().hex[:6]
+        self.driver.set_check_email_code(user_id, code)
         return code
 
     def user_check_email_code(self, user_id, code):
         LOG.info("User %s check email code in driver manager" % user_id)
-
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            if not self.driver.already_email_checked(user_id)
-                return self.driver.check_email_code(user_id, code)
+        return self.driver.check_email_code(user_id, code)
 
     def already_user_check_email(self, user_id):
-        LOG.info("User %s check email code in driver manager" % user_id)
-
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            return self.driver.already_email_checked(user_id)
+        LOG.info("User %s already check email in driver manager" % user_id)
+        return self.driver.already_email_checked(user_id)
 
 
 class Driver(object):

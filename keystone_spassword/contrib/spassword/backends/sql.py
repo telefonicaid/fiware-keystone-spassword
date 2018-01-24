@@ -25,6 +25,7 @@ except ImportError: from keystone.openstack.common import timeutils
 from keystone import exception
 from keystone.identity.backends.sql import User, Identity
 from keystone_spassword.contrib.spassword import Driver
+from keystone_spassword.contrib.spassword.mailer import SendMail
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 try: from oslo.config import cfg
@@ -38,8 +39,8 @@ class SPasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
     attributes = ['user_id', 'user_name', 'domain_id', 'creation_time',
                   'login_attempts', 'last_login_attempt_time',
-                  'sndfa', 'sndfa_last','sndfa_code','sndfa_time_code',
-                  'sndfa_email','sndfa_email_code'
+                  'sndfa', 'sndfa_last', 'sndfa_code', 'sndfa_time_code',
+                  'sndfa_email', 'sndfa_email_code'
                   ]
     user_id = sql.Column(sql.String(64), primary_key=True)
     user_name = sql.Column(sql.String(255), default=None)
@@ -129,10 +130,9 @@ class SPassword(Driver):
         with session.begin():
             session.add(spassword_ref)
 
-    # sndfa
+    # Second Factor Auth methods
+    #
     def set_user_sndfa_code(self, user, newcode):
-        # set new code into sndfa_code
-        # set current time into sndfa_time_code
         session = sql.get_session()
         spassword_ref = session.query(SPasswordModel).get(user['id'])
         LOG.debug('set user sndfa code %s for user %s' % (newcode, user['id']))
@@ -159,6 +159,20 @@ class SPassword(Driver):
                     session.add(spassword_ref)
         else:
             LOG.warn('user %s still has not spassword data' % user['id'])
+
+    def modify_sndfa(self, user_id, enable):
+        session = sql.get_session()
+        spassword_ref = session.query(SPasswordModel).get(user_id)
+        if spassword_ref:
+            spassword = spassword_ref.to_dict()
+            if spassword['sndfa_email']:
+                spassword_ref['sndfa'] = enable
+                return True
+            else:
+                LOG.warn('user %s still has not sndfa enabled or email verified' % user_id)
+        else:
+            LOG.warn('user %s still has not spassword data' % user_id)
+        return False
 
     def check_sndfa_code(self, user_id, code):
         session = sql.get_session()
@@ -239,8 +253,8 @@ class SPassword(Driver):
             LOG.warn('user %s still has not spassword data' % user_id)
         return False
 
-
-class Identity(Identity):
+@dependency.requires('spassword_api')
+class Identity(Identity, SendMail):
     def _check_password(self, password, user_ref):
         if CONF.spassword.enabled:
             # Check if password has been expired
@@ -313,22 +327,26 @@ class Identity(Identity):
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
 
                 # Check if sndfa
-                # CONF.spassword.sn2fa
-                if 'sndfa' in spassword:
-                    if spassword['sndfa']:
-                        if spassword['sndfa_email']:
-                            if (spassword['sndfa_last'] < datetime.datetime.utcnow() + \
+                if CONF.spassword.sndfa and 'sndfa' in spassword and spassword['sndfa']:
+                    if spassword['sndfa_email']:
+                        if (spassword['sndfa_last'] < datetime.datetime.utcnow() + \
                                 datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
-                                LOG.debug('user %s was validated with 2fa' % user_id)
-                                res = res and True
-                            else:
-                                # Should retr code that was sent email
-                                LOG.debug('user %s was not validated with 2fa due to code' % user_id)
-                                res = False
+                            LOG.debug('user %s was already validated with 2fa' % user_id)
+                            res = True
                         else:
-                            # Should return that emails is not validated
-                            LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
+                            # Should retry code that was sent email
+                            LOG.debug('user %s was not validated with 2fa due to code' % user_id)
+                            code = uuid.uuid4().hex[:6]
+                            self.spassword_api.set_user_sndfa_code(self.get_user(user_id), code)
+                            to = self.get_user(user_id)['email']
+                            subject = "IoT Platform second factor auth procedure"
+                            text = "The code for verify your access is %s" % code
+                            self.send_email(to, subject, text)
                             res = False
+                    else:
+                        # Should return that emails is not validated
+                        LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
+                        res = False
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)

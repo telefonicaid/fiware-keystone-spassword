@@ -34,6 +34,7 @@ from keystone.identity.controllers import UserV3
 from keystone_scim.contrib.scim.controllers import ScimUserV3Controller
 from keystone_scim.contrib.scim import converter as conv
 from keystone_spassword.contrib.spassword.checker import CheckPassword
+from keystone_spassword.contrib.spassword.mailer import SendMail
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 
@@ -44,6 +45,10 @@ CONF = cfg.CONF
 
 LOG = log.getLogger(__name__)
 
+class SPasswordNotConfigured(exception.Error):
+    message_format = _("The action you have requested needs spassword configured")
+    code = 400
+    title = 'Not Configured'
 
 class SPasswordScimUserV3Controller(ScimUserV3Controller, CheckPassword):
 
@@ -117,21 +122,19 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                                                                       user=user)
 
 @dependency.requires('spassword_api', 'identity_api')
-class SPasswordV3Controller(controller.V3Controller):
+class SPasswordV3Controller(controller.V3Controller, SendMail):
 
     def __init__(self):
         super(SPasswordV3Controller, self).__init__()
 
-    @controller.protected()
-    def recover_password(self, context, user_id):
-        """Perform user password recover procedure."""
-        if not CONF.spassword.enabled:
-            raise exception.NotImplemented()
+    def _check_spassword_configured(self):
+        # Check if spassword and sndfa are enabled
+        if not CONF.spassword.enabled or not CONF.spassword.sndfa:
+            msg = 'SPassword was not configured or enabled'
+            LOG.error('%s' % msg)
+            raise SPasswordNotConfigured()
 
-        user_info = self.identity_api.get_user(user_id)
-        LOG.debug('recover password invoked for user %s %s' % (user_info['id'],
-                                                               user_info['name']))
-
+    def _check_user_has_email_defined(self, user_info):
         # Check if user has a email defined
         if not 'email' in user_info:
             msg = 'User %s %s has no email defined' % (user_info['id'],
@@ -139,118 +142,103 @@ class SPasswordV3Controller(controller.V3Controller):
             LOG.error('%s' % msg)
             raise exception.Unauthorized(msg)
 
+    def _check_user_has_email_validated(self, user_info):
         # Check if user has a email validated
-        if not self.spassword_api.already_user_check_email(user_id):
+        if not self.spassword_api.already_user_check_email(user_info['id']):
             msg = 'User %s %s has no email verified' % (user_info['id'],
                                                         user_info['name'])
             LOG.error('%s' % msg)
             raise exception.Unauthorized(msg)
 
+    @controller.protected()
+    def recover_password(self, context, user_id):
+        """Perform user password recover procedure."""
+        self._check_spassword_configured()
+        user_info = self.identity_api.get_user(user_id)
+        LOG.debug('recover password invoked for user %s %s' % (user_info['id'],
+                                                               user_info['name']))
+        self._check_user_has_email_defined(user_info)
+        self._check_user_has_email_validated(user_info)
+
         # Create a new password randonly
-        new_password = uuid.uuid4().hex
+        new_password = uuid.uuid4().hex[:8]
 
         # Set new user password
         try:
-            update_dict = {'password': new_password}
-            self.identity_api.update_user( user_id, user_ref=update_dict)
+            update_dict = { 'password': new_password }
+            self.identity_api.update_user(user_id, user_ref=update_dict)
         except AssertionError:
             # authentication failed because of invalid username or password
             msg = 'Invalid username or password'
             LOG.error('%s' % msg)
             raise exception.Unauthorized(msg)
 
-        self.send_recovery_password_email(user_info['email'],
-                                          new_password)
+        if self._send_recovery_password_email(user_info['email'], new_password):
+            msg = 'recover password email sent to %s' % user_info['email']
+            LOG.info(msg)
+            return wsgi.render_response(body=msg, status=('200', 'OK'))
+        else:
+            msg = 'recover password email was not sent to %s' % user_info['email']
+            LOG.info(msg)
+            return wsgi.render_response(body=msg, status=('400', 'Error'))
 
-    def send_recovery_password_email(self, user_email, user_password):
+    def _send_recovery_password_email(self, user_email, user_password):
         to = user_email
         subject = "IoT Platform recovery password"
         text = "Your new password is %s" % user_password
-        self.send_email(to, subject, text)
-        LOG.info('recover password email sent to %s' % user_email)
+        return self.send_email(to, subject, text)
 
-
-    def send_email(self, to, subject, text):
-        import smtplib
-
-        dest = [to] # must be a list
-
-        #
-        # Prepare actual message
-        #
-        mail_headers = ("From: \"%s\" <%s>\r\nTo: %s\r\n"
-                        % (CONF.spassword.smtp_from,
-                           CONF.spassword.smtp_from,
-                           ", ".join(dest)))
-
-        msg = mail_headers
-        msg += ("Subject: %s\r\n\r\n" % subject)
-        msg += text
-
-        #
-        # Send the mail
-        #
-        try:
-            # TODO: server must be initialized by current class
-            server = smtplib.SMTP(CONF.spassword.smtp_server,
-                                  CONF.spassword.smtp_port)
-        except smtplib.socket.gaierror:
-            LOG.error('SMTP socket error')
-            return
-
-        server.ehlo()
-        server.starttls()
-        server.ehlo
-
-        try:
-            server.login(CONF.spassword.smtp_user,
-                         CONF.spassword.smtp_password)
-        except smtplib.SMTPAuthenticationError:
-            LOG.error('SMTP authentication error')
-            return
-
-        try:
-            server.sendmail(CONF.spassword.smtp_from, dest, msg)
-        except Exception:  # try to avoid catching Exception unless you have too
-            LOG.error('SMTP autentication error')
-            return
-        finally:
-            server.quit()
-        LOG.info('email was sent')
+    def modify_sndfa(self, context, user_id, value):
+        """Perform user sndfa modification """
+        self._check_spassword_configured()
+        user_info = self.identity_api.get_user(user_id)
+        LOG.debug('modify sndfa for user %s %s' % (user_info['id'],
+                                                    user_info['name']))
+        self._check_user_has_email_defined(user_info)
+        self._check_user_has_email_validated(user_info)
+        if 'enable' in value and (type(value['enable']) == types.BooleanType):
+            res = self.spassword_api.user_modify_sndfa(user_id, value['enable'])
+            response = { "could be modified: ": res }
+            return wsgi.render_response(body=msg, status=('200', 'OK'))
+        else:
+            raise exception.ValidationError(
+                message='invalid body format')
 
     def check_sndfa_code(self, context, user_id, code):
         """Perform user sndfa code check """
-        res = True
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            user_info = self.identity_api.get_user(user_id)
-            LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
-                                                                   user_info['name']))
-            res = self.spassword_api.user_check_sndfa_code(user_id, code)
-            LOG.debug('result %s' % res);
-        return res
+        self._check_spassword_configured()
+        user_info = self.identity_api.get_user(user_id)
+        LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
+                                                               user_info['name']))
+        self._check_user_has_email_verified(user_info)
+        if self.spassword_api.user_check_sndfa_code(user_id, code):
+            return wsgi.render_response(body={}, status=('200', 'OK'))
 
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            user_info = self.identity_api.get_user(user_id)
-            LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
-                                                                    user_info['name']))
-            LOG.debug('user_info %s', user_info)
-            code = self.spassword_api.user_ask_check_email_code(user_id)
-            LOG.debug('result %s' % code);
-            if code:
-                to = user_info['email'] # must be a list
-                subject = "IoT Platform verify email "
-                text = "The code for verify your email is %s" % code
-                self.send_email(to, subject, text)
+        self._check_user_has_email_defined(user_info)
+        user_info = self.identity_api.get_user(user_id)
+        LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
+                                                                user_info['name']))
+        code = self.spassword_api.user_ask_check_email_code(user_id)
+        to = user_info['email'] # must be a list
+        subject = "IoT Platform verify email "
+        text = "The code for verify your email is %s" % code
+        if self.send_email(to, subject, text):
+            msg = 'check email code sent to %s' % user_info['email']
+            LOG.info(msg)
+            return wsgi.render_response(body=msg, status=('200', 'OK'))
+        else:
+            msg = 'check email code was not sent to %s' % user_info['email']
+            LOG.info(msg)
+            return wsgi.render_response(body=msg, status=('400', 'Error sending email'))
 
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
-        res = False
-        if CONF.spassword.enabled and CONF.spassword.sndfa:
-            user_info = self.identity_api.get_user(user_id)
-            LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
-                                                                   user_info['name']))
-            res = self.spassword_api.user_check_email_code(user_id, code)
-            LOG.debug('result %s' % res);
+        self._check_user_has_email_defined(user_info)
+        user_info = self.identity_api.get_user(user_id)
+        LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
+                                                                user_info['name']))
+        res = self.spassword_api.user_check_email_code(user_id, code)
+        LOG.debug('result %s' % res);
         return res
