@@ -104,7 +104,7 @@ class SPasswordExtension(wsgi.ExtensionRouter):
             '/users/{user_id}/sndfa',
             controller=spassword_controller,
             action='modify_sndfa',
-            conditions=dict(method=['PUT']))
+            conditions=dict(method=['POST']))
 
         mapper.connect(
             '/users/{user_id}/checkemail',

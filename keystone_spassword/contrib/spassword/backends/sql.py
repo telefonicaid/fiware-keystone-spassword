@@ -20,6 +20,7 @@
 
 import datetime
 from keystone.common import sql
+#from keystone.common import dependency
 try: from oslo_utils import timeutils
 except ImportError: from keystone.openstack.common import timeutils
 from keystone import exception
@@ -167,6 +168,8 @@ class SPassword(Driver):
             spassword = spassword_ref.to_dict()
             if spassword['sndfa_email']:
                 spassword_ref['sndfa'] = enable
+                with session.begin():
+                    session.add(spassword_ref)
                 return True
             else:
                 LOG.warn('user %s still has not sndfa enabled or email verified' % user_id)

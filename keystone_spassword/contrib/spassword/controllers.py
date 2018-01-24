@@ -46,7 +46,7 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 class SPasswordNotConfigured(exception.Error):
-    message_format = _("The action you have requested needs spassword configured")
+    message_format = "The action you have requested needs spassword configured"
     code = 400
     title = 'Not Configured'
 
@@ -188,7 +188,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         text = "Your new password is %s" % user_password
         return self.send_email(to, subject, text)
 
-    def modify_sndfa(self, context, user_id, value):
+    def modify_sndfa(self, context, user_id, enable):
         """Perform user sndfa modification """
         self._check_spassword_configured()
         user_info = self.identity_api.get_user(user_id)
@@ -196,13 +196,13 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
                                                     user_info['name']))
         self._check_user_has_email_defined(user_info)
         self._check_user_has_email_validated(user_info)
-        if 'enable' in value and (type(value['enable']) == types.BooleanType):
-            res = self.spassword_api.user_modify_sndfa(user_id, value['enable'])
-            response = { "could be modified: ": res }
-            return wsgi.render_response(body=msg, status=('200', 'OK'))
+        if (enable.lower() == "true"):
+            res = self.spassword_api.user_modify_sndfa(user_id,
+                                                       enable.lower() == "true")
+            response = { "could be modified: " : res }
+            return wsgi.render_response(body=response, status=('200', 'OK'))
         else:
-            raise exception.ValidationError(
-                message='invalid body format')
+            raise exception.ValidationError(message='invalid body format')
 
     def check_sndfa_code(self, context, user_id, code):
         """Perform user sndfa code check """
@@ -216,8 +216,8 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
 
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
-        self._check_user_has_email_defined(user_info)
         user_info = self.identity_api.get_user(user_id)
+        self._check_user_has_email_defined(user_info)
         LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
                                                                 user_info['name']))
         code = self.spassword_api.user_ask_check_email_code(user_id)
@@ -235,8 +235,8 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
 
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
-        self._check_user_has_email_defined(user_info)
         user_info = self.identity_api.get_user(user_id)
+        self._check_user_has_email_defined(user_info)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                 user_info['name']))
         res = self.spassword_api.user_check_email_code(user_id, code)

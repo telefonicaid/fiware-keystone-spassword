@@ -42,7 +42,7 @@ if ! grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
   sed -i \
   -e '/^\[pipeline:api_v3\]$/,/^\[/ s/^pipeline\(.*\) scim_extension service_v3$/pipeline\1 spassword_checker spassword_time scim_extension service_v3/' \
   -e 's/\[pipeline:api_v3\]/[filter:spassword_checker]\npaste.filter_factory = keystone_spassword.contrib.spassword.routers:SPasswordExtension.factory\n\n&/' \
-  -e 's/\[pipeline:api_v3\]/[filter:spassword_time]\npaste.filter_factory = keystone_spassword.contrib.spassword:SPasswordMiddleware.factory\n\n&/' \
+#  -e 's/\[pipeline:api_v3\]/[filter:spassword_time]\npaste.filter_factory = keystone_spassword.contrib.spassword:SPasswordMiddleware.factory\n\n&/' \
   %{keystone_paste}
 else
   echo "SPASSWORD extension already configured. Skipping."
@@ -89,7 +89,7 @@ if grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
   echo "Removing SPASSWORD extension from Keystone configuration."
   sed -i \
       -e "/\[filter:spassword_checker\]/,+2 d" \
-      -e "/\[filter:spassword_time\]/,+2 d" \
+#      -e "/\[filter:spassword_time\]/,+2 d" \
   -e 's/spassword_checker //g' \
 #  -e 's/spassword_time //g' \
   %{keystone_paste}
