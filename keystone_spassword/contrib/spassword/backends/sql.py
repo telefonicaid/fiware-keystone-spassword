@@ -356,7 +356,6 @@ class Identity(Identity, SendMail):
                                 spassword['sndfa_last'] > datetime.datetime.utcnow() - \
                                 datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
                             LOG.debug('user %s was already validated with 2fa' % user_id)
-                            # res = {} ?
                         else:
                             # Should retry code that was sent email
                             LOG.debug('user %s was not validated with 2fa due to code' % user_id)

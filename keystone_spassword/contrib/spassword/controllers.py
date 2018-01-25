@@ -214,7 +214,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         self._check_user_has_email_validated(user_info)
         if self.spassword_api.user_check_sndfa_code(user_id, code):
             return wsgi.render_response(status=('204', 'sndfa Authorized'))
-        else
+        else:
             return wsgi.render_response(status=('401', 'sndfa Unauthorized'))
 
     @controller.protected()
