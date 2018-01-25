@@ -199,12 +199,12 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         if (enable.lower() == "true"):
             res = self.spassword_api.user_modify_sndfa(user_id,
                                                        enable.lower() == "true")
-            response = { "could be modified: " : res }
+            response = { "modified" : res }
             return wsgi.render_response(body=response, status=('200', 'OK'))
         else:
             raise exception.ValidationError(message='invalid body format')
 
-    # Should be called without auth token
+    # Should be called without provide an auth token
     def check_sndfa_code(self, context, user_id, code):
         """Perform user sndfa code check """
         self._check_spassword_configured()
@@ -213,7 +213,9 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
                                                                user_info['name']))
         self._check_user_has_email_validated(user_info)
         if self.spassword_api.user_check_sndfa_code(user_id, code):
-            return wsgi.render_response(body={}, status=('200', 'OK'))
+            return wsgi.render_response(status=('204', 'sndfa Authorized'))
+        else
+            return wsgi.render_response(status=('401', 'sndfa Unauthorized'))
 
     @controller.protected()
     def ask_for_check_email_code(self, context, user_id):
@@ -227,7 +229,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         subject = "IoT Platform verify email "
         text = "The code for verify your email is %s" % code
         link = "http://%s/v3/users/%s/checkemail/%s" % (CONF.spassword.sndfa_link_host,
-                                                            user_info['id'], code)
+                                                        user_info['id'], code)
         text += " Link is: %s" % link
         if self.send_email(to, subject, text):
             msg = 'check email code sent to %s' % user_info['email']
@@ -244,6 +246,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         self._check_user_has_email_defined(user_info)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
-        res = self.spassword_api.user_check_email_code(user_id, code)
-        LOG.debug('result %s' % res);
-        return res
+        if self.spassword_api.user_check_email_code(user_id, code):
+            return wsgi.render_response(status=('204', 'Valid code. Email checked'))
+        else:
+            return wsgi.render_response(status=('401', 'No valid code.'))

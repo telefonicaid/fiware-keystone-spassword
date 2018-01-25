@@ -360,7 +360,6 @@ class Identity(Identity, SendMail):
                         else:
                             # Should retry code that was sent email
                             LOG.debug('user %s was not validated with 2fa due to code' % user_id)
-                            # TDOO: use same code or another depending on sndfa_time_code
                             if (spassword['sndfa_time_code'] and
                                     spassword['sndfa_time_code'] > datetime.datetime.utcnow() - \
                                     datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
