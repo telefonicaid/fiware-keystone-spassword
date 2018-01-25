@@ -19,8 +19,10 @@
 # under the License.
 
 import datetime
+import uuid
+
 from keystone.common import sql
-#from keystone.common import dependency
+from keystone.common import dependency
 try: from oslo_utils import timeutils
 except ImportError: from keystone.openstack.common import timeutils
 from keystone import exception
@@ -196,8 +198,9 @@ class SPassword(Driver):
         if spassword_ref:
             spassword = spassword_ref.to_dict()
             if spassword['sndfa'] and spassword['sndfa_email']:
-                if (spassword['sndfa_last'] < datetime.datetime.utcnow() + \
-                      datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
+                if (spassword['sndfa_last'] and
+                        spassword['sndfa_last'] < datetime.datetime.utcnow() + \
+                        datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
                     LOG.debug('user %s sndfa verified' % user['id'])
                     return True
                 else:
@@ -332,24 +335,36 @@ class Identity(Identity, SendMail):
                 # Check if sndfa
                 if CONF.spassword.sndfa and 'sndfa' in spassword and spassword['sndfa']:
                     if spassword['sndfa_email']:
-                        if (spassword['sndfa_last'] < datetime.datetime.utcnow() + \
-                                datetime.timedelta(minutes=CONF.spassword.sndfa_time_window)):
+                        if (spassword['sndfa_last'] and
+                                spassword['sndfa_last'] > datetime.datetime.utcnow() - \
+                                datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
                             LOG.debug('user %s was already validated with 2fa' % user_id)
                             res = True
                         else:
                             # Should retry code that was sent email
                             LOG.debug('user %s was not validated with 2fa due to code' % user_id)
-                            code = uuid.uuid4().hex[:6]
-                            self.spassword_api.set_user_sndfa_code(self.get_user(user_id), code)
+                            # TDOO: use same code or another depending on sndfa_time_code
+                            if (spassword['sndfa_time_code'] and
+                                    spassword['sndfa_time_code'] > datetime.datetime.utcnow() - \
+                                    datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
+                                code = spassword['sndfa_code']
+                            else:
+                                code = uuid.uuid4().hex[:6]
+                                self.spassword_api.set_user_sndfa_code(self.get_user(user_id), code)
                             to = self.get_user(user_id)['email']
                             subject = "IoT Platform second factor auth procedure"
                             text = "The code for verify your access is %s" % code
+                            link = "http://localhost:5001/v3/users/%s/checkemail/%s" % (user_info['id'], code)
+                            text += "link is: %s" % link
                             self.send_email(to, subject, text)
                             res = False
+                            auth_error_msg = 'Expecting Second Factor Authentication, email was sent'
                     else:
                         # Should return that emails is not validated
                         LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
+                        # TODO: force email code verification ?
                         res = False
+                        auth_error_msg = 'Expecting Second Factor Authentication and email verification'
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
