@@ -38,6 +38,18 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
+class SPasswordSecurityError(exception.Error):
+    def _build_message(self, message, **kwargs):
+        return '%(message)s' % {
+            'message': message or self.message_format % kwargs}
+
+
+class SPasswordUnauthorized(SPasswordSecurityError):
+    message_format = "The request you have made requires authentication."
+    code = 401
+    title = 'Unauthorized'
+
+
 class SPasswordModel(sql.ModelBase, sql.DictBase):
     __tablename__ = 'spassword'
     attributes = ['user_id', 'user_name', 'domain_id', 'creation_time',
@@ -344,7 +356,7 @@ class Identity(Identity, SendMail):
                                 spassword['sndfa_last'] > datetime.datetime.utcnow() - \
                                 datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
                             LOG.debug('user %s was already validated with 2fa' % user_id)
-                            res = True
+                            # res = {} ?
                         else:
                             # Should retry code that was sent email
                             LOG.debug('user %s was not validated with 2fa due to code' % user_id)
@@ -359,16 +371,17 @@ class Identity(Identity, SendMail):
                             to = self.get_user(user_id)['email']
                             subject = "IoT Platform second factor auth procedure"
                             text = "The code for verify your access is %s" % code
-                            link = "http://localhost:5001/v3/users/%s/sndfa/%s" % (user_id, code)
+                            link = "http://%s/v3/users/%s/sndfa/%s" % (CONF.spassword.sndfa_link_host,
+                                                                           user_id, code)
                             text += " Link is: %s" % link
                             self.send_email(to, subject, text)
-                            res = False
+                            res = None
                             auth_error_msg = 'Expecting Second Factor Authentication, email was sent'
                     else:
                         # Should return that emails is not validated
                         LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
                         # TODO: force email code verification ?
-                        res = False
+                        res = None
                         auth_error_msg = 'Expecting Second Factor Authentication and email verification'
 
             else: # User still not registered in spassword
@@ -405,6 +418,6 @@ class Identity(Identity, SendMail):
 
         if not res:
             # Return 401 due to bad user/password or user reach max attempts
-            raise exception.Unauthorized(auth_error_msg)
+            raise SPasswordUnauthorized(auth_error_msg)
         return res
 
