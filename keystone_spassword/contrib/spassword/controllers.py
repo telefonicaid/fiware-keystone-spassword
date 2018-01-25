@@ -228,7 +228,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         subject = "IoT Platform verify email "
         text = "The code for verify your email is %s" % code
         link = "http://localhost:5001/v3/users/%s/checkemail/%s" % (user_info['id'], code)
-        text += "link is: %s" % link
+        text += " Link is: %s" % link
         if self.send_email(to, subject, text):
             msg = 'check email code sent to %s' % user_info['email']
             LOG.info(msg)
@@ -238,7 +238,6 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
             LOG.info(msg)
             return wsgi.render_response(body=msg, status=('400', 'Error sending email'))
 
-    @controller.protected()
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
         user_info = self.identity_api.get_user(user_id)

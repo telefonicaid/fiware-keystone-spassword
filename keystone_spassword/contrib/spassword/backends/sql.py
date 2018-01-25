@@ -185,7 +185,12 @@ class SPassword(Driver):
         if spassword_ref:
             spassword = spassword_ref.to_dict()
             if spassword['sndfa'] and spassword['sndfa_email']:
-                return spassword['sndfa_code'] == code
+                checked = spassword['sndfa_code'] == code
+                if checked:
+                    spassword_ref['sndfa_last'] = datetime.datetime.utcnow()
+                    with session.begin():
+                        session.add(spassword_ref)
+                return checked
             else:
                 LOG.warn('user %s still has not sndfa enabled or email verified' % user_id)
         else:
@@ -355,7 +360,7 @@ class Identity(Identity, SendMail):
                             subject = "IoT Platform second factor auth procedure"
                             text = "The code for verify your access is %s" % code
                             link = "http://localhost:5001/v3/users/%s/sndfa/%s" % (user_id, code)
-                            text += "link is: %s" % link
+                            text += " Link is: %s" % link
                             self.send_email(to, subject, text)
                             res = False
                             auth_error_msg = 'Expecting Second Factor Authentication, email was sent'
