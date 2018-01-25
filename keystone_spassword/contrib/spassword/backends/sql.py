@@ -350,7 +350,7 @@ class Identity(Identity, SendMail):
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
 
                 # Check if sndfa
-                if CONF.spassword.sndfa and 'sndfa' in spassword and spassword['sndfa']:
+                if res and CONF.spassword.sndfa and 'sndfa' in spassword and spassword['sndfa']:
                     if spassword['sndfa_email']:
                         if (spassword['sndfa_last'] and
                                 spassword['sndfa_last'] > datetime.datetime.utcnow() - \
@@ -376,13 +376,15 @@ class Identity(Identity, SendMail):
                             text += " Link is: %s" % link
                             self.send_email(to, subject, text)
                             res = None
-                            auth_error_msg = 'Expecting Second Factor Authentication, email was sent'
+                            auth_error_msg = 'Expecting Second Factor Authentication, email was sent. '
+                            auth_error_msg += 'Please check it and click in provided link.'
                     else:
                         # Should return that emails is not validated
                         LOG.debug('user %s was not validated with 2fa due to email not verified' % user_id)
                         # TODO: force email code verification ?
                         res = None
-                        auth_error_msg = 'Expecting Second Factor Authentication and email verification'
+                        auth_error_msg = 'Email not verificated to perform Second Factor Authentication. '
+                        auto_error_msg += 'Please contact with your admin to solve it.'
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
