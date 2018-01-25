@@ -354,7 +354,7 @@ class Identity(Identity, SendMail):
                             to = self.get_user(user_id)['email']
                             subject = "IoT Platform second factor auth procedure"
                             text = "The code for verify your access is %s" % code
-                            link = "http://localhost:5001/v3/users/%s/checkemail/%s" % (user_info['id'], code)
+                            link = "http://localhost:5001/v3/users/%s/sndfa/%s" % (user_id, code)
                             text += "link is: %s" % link
                             self.send_email(to, subject, text)
                             res = False

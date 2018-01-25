@@ -188,6 +188,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         text = "Your new password is %s" % user_password
         return self.send_email(to, subject, text)
 
+    @controller.protected()
     def modify_sndfa(self, context, user_id, enable):
         """Perform user sndfa modification """
         self._check_spassword_configured()
@@ -204,16 +205,18 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         else:
             raise exception.ValidationError(message='invalid body format')
 
+    # Should be called without auth token
     def check_sndfa_code(self, context, user_id, code):
         """Perform user sndfa code check """
         self._check_spassword_configured()
         user_info = self.identity_api.get_user(user_id)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
-        self._check_user_has_email_verified(user_info)
+        self._check_user_has_email_validated(user_info)
         if self.spassword_api.user_check_sndfa_code(user_id, code):
             return wsgi.render_response(body={}, status=('200', 'OK'))
 
+    @controller.protected()
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
         user_info = self.identity_api.get_user(user_id)
@@ -235,12 +238,13 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
             LOG.info(msg)
             return wsgi.render_response(body=msg, status=('400', 'Error sending email'))
 
+    @controller.protected()
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
         user_info = self.identity_api.get_user(user_id)
         self._check_user_has_email_defined(user_info)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
-                                                                user_info['name']))
+                                                               user_info['name']))
         res = self.spassword_api.user_check_email_code(user_id, code)
         LOG.debug('result %s' % res);
         return res
