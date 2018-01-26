@@ -367,11 +367,10 @@ class Identity(Identity, SendMail):
                                 code = uuid.uuid4().hex[:6]
                                 self.spassword_api.set_user_sndfa_code(self.get_user(user_id), code)
                             to = self.get_user(user_id)['email']
-                            subject = "IoT Platform second factor auth procedure"
-                            text = "The code for verify your access is %s" % code
-                            link = "http://%s/v3/users/%s/sndfa/%s" % (CONF.spassword.sndfa_link_host,
-                                                                           user_id, code)
-                            text += " Link is: %s" % link
+                            subject = 'IoT Platform second factor auth procedure'
+                            text = 'The code for verify your access is %s' % code
+                            link = 'http://%s/v3/users/%s/sndfa/%s' % (CONF.spassword.sndfa_endpoint, user_id, code)
+                            text += ' Link is: %s' % link
                             self.send_email(to, subject, text)
                             res = None
                             auth_error_msg = 'Expecting Second Factor Authentication, email was sent. '

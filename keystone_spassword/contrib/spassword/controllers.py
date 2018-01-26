@@ -183,8 +183,8 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
 
     def _send_recovery_password_email(self, user_email, user_password):
         to = user_email
-        subject = "IoT Platform recovery password"
-        text = "Your new password is %s" % user_password
+        subject = 'IoT Platform recovery password'
+        text = 'Your new password is %s' % user_password
         return self.send_email(to, subject, text)
 
     @controller.protected()
@@ -226,11 +226,10 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
                                                                 user_info['name']))
         code = self.spassword_api.user_ask_check_email_code(user_id)
         to = user_info['email'] # must be a list
-        subject = "IoT Platform verify email "
-        text = "The code for verify your email is %s" % code
-        link = "http://%s/v3/users/%s/checkemail/%s" % (CONF.spassword.sndfa_link_host,
-                                                        user_info['id'], code)
-        text += " Link is: %s" % link
+        subject = 'IoT Platform verify email '
+        text = 'The code for verify your email is %s' % code
+        link = 'http://%s/v3/users/%s/checkemail/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
+        text += ' Link is: %s' % link
         if self.send_email(to, subject, text):
             msg = 'check email code sent to %s' % user_info['email']
             LOG.info(msg)
