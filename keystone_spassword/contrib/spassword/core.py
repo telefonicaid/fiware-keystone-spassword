@@ -54,7 +54,7 @@ CONF.register_opt(cfg.StrOpt('smtp_user', default='user'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_password', default='password'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
 CONF.register_opt(cfg.BoolOpt('sndfa', default=False), group='spassword')
-CONF.register_opt(cfg.BoolOpt('sndfa_verify_enable', default=False), group='spassword')
+CONF.register_opt(cfg.StrOpt('sndfa_endpoint', default='localhost:5001'), group='spassword')
 CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword')
 
 
