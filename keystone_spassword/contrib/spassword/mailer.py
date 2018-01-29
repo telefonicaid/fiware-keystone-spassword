@@ -18,6 +18,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import smtplib
+
 from keystone import exception
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
@@ -34,7 +36,6 @@ class SendMail(object):
 
 
     def send_email(self, to, subject, text):
-        import smtplib
 
         dest = [to] # must be a list
 
