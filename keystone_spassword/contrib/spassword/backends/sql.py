@@ -351,6 +351,9 @@ class Identity(Identity, SendMail):
 
                 # Check if sndfa
                 if res and CONF.spassword.sndfa and 'sndfa' in spassword and spassword['sndfa']:
+                    # Put sndfa and sndfa_email info
+                    res['extras']['sndfa'] = spassword['sndfa']
+                    res['extras']['sndfa_email'] = spassword['sndfa_email']
                     if spassword['sndfa_email']:
                         if (spassword['sndfa_last'] and
                                 spassword['sndfa_last'] > datetime.datetime.utcnow() - \
@@ -407,7 +410,9 @@ class Identity(Identity, SendMail):
                     res['extras'] = {
                         "password_creation_time": timeutils.isotime(data_user['creation_time']),
                         "password_expiration_time": timeutils.isotime(expiration_date),
-                        "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist
+                        "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist,
+                        "sndfa" : False,
+                        "sndfa_email" : False
                     }
                 spassword_ref = SPasswordModel.from_dict(data_user)
 
