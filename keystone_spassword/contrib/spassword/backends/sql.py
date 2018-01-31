@@ -349,11 +349,14 @@ class Identity(Identity, SendMail):
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
 
-                # Check if sndfa
+                # Check if sndfa_email in user
+                if res and CONF.spassword.sndfa and 'sndfa_email' in spassword:
+                    # Put sndfa and sndfa_email info
+                    res['extras']['sndfa_email'] = spassword['sndfa_email']
+                # Check if sndfa in user
                 if res and CONF.spassword.sndfa and 'sndfa' in spassword and spassword['sndfa']:
                     # Put sndfa and sndfa_email info
                     res['extras']['sndfa'] = spassword['sndfa']
-                    res['extras']['sndfa_email'] = spassword['sndfa_email']
                     if spassword['sndfa_email']:
                         if (spassword['sndfa_last'] and
                                 spassword['sndfa_last'] > datetime.datetime.utcnow() - \
