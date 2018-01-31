@@ -196,9 +196,9 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
                                                     user_info['name']))
         self._check_user_has_email_defined(user_info)
         self._check_user_has_email_validated(user_info)
-        if (enable.lower() == "true"):
+        if (type(enable) == type(True)):
             res = self.spassword_api.user_modify_sndfa(user_id,
-                                                       enable.lower() == "true")
+                                                       enable)
             response = { "modified" : res }
             return wsgi.render_response(body=response, status=('200', 'OK'))
         else:
