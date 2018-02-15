@@ -295,7 +295,7 @@ class Identity(Identity, SendMail):
                     res = False
                     auth_error_msg = ('Password expired for user %s. Contact with your ' +
                                       'admin') % spassword['user_name']
-                    raise exception.Unauthorized(auth_error_msg)
+                    raise SPasswordUnauthorized(auth_error_msg)
 
         res = super(Identity, self)._check_password(password, user_ref)
         return res
@@ -319,7 +319,7 @@ class Identity(Identity, SendMail):
                         auth_error_msg = ('Password temporarily blocked for user %s due to reach' +
                                           ' max number of tries. Contact with your ' +
                                           ' admin') % spassword['user_name']
-                        raise exception.Unauthorized(auth_error_msg)
+                        raise SPasswordUnauthorized(auth_error_msg)
         try:
             res = super(Identity, self).authenticate(user_id, password)
         except AssertionError:
@@ -387,7 +387,7 @@ class Identity(Identity, SendMail):
                         # TODO: force email code verification ?
                         res = None
                         auth_error_msg = 'Email not verificated to perform Second Factor Authentication. '
-                        auto_error_msg += 'Please contact with your admin to solve it.'
+                        auth_error_msg += 'Please contact with your admin to solve it.'
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
