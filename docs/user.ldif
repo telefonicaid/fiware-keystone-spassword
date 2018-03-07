@@ -1,8 +1,9 @@
 dn: uid=adm,ou=users,dc=openstack,dc=org
 objectClass: top
-objectClass: account
 objectClass: posixAccount
 objectClass: shadowAccount
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
 cn: adm
 uid: adm
 uidNumber: 16859
@@ -10,6 +11,8 @@ gidNumber: 100
 homeDirectory: /home/adm
 loginShell: /bin/bash
 gecos: adm
+mail: adm@acme.com
+sn: adm
 userPassword: {crypt}x
 shadowLastChange: 0
 shadowMax: 0
