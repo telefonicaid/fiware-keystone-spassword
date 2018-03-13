@@ -8,6 +8,7 @@ ENV KEYSTONE_SCIM_VERSION 1.1.7
 ENV KEYSTONE_SPASSWORD_VERSION 1.3.0
 
 COPY ./*.sh /opt/keystone/
+COPY ./sql_ldap.py /opt/keystone/
 
 WORKDIR /opt/keystone
 
@@ -75,6 +76,17 @@ RUN \
     cd ${dir}/${repo_spassword}-${tag} && \
     source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # LDAP pre-support
+    mkdir -p /opt/keystone/domains && \
+    chown keystone.keystone /etc/keystone/domains && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity domain_specific_drivers_enabled true && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity domain_config_dir /etc/keystone/domains && \
+    chown keystone.keystone /etc/keystone/domains/* && \
+    cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
