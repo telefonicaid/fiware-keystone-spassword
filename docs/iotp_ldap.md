@@ -149,7 +149,7 @@ The following steps are the same that above but for the case of LDAP is in a doc
 
 ## Adapt existing LDAP (creating needed groups)
 
-In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies (described in [fiware-iot-stack.readthedocs.io](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html#users-and-permissions)()
+In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies (described in [fiware-iot-stack.readthedocs.io](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html#users-and-permissions)
 
   - ServiceCustomerGroup
   - SubServiceCustomerGroup
