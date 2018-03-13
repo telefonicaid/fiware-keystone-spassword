@@ -8,7 +8,7 @@ ENV KEYSTONE_SCIM_VERSION 1.1.7
 ENV KEYSTONE_SPASSWORD_VERSION 1.3.0
 
 COPY ./*.sh /opt/keystone/
-COPY ../docs/sql_ldap.py /opt/keystone/
+COPY ./sql_ldap.py /opt/keystone/
 
 WORKDIR /opt/keystone
 

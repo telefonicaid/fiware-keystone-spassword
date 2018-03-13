@@ -193,7 +193,7 @@ In order to configure keystone for LDAP integration you should get into Keystone
    $ chown keystone.keystone /etc/keystone/domains/*
 ```
 
-  Copy driver [sql_ldap.py](./sql_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory. This driver is unique for all services (keystone domains) that use LDAP authentication.
+  Copy driver [sql_ldap.py](../docker/sql_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory. This driver is unique for all services (keystone domains) that use LDAP authentication.
 
 ```
    $ cp sql_ldap.py  /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends
