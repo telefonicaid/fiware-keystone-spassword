@@ -23,6 +23,7 @@ In order to work with Second Factor Authentication feature needs spassword a pro
 
 ```
 [spassword]
+smtp_host=localhost
 smtp_port=587
 smtp_tls=true
 smtp_user='smtpuser@yourdomain.com'
