@@ -54,7 +54,7 @@ OpenLDAP is a free, open source implementation of the Lightweight Directory Acce
 
 #### Debian/Ubuntu: sldap
 ```
- $ sudo apt-get install slapd
+ $ sudo apt-get install slapd ldapscripts
 ```
 
 #### Centos/RedHat 7: openldap-servers
@@ -149,7 +149,7 @@ The following steps are the same that above but for the case of LDAP is in a doc
 
 ## Adapt existing LDAP (creating needed groups)
 
-In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies (described in [fiware-iot-stack.readthedocs.io](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html#users-and-permissions)()
+In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies (described in [fiware-iot-stack.readthedocs.io](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html#users-and-permissions)
 
   - ServiceCustomerGroup
   - SubServiceCustomerGroup
@@ -193,7 +193,7 @@ In order to configure keystone for LDAP integration you should get into Keystone
    $ chown keystone.keystone /etc/keystone/domains/*
 ```
 
-  Copy driver [sql_ldap.py](./sql_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory. This driver is unique for all services (keystone domains) that use LDAP authentication.
+  Copy driver [sql_ldap.py](../docker/sql_ldap.py) into /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends directory. This driver is unique for all services (keystone domains) that use LDAP authentication.
 
 ```
    $ cp sql_ldap.py  /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends

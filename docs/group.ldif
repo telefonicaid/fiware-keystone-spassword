@@ -2,4 +2,4 @@ dn: cn=SubServiceAdminGroup,ou=groups,dc=openstack,dc=org
 objectclass: groupofnames
 cn: SubServiceAdminGroup
 description: SubServiceAdmin group
-member: uid=adm,ou=Users,dc=openstack,dc=org
+member: uid=adm,ou=users,dc=openstack,dc=org
