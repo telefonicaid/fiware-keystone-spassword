@@ -77,7 +77,7 @@ RUN \
     source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # LDAP pre-support
-    mkdir -p /opt/keystone/domains && \
+    mkdir -p /etc/keystone/domains && \
     chown keystone.keystone /etc/keystone/domains && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_specific_drivers_enabled true && \
