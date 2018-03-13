@@ -54,7 +54,7 @@ OpenLDAP is a free, open source implementation of the Lightweight Directory Acce
 
 #### Debian/Ubuntu: sldap
 ```
- $ sudo apt-get install slapd
+ $ sudo apt-get install slapd ldapscripts
 ```
 
 #### Centos/RedHat 7: openldap-servers
