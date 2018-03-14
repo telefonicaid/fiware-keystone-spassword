@@ -77,13 +77,12 @@ RUN \
     source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # LDAP pre-support
-    mkdir -p /opt/keystone/domains && \
+    mkdir -p /etc/keystone/domains && \
     chown keystone.keystone /etc/keystone/domains && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_specific_drivers_enabled true && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_config_dir /etc/keystone/domains && \
-    chown keystone.keystone /etc/keystone/domains/* && \
     cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
