@@ -64,7 +64,7 @@ OpenLDAP is a free, open source implementation of the Lightweight Directory Acce
 
 ### Configure LDAP
 
-#### Debian/Ubuntu:
+#### Debian/Ubuntu: (recomended)
 Set Domain Name to "openstack.org", set organization to "openstack" and give a password.
 
 ```
@@ -77,6 +77,9 @@ Follow this guide about [install an OpenLDAP for Keystone](https://wiki.openstac
 ```
  $ slappasswd -h {SSHA} -s <password>
  $ sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f ./manager.ldif
+ $ sudo ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif
+ $ sudo ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif 
+ $ sudo ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif
 ```
 
 
