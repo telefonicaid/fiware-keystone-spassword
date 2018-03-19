@@ -20,13 +20,10 @@
 
 """Extensions supporting Strong Passwords."""
 
-import copy
 import uuid
 
-from keystone import config
 from keystone.common import controller
 from keystone.common import dependency
-from keystone.common import extension
 from keystone.common import wsgi
 from keystone import exception
 from keystone import identity

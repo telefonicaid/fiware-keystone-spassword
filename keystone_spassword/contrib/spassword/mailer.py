@@ -76,7 +76,7 @@ class SendMail(object):
 
         try:
             server.sendmail(CONF.spassword.smtp_from, dest, msg)
-        except Exception:  # try to avoid catching Exception unless you have too
+        except Exception, ex:  # try to avoid catching Exception unless you have too
             LOG.error('SMTP sendmail error %s' % ex)
             return False
         finally:

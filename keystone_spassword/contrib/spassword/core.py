@@ -25,8 +25,7 @@ import uuid
 from keystone import auth
 from keystone.auth.plugins import password
 from keystone.common import dependency
-from keystone.common import extension
-from keystone.common import wsgi
+#from keystone.common import wsgi
 from keystone import exception
 from keystone import identity
 try: from oslo_log import log
