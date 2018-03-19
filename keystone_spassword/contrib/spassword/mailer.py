@@ -81,5 +81,5 @@ class SendMail(object):
             return False
         finally:
             server.quit()
-        logger.info('email was sent to %s' % dest)
+        LOG.info('email was sent to %s' % dest)
         return True
