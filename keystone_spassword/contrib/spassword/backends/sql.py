@@ -74,42 +74,42 @@ class SPasswordModel(sql.ModelBase, sql.DictBase):
     sndfa_email_code = sql.Column(sql.String(32), default=None)
 
 
+def get_user_session(user_id):
+    try:
+        session = sql.get_session()
+        user_ref = session.query(User).get(user_id)
+    except AttributeError:
+        with sql.session_for_read() as session:
+            user_ref = session.query(User).get(user_id)
+   return user_ref, session
+
+def get_spassword_session(user_id):
+    try:
+        session = sql.get_session()
+        spassword_ref = session.query(SpasswordModel).get(user_id)
+    except AttributeError:
+        with sql.session_for_read() as session:
+            spassword_ref = session.query(SpasswordModel).get(user_id)
+    return spassword_ref, session
+
 
 class SPassword(Driver):
 
-    def get_user_session(self, user_id):
-        try:
-            session = sql.get_session()
-            user_ref = session.query(User).get(user_id)
-        except AttributeError:
-            with sql.session_for_read() as session:
-                user_ref = session.query(User).get(user_id)
-        return user_ref, session
-
-    def get_spassword_session(self, user_id):
-        try:
-            session = sql.get_session()
-            spassword_ref = session.query(SpasswordModel).get(user_id)
-        except AttributeError:
-            with sql.session_for_read() as session:
-                spassword_ref = session.query(SpasswordModel).get(user_id)
-        return spassword_ref, session
-
     def get_user(self, user_id):
-        user_ref, session = self.get_user_session(user_id)
+        user_ref, session = get_user_session(user_id)
         if not user_ref:
             raise exception.UserNotFound(user_id=user_id)
         return user_ref
 
     def remove_user(self, user_id):
-        spassword_ref, session = self.get_spassword_session(user_id)
+        spassword_ref, session = get_spassword_session(user_id)
         LOG.info('removing user %s from spassword' % user_id)
         if spassword_ref:
             with session.begin():
                 session.delete(spassword_ref)
 
     def set_user_creation_time(self, user):
-        spassword_ref, session = self.get_spassword_session(user['id'])
+        spassword_ref, session = get_spassword_session(user['id'])
         LOG.debug('set user creation time for %s' % user['id'])
         if not spassword_ref:
             data_user = {}
@@ -137,7 +137,7 @@ class SPassword(Driver):
         return spassword_ref.to_dict()
 
     def update_user_modification_time(self, user):
-        spassword_ref, session = self.get_spassword_session(user['id'])
+        spassword_ref, session = get_spassword_session(user['id'])
         LOG.debug('update user modification time for %s' % user['id'])
         if spassword_ref:
             spassword_ref['creation_time'] = datetime.datetime.utcnow()
@@ -162,7 +162,7 @@ class SPassword(Driver):
     # Second Factor Auth methods
     #
     def set_user_sndfa_code(self, user, newcode):
-        spassword_ref, session = self.get_spassword_session(user['id'])
+        spassword_ref, session = get_spassword_session(user['id'])
         LOG.debug('set user sndfa code %s for user %s' % (newcode, user['id']))
         if spassword_ref:
             spassword = spassword_ref.to_dict()
@@ -189,7 +189,7 @@ class SPassword(Driver):
             LOG.warn('user %s still has not spassword data' % user['id'])
 
     def modify_sndfa(self, user_id, enable):
-        spassword_ref, session = self.get_spassword_session(user_id)
+        spassword_ref, session = get_spassword_session(user_id)
         if spassword_ref:
             spassword = spassword_ref.to_dict()
             if spassword['sndfa_email']:
@@ -204,7 +204,7 @@ class SPassword(Driver):
         return False
 
     def check_sndfa_code(self, user_id, code):
-        spassword_ref, session = self.get_spassword_session(user_id)
+        spassword_ref, session = get_spassword_session(user_id)
         if spassword_ref:
             spassword = spassword_ref.to_dict()
             if spassword['sndfa'] and spassword['sndfa_email']:
@@ -221,7 +221,7 @@ class SPassword(Driver):
         return False
 
     def already_sndfa_signed(self, user):
-        spassword_ref, session = self.get_spassword_session(user['id'])
+        spassword_ref, session = get_spassword_session(user['id'])
         if spassword_ref:
             spassword = spassword_ref.to_dict()
             if spassword['sndfa'] and spassword['sndfa_email']:
@@ -237,7 +237,7 @@ class SPassword(Driver):
         return False
 
     def set_check_email_code(self, user_id, newcode):
-        spassword_ref, session = self.get_spassword_session(user_id)
+        spassword_ref, session = get_spassword_session(user_id)
         if spassword_ref:
             spassword_ref['sndfa_email_code'] = newcode
             spassword_ref['sndfa_email'] = False
@@ -247,7 +247,7 @@ class SPassword(Driver):
             LOG.warn('user %s still has not spassword data' % user_id)
 
     def check_email_code(self, user_id, code):
-        spassword_ref, session = self.get_spassword_session(user_id)
+        spassword_ref, session = get_spassword_session(user_id)
         check = False
         if spassword_ref:
             spassword = spassword_ref.to_dict()
@@ -262,7 +262,7 @@ class SPassword(Driver):
         return check
 
     def already_email_checked(self, user_id):
-        spassword_ref, session = self.get_spassword_session(user_id)
+        spassword_ref, session = get_spassword_session(user_id)
         if spassword_ref:
             spassword = spassword_ref.to_dict()
             if 'sndfa_email' in spassword:
@@ -288,7 +288,7 @@ class Identity(Identity, SendMail):
     def _check_password(self, password, user_ref):
         if CONF.spassword.enabled:
             # Check if password has been expired
-            spassword_ref, session = self.get_spassword_session(user_ref['id'])
+            spassword_ref, session = get_spassword_session(user_ref['id'])
             if (not (spassword_ref == None)) and \
                 (not user_ref['id'] in CONF.spassword.pwd_user_blacklist):
                 # Check password time
@@ -311,7 +311,7 @@ class Identity(Identity, SendMail):
 
         if CONF.spassword.enabled and \
            not (user_id in CONF.spassword.pwd_user_blacklist):
-            spassword_ref, session = self.get_spassword_session(user_id)
+            spassword_ref, session = get_spassword_session(user_id)
 
             if spassword_ref:
                 spassword = spassword_ref.to_dict()
@@ -332,7 +332,7 @@ class Identity(Identity, SendMail):
             auth_error_msg = 'Invalid username or password'
 
         if CONF.spassword.enabled:
-            spassword_ref, session = self.get_spassword_session(user_id)
+            spassword_ref, session = get_spassword_session(user_id)
             current_attempt_time = datetime.datetime.utcnow()
 
             if spassword_ref:
