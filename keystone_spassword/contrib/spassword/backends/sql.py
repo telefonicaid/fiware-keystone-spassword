@@ -81,7 +81,7 @@ def get_user_session(user_id):
     except AttributeError:
         with sql.session_for_read() as session:
             user_ref = session.query(User).get(user_id)
-   return user_ref, session
+    return user_ref, session
 
 def get_spassword_session(user_id):
     try:
