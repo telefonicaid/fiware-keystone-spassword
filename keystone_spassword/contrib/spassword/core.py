@@ -58,6 +58,9 @@ CONF.register_opt(cfg.StrOpt('sndfa_endpoint', default='localhost:5001'), group=
 CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword')
 
 
+RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
++
+
 @dependency.provider('spassword_api')
 class SPasswordManager(manager.Manager):
     """SPassword Manager.
@@ -204,7 +207,7 @@ class SPassword(password.Password):
 
     def authenticate(self, context, auth_payload, user_context):
         """Try to authenticate against the identity backend."""
-        if ('L' in versionutils.deprecated._RELEASES):
+        if ('L' in RELEASES):
             user_info = password.auth_plugins.UserAuthInfo.create(auth_payload, 'password')
         else:
             user_info = password.UserAuthInfo.create(auth_payload)
@@ -212,8 +215,8 @@ class SPassword(password.Password):
         # FIXME(gyee): identity.authenticate() can use some refactoring since
         # all we care is password matches
         try:
-            if (('J' in versionutils.deprecated._RELEASES) or
-                ('K' in versionutils.deprecated._RELEASES)):
+            if (('J' in RELEASES) or
+                ('K' in RELEASES)):
                 res = self.identity_api.authenticate(
                     context,
                     user_id=user_info.user_id,
