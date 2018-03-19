@@ -59,7 +59,8 @@ class SendMail(object):
             server = smtplib.SMTP(CONF.spassword.smtp_server,
                                   CONF.spassword.smtp_port)
         except smtplib.socket.gaierror:
-            LOG.error('SMTP socket error')
+            LOG.error('SMTP socket error %s %s' % (
+                CONF.spassword.smtp_server, CONF.spassword.smtp_port))
             return False
 
         server.ehlo()
@@ -70,15 +71,15 @@ class SendMail(object):
             server.login(CONF.spassword.smtp_user,
                          CONF.spassword.smtp_password)
         except smtplib.SMTPAuthenticationError:
-            LOG.error('SMTP authentication error')
+            LOG.error('SMTP authentication error %s' % CONF.spassword.smtp_user)
             return False
 
         try:
             server.sendmail(CONF.spassword.smtp_from, dest, msg)
         except Exception:  # try to avoid catching Exception unless you have too
-            LOG.error('SMTP autentication error')
+            LOG.error('SMTP sendmail error %s' % ex)
             return False
         finally:
             server.quit()
-        LOG.info('email was sent')            
+        logger.info('email was sent to %s' % dest)
         return True
