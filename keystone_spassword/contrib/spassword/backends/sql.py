@@ -86,10 +86,10 @@ def get_user_session(user_id):
 def get_spassword_session(user_id):
     try:
         session = sql.get_session()
-        spassword_ref = session.query(SpasswordModel).get(user_id)
+        spassword_ref = session.query(SPasswordModel).get(user_id)
     except AttributeError:
         with sql.session_for_read() as session:
-            spassword_ref = session.query(SpasswordModel).get(user_id)
+            spassword_ref = session.query(SPasswordModel).get(user_id)
     return spassword_ref, session
 
 
