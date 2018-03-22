@@ -14,9 +14,9 @@ sndfa_time_window=24
 sndfa_endpoint='localhost:5001'
 ```
 
-`sndfa` is a boolean which enables (true) or disables (false) if Second Factor Authentication feature is available in Keystone instance.
-`sndfa_time_window` indicates the time in hours in which Second Factor Authentication performed by an user is still valid before ask another new one.
-`sndfa_endpoint` is the endpoint used in links sent by email to users to check email address and sndfa changes
+* `sndfa` is a boolean which enables (true) or disables (false) if Second Factor Authentication feature is available in Keystone instance.
+* `sndfa_time_window` indicates the time in hours in which Second Factor Authentication performed by an user is still valid before ask another new one.
+* `sndfa_endpoint` is the endpoint used in links sent by email to users to check email address and sndfa changes
 
 
 In order to work with Second Factor Authentication feature spassword needs a proper smtp configuration; make sure that you provide one.
