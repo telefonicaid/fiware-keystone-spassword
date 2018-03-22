@@ -25,7 +25,6 @@ import uuid
 from keystone import auth
 from keystone.auth.plugins import password
 from keystone.common import dependency
-#from keystone.common import wsgi
 from keystone import exception
 from keystone import identity
 try: from oslo_log import log
@@ -189,16 +188,6 @@ class Driver(object):
         """
         raise exception.NotImplemented()
 
-
-# class SPasswordMiddleware(wsgi.Middleware):
-
-#     def __init__(self, *args, **kwargs):
-#         LOG.debug("SPasswordMiddleware INIT")
-#         try:
-#             self.spassword_api = SPasswordManager()
-#         except Exception:
-#             LOG.debug("SPasswordMiddleware already registered")
-#         return super(SPasswordMiddleware, self).__init__(*args, **kwargs)
 
 
 @dependency.requires('identity_api')
