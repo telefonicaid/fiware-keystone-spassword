@@ -36,19 +36,19 @@ smtp_from='smtpuser'
 Second Factor authentication introduces new methods:
 
 - Ask to check current user email. A code will be sent to user to that email.
-```GET /v3/users/<user_id>/checkemail```
+  ```GET /v3/users/<user_id>/checkemail```
 
 - Check a code to validate user email. The code was received by user in his email.
-```GET /v3/users/<user_id>/checkemail/<code>```
+  ```GET /v3/users/<user_id>/checkemail/<code>```
   This call does not need a x-auth-token. Tipically is done by click in a email link.
 
 - Modify configuration for second factor authentication for a user, allowing enable or diseble it.
-```POST /v3/users/<user_id>/sndfa```
+  ```POST /v3/users/<user_id>/sndfa```
 
 - Check a second factor authentication code to allow user authentication
-```GET /v3/users/<user_id>/sndfa/<code>```
+  ```GET /v3/users/<user_id>/sndfa/<code>```
   This call does not need a x-auth-token. Tipically is done by click in a email link.
 
 - Force to recover a user passsword.
-```GET /v3/users/<user_id>/recover_password```
+  ```GET /v3/users/<user_id>/recover_password```
   This call does not need a x-auth-token
