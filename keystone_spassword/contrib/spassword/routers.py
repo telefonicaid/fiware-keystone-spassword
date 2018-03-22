@@ -33,6 +33,7 @@ class SPasswordExtension(wsgi.ExtensionRouter):
 
         scim_user_controller = controllers.SPasswordScimUserV3Controller()
         user_controller = controllers.SPasswordUserV3Controller()
+        spassword_controller = controllers.SPasswordV3Controller()
 
         # SCIM User Operations
         mapper.connect(
@@ -72,13 +73,6 @@ class SPasswordExtension(wsgi.ExtensionRouter):
             action='change_password',
             conditions=dict(method=['POST']))
 
-        # # New User operations: recover password
-        # mapper.connect(
-        #     '/users/{user_id}/recover_password',
-        #     controller=user_controller,
-        #     action='recover_password',
-        #     conditions=dict(method=['GET']))
-
         # Create user using OS-SCIM API
         mapper.connect(
             self.PATH_PREFIX + '/Users',
@@ -91,3 +85,35 @@ class SPasswordExtension(wsgi.ExtensionRouter):
             controller=scim_user_controller,
             action='delete_user',
             conditions=dict(method=['DELETE']))
+
+        # New User operations: recover password
+        mapper.connect(
+            '/users/{user_id}/recover_password',
+            controller=spassword_controller,
+            action='recover_password',
+            conditions=dict(method=['GET']))
+
+        # SNDFA User operations:
+        mapper.connect(
+            '/users/{user_id}/sndfa/{code}',
+            controller=spassword_controller,
+            action='check_sndfa_code',
+            conditions=dict(method=['GET']))
+
+        mapper.connect(
+            '/users/{user_id}/sndfa',
+            controller=spassword_controller,
+            action='modify_sndfa',
+            conditions=dict(method=['POST']))
+
+        mapper.connect(
+            '/users/{user_id}/checkemail',
+            controller=spassword_controller,
+            action='ask_for_check_email_code',
+            conditions=dict(method=['GET']))
+
+        mapper.connect(
+            '/users/{user_id}/checkemail/{code}',
+            controller=spassword_controller,
+            action='check_email_code',
+            conditions=dict(method=['GET']))

@@ -2,7 +2,7 @@
 Keystone SPASSWORD is an OpenStack Keystone extension that enables
 some extra security checks over user passwords, as force the usage of strong passwords,
 expiration time for a password, number of bad login attempts before user account became temporarily blocked,
-a recover procedure password and so on.
+a recover procedure password, a second factor authentication (2FA)  and so on.
 
 
 ## Installing
@@ -153,5 +153,7 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 
 
 ## [LDAP integration](docs/iotp_ldap.md)
+
+## [Second Factor Authentication](docs/second_factor_auth.md)
 
 

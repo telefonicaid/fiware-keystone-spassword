@@ -19,7 +19,14 @@ BuildArch: noarch
 %if 0%{?with_python27}
 %define python_lib /usr/lib/python2.7/site-packages
 %endif # if with_python27
+
+%define check_paste %(test -e /etc/keystone/keystone-paste.ini && echo 1 || echo 0)
+%if %{check_paste}
+%define keystone_paste /etc/keystone/keystone-paste.ini
+%else
 %define keystone_paste /usr/share/keystone/keystone-dist-paste.ini
+%endif
+
 %define keystone_policy /etc/keystone/policy.json
 %define keystone_conf /etc/keystone/keystone.conf
 
@@ -40,9 +47,8 @@ find $RPM_BUILD_ROOT/%{python_lib}/keystone_spassword -name "*.pyc" -delete
 if ! grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
   echo "Adding SPASSWORD extension to Keystone configuration."
   sed -i \
-  -e '/^\[pipeline:api_v3\]$/,/^\[/ s/^pipeline\(.*\) scim_extension service_v3$/pipeline\1 spassword_checker spassword_time scim_extension service_v3/' \
+  -e '/^\[pipeline:api_v3\]$/,/^\[/ s/^pipeline\(.*\) scim_extension service_v3$/pipeline\1 spassword_checker scim_extension service_v3/' \
   -e 's/\[pipeline:api_v3\]/[filter:spassword_checker]\npaste.filter_factory = keystone_spassword.contrib.spassword.routers:SPasswordExtension.factory\n\n&/' \
-  -e 's/\[pipeline:api_v3\]/[filter:spassword_time]\npaste.filter_factory = keystone_spassword.contrib.spassword:SPasswordMiddleware.factory\n\n&/' \
   %{keystone_paste}
 else
   echo "SPASSWORD extension already configured. Skipping."
@@ -63,12 +69,16 @@ pwd_max_tries=5
 pwd_block_minutes=30
 pwd_exp_days=365
 pwd_user_blacklist=
-#smtp_server='0.0.0.0'
-#smtp_port=587
-#smtp_tls=true
-#smtp_user='smtpuser@yourdomain.com'
-#smtp_password='yourpassword'
-#smtp_from='smtpuser'">> %{keystone_conf}
+smtp_server='0.0.0.0'
+smtp_port=587
+smtp_tls=true
+smtp_user='smtpuser@yourdomain.com'
+smtp_password='yourpassword'
+smtp_from='smtpuser'
+sndfa=false
+sndfa_endpoint='localhost:5001'
+sndfa_time_window=24
+">> %{keystone_conf}
 fi
 
 ln -fs %{python_lib}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib
@@ -85,9 +95,7 @@ if grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
   echo "Removing SPASSWORD extension from Keystone configuration."
   sed -i \
       -e "/\[filter:spassword_checker\]/,+2 d" \
-      -e "/\[filter:spassword_time\]/,+2 d" \
   -e 's/spassword_checker //g' \
-  -e 's/spassword_time //g' \
   %{keystone_paste}
 else
   echo "SPASSWORD extension not configured. Skipping."
