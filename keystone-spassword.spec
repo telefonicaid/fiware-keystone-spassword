@@ -75,7 +75,7 @@ smtp_tls=true
 smtp_user='smtpuser@yourdomain.com'
 smtp_password='yourpassword'
 smtp_from='smtpuser'
-sndfa=true
+sndfa=false
 sndfa_endpoint='localhost:5001'
 sndfa_time_window=24
 ">> %{keystone_conf}
