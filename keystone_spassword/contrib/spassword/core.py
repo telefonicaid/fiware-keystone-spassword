@@ -58,8 +58,6 @@ CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword'
 
 RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
 
-RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
-
 @dependency.provider('spassword_api')
 class SPasswordManager(manager.Manager):
     """SPassword Manager.
