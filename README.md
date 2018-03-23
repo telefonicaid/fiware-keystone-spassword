@@ -2,7 +2,7 @@
 Keystone SPASSWORD is an OpenStack Keystone extension that enables
 some extra security checks over user passwords, as force the usage of strong passwords,
 expiration time for a password, number of bad login attempts before user account became temporarily blocked,
-a recover procedure password and so on.
+a recover procedure password, a second factor authentication (2FA)  and so on.
 
 
 ## Installing
@@ -44,7 +44,8 @@ This way keystone-spassword extend token data returned from keystone to user by
  "extras": {
      "password_creation_time": "2016-12-01T08:55:34Z",
      "pwd_user_in_blacklist": false,
-     "password_expiration_time": "2017-12-01T08:55:34Z"
+     "password_expiration_time": "2017-12-01T08:55:34Z",
+     "last_login_attempt_time": "2017-05-01T06:45:00Z"
      },
 ```
 
@@ -152,5 +153,7 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 
 
 ## [LDAP integration](docs/iotp_ldap.md)
+
+## [Second Factor Authentication](docs/second_factor_auth.md)
 
 

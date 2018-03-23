@@ -18,6 +18,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import cracklib
+
 from keystone import exception
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
@@ -35,14 +37,9 @@ class CheckPassword(object):
     def strong_check_password(self, new_password):
         # Check password strengh
         try:
-            import cracklib
-            try:
-                if CONF.spassword.enabled:
-                    cracklib.VeryFascistCheck(new_password)
-            except ValueError, msg:
-                LOG.debug('The password is too weak %s, ' % msg)
-                raise exception.ValidationError(
-                    message="SPASSWORD: %s" % msg)
-        except ImportError:  # not used if not configured (dev environments)
-            LOG.error('cracklib module is not properly configured, '
-                        'weak password can be used when changing')
+            if CONF.spassword.enabled:
+                cracklib.VeryFascistCheck(new_password)
+        except ValueError, msg:
+            LOG.debug('The password is too weak %s, ' % msg)
+            raise exception.ValidationError(
+                message="SPASSWORD: %s" % msg)
