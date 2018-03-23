@@ -4,12 +4,12 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-#ENV KEYSTONE_SCIM_VERSION 1.1.7
-ENV KEYSTONE_SCIM_VERSION task/add_compability_with_mitaka_version
-#ENV KEYSTONE_SPASSWORD_VERSION 1.3.0
 ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
+#ENV KEYSTONE_SCIM_VERSION 1.1.8
+#ENV KEYSTONE_SPASSWORD_VERSION 1.4.0
 
 COPY ./*.sh /opt/keystone/
+COPY ./sql_ldap.py /opt/keystone/
 COPY ./*.patch /opt/keystone/
 
 WORKDIR /opt/keystone
@@ -61,8 +61,8 @@ RUN \
     dir=~/fiware-keystone && \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_scim}" | tar zxvf - -C ${dir} && \
-    cd ${dir}/${repo_scim}-task-add_compability_with_mitaka_version/ && \
-    source ./${pack_scim} --with-python27 --with-version 1.8.0 && \
+    cd ${dir}/${repo_scim}-${tag} && \
+    source ./${pack_scim} --with-python27 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Install Keystone-SPASSWORD
     cd /opt/keystone && \
@@ -74,12 +74,23 @@ RUN \
     dir=~/fiware-keystone && \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
-    cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \
-    source ./${pack_spassword} --with-python27 --with-version 1.4.0 && \
+    cd ${dir}/${repo_spassword}-${tag} && \
+    cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \    
+    source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # LDAP pre-support
+    mkdir -p /etc/keystone/domains && \
+    chown keystone.keystone /etc/keystone/domains && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity domain_specific_drivers_enabled true && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity domain_config_dir /etc/keystone/domains && \
+    cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
     # Patching Newton...
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
-    patch -f -p0 < /opt/keystone/common.patch && \
+    patch -f -p0 < /opt/keystone/common.patch && \    
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \

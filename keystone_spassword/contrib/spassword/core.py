@@ -31,6 +31,10 @@ try: from oslo_log import versionutils
 except ImportError: from keystone.openstack.common import versionutils
 from keystone.common import manager
 
+from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
+from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
+from keystone_spassword.contrib.spassword.controllers import SPasswordV3Controller
+
 LOG = log.getLogger(__name__)
 
 try: from oslo_config import cfg
@@ -49,6 +53,12 @@ CONF.register_opt(cfg.BoolOpt('smtp_tls', default=True), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_user', default='user'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_password', default='password'), group='spassword')
 CONF.register_opt(cfg.StrOpt('smtp_from', default='from'), group='spassword')
+CONF.register_opt(cfg.BoolOpt('sndfa', default=False), group='spassword')
+CONF.register_opt(cfg.StrOpt('sndfa_endpoint', default='localhost:5001'), group='spassword')
+CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword')
+
+
+RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
 
 RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
 
@@ -60,6 +70,7 @@ class SPasswordManager(manager.Manager):
     how this dynamically calls the backend.
 
     """
+    driver_namespace = 'keystone.contrib.spassword'
 
     def __init__(self):
         LOG.debug("Manager INIT")
@@ -107,6 +118,30 @@ class SPasswordManager(manager.Manager):
         LOG.info("User %s deleted in driver manager" % user_id)
         if CONF.spassword.enabled:
             self.driver.remove_user(user_id)
+
+    def user_check_sndfa_code(self, user_id, code):
+        LOG.info("User %s check sndfa code in driver manager" % user_id)
+        return self.driver.check_sndfa_code(user_id, code)
+
+    def user_modify_sndfa(self, user_id, enable):
+        LOG.info("User %s modify sndfa in driver manager" % user_id)
+        return self.driver.modify_sndfa(user_id, enable)
+
+    def user_ask_check_email_code(self, user_id):
+        LOG.info("User %s ask for a check email code in driver manager" % user_id)
+        # Ensure sndfa_email exists in user
+        self.driver.already_email_checked(user_id)
+        code = uuid.uuid4().hex[:6]
+        self.driver.set_check_email_code(user_id, code)
+        return code
+
+    def user_check_email_code(self, user_id, code):
+        LOG.info("User %s check email code in driver manager" % user_id)
+        return self.driver.check_email_code(user_id, code)
+
+    def already_user_check_email(self, user_id):
+        LOG.info("User %s already check email in driver manager" % user_id)
+        return self.driver.already_email_checked(user_id)
 
 
 class Driver(object):
@@ -156,16 +191,6 @@ class Driver(object):
         """
         raise exception.NotImplemented()
 
-
-class SPasswordMiddleware(wsgi.Middleware):
-
-    def __init__(self, *args, **kwargs):
-        LOG.debug("SPasswordMiddleware INIT")
-        try:
-            self.spassword_api = SPasswordManager()
-        except Exception:
-            LOG.debug("SPasswordMiddleware already registered")
-        return super(SPasswordMiddleware, self).__init__(*args, **kwargs)
 
 
 @dependency.requires('identity_api')
