@@ -9,6 +9,7 @@ ENV KEYSTONE_SPASSWORD_VERSION 1.4.0
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
+COPY ./sql_ldap.py /opt/keystone/
 
 WORKDIR /opt/keystone
 
@@ -62,7 +63,7 @@ RUN \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_scim}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_scim}-${tag} && \
-    source ./${pack_scim} --with-python27 --with-version $KEYSTONE_SCIM_VERSION && \
+    source ./${pack_scim} --with-python27 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Install Keystone-SPASSWORD
     cd /opt/keystone && \
@@ -75,11 +76,21 @@ RUN \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_spassword}-${tag} && \
-    source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION && \
+    source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Patching Mitaka to enable extra fields in token response
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
     patch -f -p0 < /opt/keystone/common.patch && \
+    # LDAP pre-support
+    mkdir -p /etc/keystone/domains && \
+    chown keystone.keystone /etc/keystone/domains && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity domain_specific_drivers_enabled true && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity domain_config_dir /etc/keystone/domains && \
+    cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
