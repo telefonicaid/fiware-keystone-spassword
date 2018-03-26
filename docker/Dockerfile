@@ -24,7 +24,9 @@ RUN \
     yum -y install rpm-build tar findutils && \
     yum -y install python  && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \    
+    yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \
+    # Set Centos mirror to ctinetworks to ensure openstack Newton version
+    sed -i 's/mirror.centos.org/distro.ctinetworks.com\/mirror/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install unzip tcping jq  && \
