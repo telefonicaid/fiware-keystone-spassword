@@ -84,9 +84,9 @@ RUN \
     dir=~/fiware-keystone && \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
-    cd ${dir}/${repo_spassword}-${tag} && \
+    #cd ${dir}/${repo_spassword}-${tag} && \
     cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \    
-    source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
+    source ./${pack_spassword} --with-python27 --with-version 1.6.0 --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Patching Mitaka to enable extra fields in token response
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \

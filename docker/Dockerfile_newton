@@ -10,7 +10,7 @@ ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
 
 COPY ./*.sh /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
-COPY ./*.patch /opt/keystone
+COPY ./*.patch /opt/keystone/
 COPY ./keystone-all /opt/keystone/
 
 WORKDIR /opt/keystone
@@ -23,13 +23,13 @@ RUN \
     yum -y install mysql git  && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
-    yum -y install python && \
+    yum -y install python  && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \
     # Set Centos mirror to ctinetworks to ensure openstack Newton version
     sed -i 's/mirror.centos.org/distro.ctinetworks.com\/mirror/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
-    yum -y install openstack-utils openstack-keystone python-keystoneclient && \
+    yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install httpd mod_wsgi python-openstackclient && \
     # https://docs.openstack.org/newton/install-guide-rdo/keystone-install.html
     #sed -i 's/ / /g' /etc/httpd/conf/httpd.conf && \
@@ -38,7 +38,7 @@ RUN \
     #systemctl start httpd.service && \
     cp /opt/keystone/keystone-all /usr/bin && \
     chmod 755 /usr/bin/keystone-all && \
-    yum -y install unzip tcping jq && \
+    yum -y install unzip tcping jq  && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
@@ -50,10 +50,10 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.uuid.Provider && \
-    openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql://keystone:keystone@$DB_HOST/keystone && \
     # Set keystone SSL configuration
+    openstack-config --set /etc/keystone/keystone.conf \
+    token provider keystone.token.providers.uuid.Provider && \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
@@ -72,8 +72,8 @@ RUN \
     dir=~/fiware-keystone && \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_scim}" | tar zxvf - -C ${dir} && \
-    cd ${dir}/${repo_scim}-task-add_compability_with_mitaka_version/ && \
-    source ./${pack_scim} --with-python27 --with-version 1.8.0 --with-release 0 && \
+    cd ${dir}/${repo_scim}-${tag} && \
+    source ./${pack_scim} --with-python27 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Install Keystone-SPASSWORD
     cd /opt/keystone && \
@@ -86,7 +86,7 @@ RUN \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \
-    source ./${pack_spassword} --with-python27 --with-version 1.5.0 --with-release 0 && \
+    source ./${pack_spassword} --with-python27 --with-version 1.6.0 --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Patching Mitaka to enable extra fields in token response
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
