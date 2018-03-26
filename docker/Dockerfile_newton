@@ -22,7 +22,7 @@ RUN \
     yum -y install mysql git  && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
-    yum -y install python python27  && \
+    yum -y install python && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \
     # Set Centos mirror to ctinetworks to ensure openstack Newton version
@@ -34,8 +34,8 @@ RUN \
     #sed -i 's/ / /g' /etc/httpd/conf/httpd.conf && \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
     systemctl enable httpd.service && \
-    systemctl start httpd.service && \
-    yum -y install unzip tcping jq  && \
+    #systemctl start httpd.service && \
+    yum -y install unzip tcping jq && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \

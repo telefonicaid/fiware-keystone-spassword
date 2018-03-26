@@ -29,6 +29,11 @@ RUN \
     sed -i 's/mirror.centos.org/distro.ctinetworks.com\/mirror/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
+    yum -y install httpd mod_wsgi python-openstackclient && \
+    # https://docs.openstack.org/newton/install-guide-rdo/keystone-install.html
+    #sed -i 's/ / /g' /etc/httpd/conf/httpd.conf && \
+    ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
+    systemctl enable httpd.service && \
     yum -y install unzip tcping jq  && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
