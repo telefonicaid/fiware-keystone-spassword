@@ -54,14 +54,6 @@ class Mapping(identity.MappingDriverV8):
                 None
         return session
 
-    def get_transaction_session(self):
-        try:
-            session = sql.transaction()
-        except Exception:
-            with sql.session_for_write() as session:
-                None
-        return session
-
     def get_public_id(self, local_entity):
         if (local_entity['entity_type'] == identity_mapping.EntityType.GROUP):
             LOG.debug('Trying to get public_id for group %s in %s' % (local_entity['local_id'],
@@ -111,7 +103,7 @@ class Mapping(identity.MappingDriverV8):
 
     def create_id_mapping(self, local_entity, public_id=None):
         entity = local_entity.copy()
-        with self.get_transaction_session() as session:
+        with sql.session_for_write() as session:
             if public_id is None:
                 public_id = self.id_generator_api.generate_public_ID(entity)
             entity['public_id'] = public_id
@@ -120,7 +112,7 @@ class Mapping(identity.MappingDriverV8):
         return public_id
 
     def delete_id_mapping(self, public_id):
-        with self.get_transaction_session() as session:
+        with sql.session_for_write() as session:
             try:
                 session.query(IDMapping).filter(
                     IDMapping.public_id == public_id).delete()

@@ -79,7 +79,7 @@ def get_user_session(user_id):
         session = sql.get_session()
         user_ref = session.query(User).get(user_id)
     except Exception:
-        with sql.session_for_write() as session:
+        with sql.session_for_read() as session:
             user_ref = session.query(User).get(user_id)
     return user_ref, session
 
@@ -88,7 +88,7 @@ def get_spassword_session(user_id):
         session = sql.get_session()
         spassword_ref = session.query(SPasswordModel).get(user_id)
     except Exception:
-        with sql.session_for_write() as session:
+        with sql.session_for_read() as session:
             spassword_ref = session.query(SPasswordModel).get(user_id)
     return spassword_ref, session
 
