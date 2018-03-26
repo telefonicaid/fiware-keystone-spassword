@@ -11,7 +11,7 @@ ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
 COPY ./*.sh /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
 COPY ./*.patch /opt/keystone
-COPY ./keystone-all /usr/bin
+COPY ./keystone-all /opt/keystone/
 
 WORKDIR /opt/keystone
 
@@ -36,6 +36,7 @@ RUN \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
     systemctl enable httpd.service && \
     #systemctl start httpd.service && \
+    cp /opt/keystone/keystone-all /usr/bin && \
     yum -y install unzip tcping jq && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration

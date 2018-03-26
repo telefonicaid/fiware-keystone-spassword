@@ -11,7 +11,7 @@ ENV KEYSTONE_SCIM_VERSION 1.1.8
 COPY ./*.sh /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
 COPY ./*.patch /opt/keystone/
-COPY ./keystone-all /usr/bin
+COPY ./keystone-all /opt/keystone/
 
 WORKDIR /opt/keystone
 
@@ -35,6 +35,7 @@ RUN \
     #sed -i 's/ / /g' /etc/httpd/conf/httpd.conf && \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
     systemctl enable httpd.service && \
+    cp /opt/keystone/keystone-all /usr/bin && \
     yum -y install unzip tcping jq  && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
