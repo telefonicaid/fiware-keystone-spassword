@@ -10,7 +10,8 @@ ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
 
 COPY ./*.sh /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
-COPY ./*.patch /opt/keystone/
+COPY ./*.patch /opt/keystone
+COPY ./keystone-all /usr/bin
 
 WORKDIR /opt/keystone
 

@@ -11,6 +11,7 @@ ENV KEYSTONE_SCIM_VERSION 1.1.8
 COPY ./*.sh /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
 COPY ./*.patch /opt/keystone/
+COPY ./keystone-all /usr/bin
 
 WORKDIR /opt/keystone
 
