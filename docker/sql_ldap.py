@@ -50,7 +50,15 @@ class Mapping(identity.MappingDriverV8):
         try:
             session = sql.get_session()
         except Exception:
-            with sql.session_for_read() as session:
+            with sql.session_for_write() as session:
+                None
+        return session
+
+    def get_transaction_session(self):
+        try:
+            session = sql.transaction()
+        except Exception:
+            with sql.session_for_write() as session:
                 None
         return session
 
@@ -103,7 +111,7 @@ class Mapping(identity.MappingDriverV8):
 
     def create_id_mapping(self, local_entity, public_id=None):
         entity = local_entity.copy()
-        with sql.transaction() as session:
+        with self.get_transaction_session() as session:
             if public_id is None:
                 public_id = self.id_generator_api.generate_public_ID(entity)
             entity['public_id'] = public_id
@@ -112,7 +120,7 @@ class Mapping(identity.MappingDriverV8):
         return public_id
 
     def delete_id_mapping(self, public_id):
-        with sql.transaction() as session:
+        with self.get_transaction_session() as session:
             try:
                 session.query(IDMapping).filter(
                     IDMapping.public_id == public_id).delete()
