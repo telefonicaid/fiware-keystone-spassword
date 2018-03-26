@@ -4,9 +4,8 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-#ENV KEYSTONE_SCIM_VERSION 1.1.8
-ENV KEYSTONE_SCIM_VERSION task/add_compability_with_mitaka_version
-#ENV KEYSTONE_SPASSWORD_VERSION 1.5.0
+ENV KEYSTONE_SCIM_VERSION 1.1.8
+#ENV KEYSTONE_SPASSWORD_VERSION 1.6.0
 ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
 
 COPY ./*.sh /opt/keystone/
@@ -86,6 +85,9 @@ RUN \
     cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \
     source ./${pack_spassword} --with-python27 --with-version 1.5.0 --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # Patching Mitaka to enable extra fields in token response
+    cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
+    patch -f -p0 < /opt/keystone/common.patch && \    
     # LDAP pre-support
     mkdir -p /etc/keystone/domains && \
     chown keystone.keystone /etc/keystone/domains && \
