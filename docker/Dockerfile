@@ -36,6 +36,7 @@ RUN \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
     systemctl enable httpd.service && \
     cp /opt/keystone/keystone-all /usr/bin && \
+    chmod 755 /usr/bin/keystone-all && \
     yum -y install unzip tcping jq  && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration

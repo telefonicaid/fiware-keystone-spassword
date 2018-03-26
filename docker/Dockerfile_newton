@@ -37,6 +37,7 @@ RUN \
     systemctl enable httpd.service && \
     #systemctl start httpd.service && \
     cp /opt/keystone/keystone-all /usr/bin && \
+    chmod 755 /usr/bin/keystone-all && \
     yum -y install unzip tcping jq && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
