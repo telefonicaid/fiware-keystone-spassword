@@ -6,9 +6,10 @@ ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
 #ENV KEYSTONE_SCIM_VERSION 1.1.8
-#ENV KEYSTONE_SPASSWORD_VERSION 1.4.0
+#ENV KEYSTONE_SPASSWORD_VERSION 1.5.0
 
 COPY ./*.sh /opt/keystone/
+COPY ./*.patch /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
 COPY ./*.patch /opt/keystone/
 
@@ -22,7 +23,7 @@ RUN \
     yum -y install mysql git  && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
-    yum -y install python python27  && \
+    yum -y install python  && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \    
     # Install keystone dependencies
@@ -39,10 +40,10 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.uuid.Provider && \
-    openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql://keystone:keystone@$DB_HOST/keystone && \
     # Set keystone SSL configuration
+    openstack-config --set /etc/keystone/keystone.conf \
+    token provider keystone.token.providers.uuid.Provider && \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
@@ -78,6 +79,9 @@ RUN \
     cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \    
     source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # Patching Mitaka to enable extra fields in token response
+    cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
+    patch -f -p0 < /opt/keystone/common.patch && \
     # LDAP pre-support
     mkdir -p /etc/keystone/domains && \
     chown keystone.keystone /etc/keystone/domains && \

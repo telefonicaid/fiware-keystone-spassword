@@ -23,14 +23,12 @@
 
 from keystone.auth.plugins import password
 from keystone.common import dependency
-from keystone.common import wsgi
 from keystone import exception
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
 try: from oslo_log import versionutils
 except ImportError: from keystone.openstack.common import versionutils
 from keystone.common import manager
-
 from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
 from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
 from keystone_spassword.contrib.spassword.controllers import SPasswordV3Controller
@@ -57,8 +55,6 @@ CONF.register_opt(cfg.BoolOpt('sndfa', default=False), group='spassword')
 CONF.register_opt(cfg.StrOpt('sndfa_endpoint', default='localhost:5001'), group='spassword')
 CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword')
 
-
-RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
 
 RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
 
