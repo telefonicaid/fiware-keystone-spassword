@@ -2,6 +2,10 @@
 
 Upgrade plugin for compatibility with Mitaka version (including docker).
 
+1.4.1
+
+Fix permission over 2FA controller to allow non admin
+
 1.4.0
 
 LDAP preconfiguration
