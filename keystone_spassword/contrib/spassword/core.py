@@ -190,7 +190,6 @@ class Driver(object):
         """
         raise exception.NotImplemented()
 
-
 @dependency.requires('identity_api')
 class SPassword(password.Password):
 
