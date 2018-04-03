@@ -25,6 +25,8 @@ import uuid
 from keystone import auth
 from keystone.auth.plugins import password
 from keystone.common import dependency
+from keystone.common import wsgi
+from keystone import notifications
 from keystone import exception
 from keystone import identity
 try: from oslo_log import log
@@ -58,7 +60,7 @@ CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword'
 
 RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
 
-
+@notifications.listener  # NOTE(dstanek): only needed if using event_callbacks
 @dependency.provider('spassword_api')
 class SPasswordManager(manager.Manager):
     """SPassword Manager.
@@ -74,15 +76,15 @@ class SPasswordManager(manager.Manager):
         self.event_callbacks = {
             # Here we add the event_callbacks class attribute that
             # calls project_deleted_callback when a project is deleted.
-            'updated': {
+            notifications.ACTIONS.updated: {
                 'user': [
                     self.user_updated_callback]
                 },
-            'created': {
+            notifications.ACTIONS.created: {
                 'user': [
                     self.user_created_callback]
                 },
-            'deleted': {
+            notifications.ACTIONS.deleted: {
                 'user': [
                     self.user_deleted_callback]
                 },
@@ -187,8 +189,6 @@ class Driver(object):
 
         """
         raise exception.NotImplemented()
-
-
 
 @dependency.requires('identity_api')
 class SPassword(password.Password):
