@@ -20,6 +20,7 @@
 
 """Extensions supporting Strong Passwords."""
 
+import uuid
 
 from keystone.auth.plugins import password
 from keystone.common import dependency
