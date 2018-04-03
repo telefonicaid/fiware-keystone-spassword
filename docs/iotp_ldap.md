@@ -64,7 +64,7 @@ OpenLDAP is a free, open source implementation of the Lightweight Directory Acce
 
 ### Configure LDAP
 
-#### Debian/Ubuntu:
+#### Debian/Ubuntu: (recomended)
 Set Domain Name to "openstack.org", set organization to "openstack" and give a password.
 
 ```
@@ -77,6 +77,9 @@ Follow this guide about [install an OpenLDAP for Keystone](https://wiki.openstac
 ```
  $ slappasswd -h {SSHA} -s <password>
  $ sudo ldapmodify -Y EXTERNAL -H ldapi:/// -f ./manager.ldif
+ $ sudo ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif
+ $ sudo ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif 
+ $ sudo ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif
 ```
 
 
@@ -174,6 +177,8 @@ In order to configure keystone for LDAP integration you should get into Keystone
    $ setsebool -P authlogin_nsswitch_use_ldap on
 ```
 
+# Keystone with spassword plugin version until 1.3.0
+
 - Enable Domain Specific Configuration in Keystone
 
 ```
@@ -266,7 +271,20 @@ In order to configure keystone for LDAP integration you should get into Keystone
    $ openstack-config --set /etc/keystone/keystone.conf \
                    DEFAULT verbose true
 ```
+- Restart Keystone:
+  Depending on your deploy, it could be a simple service restart:
 
+```
+  $ sudo service openstack-keystone restart
+```
+  or a docker container restart
+
+
+# Keystone with spassword plugin version 1.4.0 or upper
+
+Copy your keystone.DOMAIN_NAME.conf into /etc/keystone/domains. Use [keystone.smartcity.conf](./keystone.smartcity.conf) as a template. Remember change <YOUR_LDAP_IP> with a proper IP on that file.
+
+  You will need such a keystone.smartcity.conf files as services (keystone domains) will use LDAP authentication.
 
 
 - Restart Keystone:
