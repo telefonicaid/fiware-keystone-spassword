@@ -7,6 +7,14 @@ Upgrade plugin for compatibility with Newton version (including docker).
 
 Upgrade plugin for compatibility with Mitaka version (including docker).
 
+1.4.2
+
+Fix notification event callbacks for user spassword
+
+1.4.1
+
+Fix permission over 2FA controller to allow non admin
+
 1.4.0
 
 LDAP preconfiguration
