@@ -33,7 +33,8 @@ This solution about integrate LDAP with Keystone expects:
   - AdminGroup: roles admin in service and SubServiceAdmin in all posible subservices
   
   These groups have been provisioned automatically in each Service by IoTP Orchestrator since version 1.5.0 or upper. If Service was created with a previous version of Orchestrator make sure that needed Groups are created before.
-  Provided role asignments for that groups by default can be modifyed easily using [orchestrator API](https://orchestrator2.docs.apiary.io/#reference/orchestrator/group-role-assigment)
+  
+  Provided role asignments for that groups can be modified easily using [orchestrator API](https://orchestrator2.docs.apiary.io/#reference/orchestrator/group-role-assigment)
 - Users in LDAP belongs to the defined LDAP Groups.
 
 
