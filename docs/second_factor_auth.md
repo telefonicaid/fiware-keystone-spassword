@@ -57,7 +57,7 @@ Second Factor authentication introduces new methods:
   
   This call does not need a x-auth-token. Tipically is done by click in a email link.
 
-- Modify configuration for second factor authentication for a user, allowing enable or diseble it.
+- Modify configuration for second factor authentication for a user, allowing enable or disable it.
   
   ```POST /v3/users/<user_id>/sndfa```
 
