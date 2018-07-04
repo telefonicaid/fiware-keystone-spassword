@@ -68,12 +68,14 @@ class SendMail(object):
             server.ehlo()
             server.starttls()
 
-        try:
-            server.login(CONF.spassword.smtp_user,
-                         CONF.spassword.smtp_password)
-        except smtplib.SMTPAuthenticationError:
-            LOG.error('SMTP authentication error %s' % CONF.spassword.smtp_user)
-            return False
+        # Use auth only if smtp_user and smtp_password not empty
+        if CONF.spassword.smtp_user and CONF.spassword.smtp_password:
+            try:
+                server.login(CONF.spassword.smtp_user,
+                             CONF.spassword.smtp_password)
+            except smtplib.SMTPAuthenticationError:
+                LOG.error('SMTP authentication error %s' % CONF.spassword.smtp_user)
+                return False
 
         try:
             server.sendmail(CONF.spassword.smtp_from, dest, msg)
