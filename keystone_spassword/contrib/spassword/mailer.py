@@ -63,9 +63,10 @@ class SendMail(object):
                 CONF.spassword.smtp_server, CONF.spassword.smtp_port))
             return False
 
-        server.ehlo()
-        server.starttls()
-        server.ehlo
+        # Use tls for smtp if CONF.spassword.smtp_tls is True
+        if CONF.spassword.smtp_tls:
+            server.ehlo()
+            server.starttls()
 
         try:
             server.login(CONF.spassword.smtp_user,
