@@ -1,4 +1,4 @@
-Fix remove extension when upgrading RPM
+Fix remove old extension when upgrading from and old version of RPM
 
 1.4.2
 
