@@ -1,3 +1,5 @@
+Add sndfa_endpoint protocol if not provided
+
 1.4.3
 
 Fix check configuration for smtp_tls, smtp_user and smtp_password as STMP server connection
