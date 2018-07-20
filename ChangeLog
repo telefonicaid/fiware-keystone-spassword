@@ -1,4 +1,5 @@
 Add sndfa_endpoint protocol if not provided
+Fix remove old extension when upgrading from and old version of RPM
 
 1.4.3
 
