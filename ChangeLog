@@ -1,3 +1,5 @@
+Fix remove old extension when upgrading from and old version of RPM
+
 1.4.3
 
 Fix check configuration for smtp_tls, smtp_user and smtp_password as STMP server connection
