@@ -99,7 +99,7 @@ class SPasswordManager(manager.Manager):
         LOG.debug("User %s updated." % user['id'])
         # TODO: Already is done in any update operations.
         # But only admin can modify user is password were blocked
-        # Minor bug: user acount is unlocker when admin user modifies any issue
+        # Minor bug: user acount is unlocked when admin user modifies any issue
         # about user not just password
         if CONF.spassword.enabled:
             self.driver.update_user_modification_time(user)
