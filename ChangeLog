@@ -1,3 +1,5 @@
+Fix remove extension when upgrading RPM
+
 1.4.2
 
 Fix notification event callbacks for user spassword
