@@ -1,3 +1,5 @@
+1.4.4
+
 Add sndfa_endpoint protocol if not provided
 Fix remove old extension when upgrading from and old version of RPM
 
