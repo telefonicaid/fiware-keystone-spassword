@@ -4,6 +4,18 @@ According with [wikipedia](https://en.wikipedia.org/wiki/Multi-factor_authentica
 
 This feature provides 2FA for OpenStack Keystone based on email.
 
+2FA feature extends token data returned from keystone to user by
+"POST /v3/auth/tokens", including new fields in 'extra' dictionary of 'token':
+
+```
+ "extras": {
+     ...
+     "sndfa": true
+     "sndfa_email": true
+     ...
+     },
+```
+
 ## Configuration
 
 Specific options at /etc/keystone/keystone.conf
@@ -43,17 +55,17 @@ Second Factor authentication introduces new methods:
   
   ```GET /v3/users/<user_id>/checkemail/<code>```
   
-  This call does not need a x-auth-token. Tipically is done by click in a email link.
+  This call does not need a x-auth-token. Tipically is done by click in an email link.
 
-- Modify configuration for second factor authentication for a user, allowing enable or diseble it.
+- Modify configuration for second factor authentication for a user, allowing enable or disable it.
   
   ```POST /v3/users/<user_id>/sndfa```
 
-- Check a second factor authentication code to allow user authentication
+- Check a second factor authentication code to allow user authentication. Code is just valid during sndfa_time_window.
   
   ```GET /v3/users/<user_id>/sndfa/<code>```
   
-  This call does not need a x-auth-token. Tipically is done by click in a email link.
+  This call does not need a x-auth-token. Tipically is done by click in an email link.
 
 - Force to recover a user passsword.
   

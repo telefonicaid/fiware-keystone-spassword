@@ -87,7 +87,14 @@ echo "SPASSWORD extension installed successfully. Restart Keystone daemon to tak
 
 %preun
 if [ $1 -gt 0 ] ; then
-  # upgrading: no remove extension
+  # upgrading: remove extension spassword_time
+  if grep -q -F "[filter:spassword_time]" "%{keystone_paste}"; then
+    echo "Removing old SPASSWORD extension from Keystone configuration."
+    sed -i \
+        -e "/\[filter:spassword_time\]/,+2 d" \
+        -e 's/spassword_time //g' \
+        %{keystone_paste}
+  fi
   exit 0
 fi
 if grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
