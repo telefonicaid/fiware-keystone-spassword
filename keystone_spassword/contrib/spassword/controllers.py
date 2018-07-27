@@ -222,7 +222,10 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         to = user_info['email'] # must be a list
         subject = 'IoT Platform verify email '
         text = 'The code for verify your email is %s' % code
-        link = 'http://%s/v3/users/%s/checkemail/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
+        if CONF.spassword.sndfa_endpoint.startswith('http'):
+            link = '%s/v3/users/%s/checkemail/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
+        else:
+            link = 'http://%s/v3/users/%s/checkemail/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
         text += ' Link is: %s' % link
         if self.send_email(to, subject, text):
             msg = 'check email code sent to %s' % user_info['email']

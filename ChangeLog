@@ -7,6 +7,15 @@ Upgrade plugin for compatibility with Newton version (including docker).
 
 Upgrade plugin for compatibility with Mitaka version (including docker).
 
+1.4.4
+
+Add sndfa_endpoint protocol if not provided
+Fix remove old extension when upgrading from and old version of RPM
+
+1.4.3
+
+Fix check configuration for smtp_tls, smtp_user and smtp_password as STMP server connection
+
 1.4.2
 
 Fix notification event callbacks for user spassword
