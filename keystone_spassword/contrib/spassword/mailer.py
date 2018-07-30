@@ -39,6 +39,8 @@ class SendMail(object):
 
     def send_email(self, to, subject, text):
 
+        dest = [to] # must be a list
+
         #
         # Prepare actual message
         #
