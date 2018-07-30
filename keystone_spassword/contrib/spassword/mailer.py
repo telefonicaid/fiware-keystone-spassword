@@ -19,6 +19,8 @@
 # under the License.
 
 import smtplib
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
 
 from keystone import exception
 try: from oslo_log import log
@@ -37,19 +39,16 @@ class SendMail(object):
 
     def send_email(self, to, subject, text):
 
-        dest = [to] # must be a list
-
         #
         # Prepare actual message
         #
-        mail_headers = ("From: \"%s\" <%s>\r\nTo: %s\r\n"
-                        % (CONF.spassword.smtp_from,
-                           CONF.spassword.smtp_from,
-                           ", ".join(dest)))
-
-        msg = mail_headers
-        msg += ("Subject: %s\r\n\r\n" % subject)
-        msg += text
+        mimemsg = MIMEMultipart()
+        mimemsg['From'] = CONF.spassword.smtp_from
+        mimemsg['To'] = to
+        mimemsg['Subject'] = subject
+        body = text
+        mimemsg.attach(MIMEText(body, 'plain'))
+        msg = mimemsg.as_string()
 
         #
         # Send the mail
