@@ -1,3 +1,5 @@
+Render check email and sndfa response in HTML
+
 1.4.4
 
 Add sndfa_endpoint protocol if not provided
