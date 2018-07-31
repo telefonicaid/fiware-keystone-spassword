@@ -1,3 +1,5 @@
+Use multipart when send email about sndfa.
+
 1.4.4
 
 Add sndfa_endpoint protocol if not provided

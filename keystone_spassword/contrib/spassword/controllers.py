@@ -209,9 +209,13 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
                                                                user_info['name']))
         self._check_user_has_email_validated(user_info)
         if self.spassword_api.user_check_sndfa_code(user_id, code):
-            return wsgi.render_response(status=('204', 'sndfa Authorized'))
+            # Render response in HTML
+            headers = [('Content-Type', 'text/html')]
+            return wsgi.render_response(body="Valid code. Sndfa successfully authorized",
+                                        status=('200', 'Valid code'),
+                                        headers=headers)
         else:
-            return wsgi.render_response(status=('401', 'sndfa Unauthorized'))
+            return wsgi.render_response(status=('401', 'No valid code. sndfa Unauthorized'))
 
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
@@ -227,7 +231,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
             link = '%s/v3/users/%s/checkemail/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
         else:
             link = 'http://%s/v3/users/%s/checkemail/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
-        text += ' Link is: %s' % link
+        text += '\nLink is: %s' % link
         if self.send_email(to, subject, text):
             msg = 'check email code sent to %s' % user_info['email']
             LOG.info(msg)
@@ -244,6 +248,10 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
         if self.spassword_api.user_check_email_code(user_id, code):
-            return wsgi.render_response(status=('204', 'Valid code. Email checked'))
+            # Render response in HTML
+            headers = [('Content-Type', 'text/html')]
+            return wsgi.render_response(body="Valid code. Email sucessfully checked",
+                                        status=('200', 'Valid code'),
+                                        headers=headers)
         else:
-            return wsgi.render_response(status=('401', 'No valid code.'))
+            return wsgi.render_response(status=('401', 'No valid code. Email not checked'))
