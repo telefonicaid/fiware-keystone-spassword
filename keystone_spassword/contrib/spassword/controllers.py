@@ -231,7 +231,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
             link = '%s/v3/users/%s/checkemail/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
         else:
             link = 'http://%s/v3/users/%s/checkemail/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
-        text += ' Link is: %s' % link
+        text += '\nLink is: %s' % link
         if self.send_email(to, subject, text):
             msg = 'check email code sent to %s' % user_info['email']
             LOG.info(msg)
