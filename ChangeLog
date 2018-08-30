@@ -1,4 +1,6 @@
+Render check email and sndfa response in HTML (#88)
 Use multipart when send email about sndfa.
+
 
 1.4.4
 
