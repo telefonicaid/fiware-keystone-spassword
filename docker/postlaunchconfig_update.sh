@@ -70,6 +70,14 @@ kill -9 $keystone_all_pid
 sleep 3
 chkconfig openstack-keystone on
 
+IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from user u where u.name="iotagent"' | awk '{if ($2=="iotagent") print $1}'`
+ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from user u where u.name="cloud_admin"' | awk '{if ($2=="cloud_admin") print $1}'`
+ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from user u where u.name="pep"' | awk '{if ($2=="pep") print $1}'`
+
+# Exclude some users from spassword
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID
+
 # Ensure db is migrated to current keystone version
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
