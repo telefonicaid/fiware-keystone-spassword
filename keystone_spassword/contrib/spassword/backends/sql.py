@@ -378,7 +378,7 @@ class Identity(Identity, SendMail):
                             subject = 'IoT Platform second factor auth procedure'
                             text = 'The code for verify your access is %s' % code
                             link = 'http://%s/v3/users/%s/sndfa/%s' % (CONF.spassword.sndfa_endpoint, user_id, code)
-                            text += ' Link to verify your access is: %s' % link
+                            text += '\nLink to verify your access is: %s' % link
                             self.send_email(to, subject, text)
                             res = None
                             auth_error_msg = 'Expecting Second Factor Authentication, email was sent. '

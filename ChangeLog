@@ -1,6 +1,13 @@
+
 1.5.0
 
 Upgrade plugin for compatibility with Mitaka version (including docker).
+
+1.4.5
+
+Fix user id for blacklist when update docker (#92)
+Render check email and sndfa response in HTML (#88)
+Use multipart when send email about sndfa.
 
 1.4.4
 
