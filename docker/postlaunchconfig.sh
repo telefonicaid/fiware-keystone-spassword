@@ -202,4 +202,5 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 kill -9 $keystone_all_pid
 sleep 3
-chkconfig openstack-keystone on
+# Disable in newton
+#chkconfig openstack-keystone on

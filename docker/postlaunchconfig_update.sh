@@ -69,7 +69,8 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 kill -9 $keystone_all_pid
 sleep 3
-chkconfig openstack-keystone on
+# Disable in newton
+#chkconfig openstack-keystone on
 
 IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent"' | awk '{if ($2=="iotagent") print $1}'`
 ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin"' | awk '{if ($2=="cloud_admin") print $1}'`
