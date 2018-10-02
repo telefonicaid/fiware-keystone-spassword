@@ -32,7 +32,7 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
 fi
 
 /usr/bin/keystone-all &
-keystone_all_pid=`ps -a | grep keystone-wsgi-public | awk '{print $1}'`
+keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
 sleep 5    
 
 export OS_SERVICE_TOKEN=ADMIN

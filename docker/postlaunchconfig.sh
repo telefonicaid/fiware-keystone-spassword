@@ -48,7 +48,7 @@ fi
 /usr/bin/keystone-manage db_sync --extension spassword
 
 /usr/bin/keystone-all &
-keystone_all_pid=`ps -a | grep keystone-wsgi-public | awk '{print $1}'`
+keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
 sleep 5
 
 # Create Services
