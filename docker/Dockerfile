@@ -4,10 +4,9 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
 ENV KEYSTONE_SCIM_VERSION 1.1.8
-
-ENV KEYSTONE_SPASSWORD_VERSION 1.6.0
+#ENV KEYSTONE_SPASSWORD_VERSION 1.6.0
+ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
 
 COPY ./*.sh /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
@@ -27,7 +26,7 @@ RUN \
     yum -y install python  && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \
-    # Set Centos mirror to buildlogs to ensure openstack Newton version
+    # Set Centos mirror to ctinetworks to ensure openstack Newton version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
@@ -37,6 +36,7 @@ RUN \
     #sed -i 's/ / /g' /etc/httpd/conf/httpd.conf && \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
     systemctl enable httpd.service && \
+    #systemctl start httpd.service && \
     cp /opt/keystone/keystone-all /usr/bin && \
     chmod 755 /usr/bin/keystone-all && \
     yum -y install unzip tcping jq  && \
@@ -86,13 +86,9 @@ RUN \
     dir=~/fiware-keystone && \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
-    #cd ${dir}/${repo_spassword}-${tag} && \
-    cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \    
+    cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \
     source ./${pack_spassword} --with-python27 --with-version 1.6.0 --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
-    # Patching Mitaka to enable extra fields in token response
-    cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
-    patch -f -p0 < /opt/keystone/common.patch && \
     # LDAP pre-support
     mkdir -p /etc/keystone/domains && \
     chown keystone.keystone /etc/keystone/domains && \
@@ -105,7 +101,7 @@ RUN \
     identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
     # Patching Newton...
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
-    patch -f -p0 < /opt/keystone/common.patch && \    
+    patch -f -p0 < /opt/keystone/common.patch && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
