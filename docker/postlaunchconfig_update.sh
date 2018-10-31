@@ -41,7 +41,7 @@ export KEYSTONE_HOST="127.0.0.1:5001"
 
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
-ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from domain d, project p where d.name="admin_domain" or p.name="admin_domain";' | awk '{if ($6=="admin_domain") print $5; else if ($2=="admin_domain") print $1}'`
+ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from domain d, project p where d.name="admin_domain" or p.name="admin_domain";' | awk '{if ($6=="admin_domain") print $5; else if ($2=="admin_domain") print $1}' | head -n 1`
 
 
 curl -s -L --insecure https://github.com/openstack/keystone/raw/mitaka-eol/etc/policy.v3cloudsample.json \
