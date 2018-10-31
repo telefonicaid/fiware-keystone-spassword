@@ -17,10 +17,10 @@ WORKDIR /opt/keystone
 
 RUN \
     # Install dependencies
-    yum update -y && yum install -y curl uwsgi && \
+    yum update -y && yum install -y curl && \
     yum install -y epel-release && yum update -y epel-release && \
     # Install MySQL client
-    yum -y install mysql git  && \
+    yum -y install mysql git uwsgi && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python  && \
