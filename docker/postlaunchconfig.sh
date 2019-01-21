@@ -47,15 +47,33 @@ fi
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
 
-/usr/bin/keystone-all &
-keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
+#/usr/bin/keystone-all &
+#keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
+/usr/bin/keystone-wsgi-admin --port 35357 &
 sleep 5
+
+
 
 # Create Services
 
 export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
+export OS_AUTH_URL="http:/127.0.0.1:5001/v2.0"
+
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_NAME=admin
+export OS_IDENTITY_API_VERSION=3
+export OS_PASSWORD=ADMIN
+export OS_AUTH_URL=http://127.0.0.1:35357
+export OS_USERNAME=admin
+export OS_INTERFACE=public
+
+#export OS_AUTH_URL="http://127.0.0.1:5001"
+#export OS_USER_DOMAIN_ID="default"
+#export OS_PROJECT_DOMAIN_ID="default"
+
+
 
 #keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
 openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" admin
@@ -74,7 +92,8 @@ openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" --email=nagios@no.co
 #keystone user-role-add --user=nagios --tenant=admin --role=admin
 openstack role add --user=nagios --tenant=admin admin
 
-IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
+#IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
+IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
 
 ADMIN_TOKEN=$(\
 curl http://${KEYSTONE_HOST}/v3/auth/tokens   \

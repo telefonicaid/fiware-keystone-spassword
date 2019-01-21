@@ -100,5 +100,5 @@ RUN \
 # Define the entry point
 ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
-EXPOSE 5001
+EXPOSE 5001 35357
 
