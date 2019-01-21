@@ -57,14 +57,22 @@ export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
-keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com 
-keystone role-create --name=admin
-keystone tenant-create --name=admin --description="Admin Tenant"
-keystone user-role-add --user=admin --tenant=admin --role=admin
-keystone role-create --name=service
-keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iotagent@no.com
-keystone user-create --name=nagios --pass=$KEYSTONE_ADMIN_PASSWORD --email=nagios@no.com
-keystone user-role-add --user=nagios --tenant=admin --role=admin
+#keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
+openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" admin
+#keystone role-create --name=admin
+openstack role create admin
+#keystone tenant-create --name=admin --description="Admin Tenant"
+openstack tenant create admin --description="Admin Tenant"
+#keystone user-role-add --user=admin --tenant=admin --role=admin
+openstack role add --user=admin --tenant=admin admin
+#keystone role-create --name=service
+openstack role create service
+#keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iotagent@no.com
+openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" --email=iotagent@no.com iotagent
+#keystone user-create --name=nagios --pass=$KEYSTONE_ADMIN_PASSWORD --email=nagios@no.com
+openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" --email=nagios@no.com nagios
+#keystone user-role-add --user=nagios --tenant=admin --role=admin
+openstack role add --user=nagios --tenant=admin admin
 
 IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
 
