@@ -59,8 +59,8 @@ keystone-manage bootstrap \
   --bootstrap-public-url "http://127.0.0.1:5001" \
   --bootstrap-internal-url "http://127.0.0.1:5001"
 
-#/usr/bin/keystone-all &
-#keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
+/usr/bin/keystone-all &
+keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
 /usr/bin/keystone-wsgi-admin --port 35357 &
 sleep 5
 
