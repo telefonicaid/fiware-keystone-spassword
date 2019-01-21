@@ -68,7 +68,7 @@ sleep 5
 
 # Create Services
 
-#export OS_SERVICE_TOKEN=ADMIN
+export OS_SERVICE_TOKEN=ADMIN
 #export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 #export KEYSTONE_HOST="127.0.0.1:5001"
 #export OS_AUTH_URL="http:/127.0.0.1:5001/v2.0"
