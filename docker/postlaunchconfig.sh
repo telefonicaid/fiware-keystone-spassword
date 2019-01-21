@@ -47,6 +47,18 @@ fi
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
 
+
+keystone-manage bootstrap \
+  --bootstrap-project-name "admin" \
+  --bootstrap-username "admin" \
+  --bootstrap-password "ADMIN" \
+  --bootstrap-role-name "admin" \
+  --bootstrap-service-name "keystone" \
+  --bootstrap-region-id "RegionOne" \
+  --bootstrap-admin-url "http://127.0.0.1:35357" \
+  --bootstrap-public-url "http://127.0.0.1:5001" \
+  --bootstrap-internal-url "http://127.0.0.1:5001"
+
 #/usr/bin/keystone-all &
 #keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
 /usr/bin/keystone-wsgi-admin --port 35357 &
@@ -56,10 +68,10 @@ sleep 5
 
 # Create Services
 
-export OS_SERVICE_TOKEN=ADMIN
-export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
-export KEYSTONE_HOST="127.0.0.1:5001"
-export OS_AUTH_URL="http:/127.0.0.1:5001/v2.0"
+#export OS_SERVICE_TOKEN=ADMIN
+#export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
+#export KEYSTONE_HOST="127.0.0.1:5001"
+#export OS_AUTH_URL="http:/127.0.0.1:5001/v2.0"
 
 export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_NAME=admin
@@ -80,17 +92,17 @@ openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" admin
 #keystone role-create --name=admin
 openstack role create admin
 #keystone tenant-create --name=admin --description="Admin Tenant"
-openstack tenant create admin --description="Admin Tenant"
+#openstack tenant create admin --description="Admin Tenant"
 #keystone user-role-add --user=admin --tenant=admin --role=admin
-openstack role add --user=admin --tenant=admin admin
+openstack role add --user admin --project admin admin
 #keystone role-create --name=service
 openstack role create service
 #keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iotagent@no.com
-openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" --email=iotagent@no.com iotagent
+openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" --email iotagent@no.com iotagent
 #keystone user-create --name=nagios --pass=$KEYSTONE_ADMIN_PASSWORD --email=nagios@no.com
-openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" --email=nagios@no.com nagios
+openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" --email nagios@no.com nagios
 #keystone user-role-add --user=nagios --tenant=admin --role=admin
-openstack role add --user=nagios --tenant=admin admin
+openstack role add --user nagios --project admin admin
 
 #IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
 IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
