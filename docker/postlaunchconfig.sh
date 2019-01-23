@@ -50,7 +50,7 @@ fi
 keystone-manage bootstrap \
   --bootstrap-project-name "admin" \
   --bootstrap-username "admin" \
-  --bootstrap-password "$KEYSTONE_ADMIN_PASSWORD" \
+  --bootstrap-password $KEYSTONE_ADMIN_PASSWORD \
   --bootstrap-role-name "admin" \
   --bootstrap-service-name "keystone" \
   --bootstrap-region-id "RegionOne" \
@@ -87,7 +87,7 @@ export OS_INTERFACE=public
 
 
 #keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
-openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" admin
+openstack user create --password $KEYSTONE_ADMIN_PASSWORD admin
 #keystone role-create --name=admin
 openstack role create admin
 #keystone tenant-create --name=admin --description="Admin Tenant"
@@ -97,9 +97,9 @@ openstack role add --user admin --project admin admin
 #keystone role-create --name=service
 openstack role create service
 #keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iotagent@no.com
-openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" --email iotagent@no.com iotagent
+openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email iotagent@no.com iotagent
 #keystone user-create --name=nagios --pass=$KEYSTONE_ADMIN_PASSWORD --email=nagios@no.com
-openstack user create --password "$KEYSTONE_ADMIN_PASSWORD" --email nagios@no.com nagios
+openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com nagios
 #keystone user-role-add --user=nagios --tenant=admin --role=admin
 openstack role add --user nagios --project admin admin
 
