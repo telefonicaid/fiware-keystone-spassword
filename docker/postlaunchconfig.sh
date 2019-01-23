@@ -88,7 +88,7 @@ export OS_INTERFACE=public
 
 #keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
 ##openstack user create --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com
-openstack user set --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com
+#openstack user set --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com
 #keystone role-create --name=admin
 openstack role create admin
 #keystone tenant-create --name=admin --description="Admin Tenant"
@@ -126,7 +126,7 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
                           "name": "Default"
                       },
                       "name": "admin",
-                      "password": "'$KEYSTONE_ADMIN_PASSWORD'"
+                      "password": "ADMIN"
                   }
               }
           },
