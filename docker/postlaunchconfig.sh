@@ -45,13 +45,12 @@ fi
 
 /usr/bin/keystone-manage bootstrap
 /usr/bin/keystone-manage db_sync
-/usr/bin/keystone-manage db_sync --extension spassword
 
 
 keystone-manage bootstrap \
   --bootstrap-project-name "admin" \
   --bootstrap-username "admin" \
-  --bootstrap-password "ADMIN" \
+  --bootstrap-password "$KEYSTONE_ADMIN_PASSWORD" \
   --bootstrap-role-name "admin" \
   --bootstrap-service-name "keystone" \
   --bootstrap-region-id "RegionOne" \
@@ -106,6 +105,7 @@ openstack role add --user nagios --project admin admin
 
 #IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
 IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
+echo "IOTAGENT_ID: $IOTAGENT_ID"
 
 ADMIN_TOKEN=$(\
 curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
