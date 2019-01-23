@@ -82,4 +82,4 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 # Ensure db is migrated to current keystone version
 /usr/bin/keystone-manage db_sync
-/usr/bin/keystone-manage db_sync --extension spassword
+#/usr/bin/keystone-manage db_sync --extension spassword
