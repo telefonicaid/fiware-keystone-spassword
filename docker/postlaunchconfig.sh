@@ -97,13 +97,18 @@ export OS_INTERFACE=public
 #openstack tenant create admin --description="Admin Tenant"
 
 #keystone user-role-add --user=admin --tenant=admin --role=admin
+openstack role add --user admin --domain Default admin
 openstack role add --user admin --project admin admin
+
 #keystone role-create --name=service
 openstack role create service
+
 #keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iotagent@no.com
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email iotagent@no.com iotagent
+
 #keystone user-create --name=nagios --pass=$KEYSTONE_ADMIN_PASSWORD --email=nagios@no.com
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com nagios
+
 #keystone user-role-add --user=nagios --tenant=admin --role=admin
 openstack role add --user nagios --project admin admin
 
@@ -135,6 +140,9 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
           },
           "scope": {
               "project": {
+                  "domain": {
+                      "name": "Default"
+                  },
                   "name": "admin"
               }
           }
