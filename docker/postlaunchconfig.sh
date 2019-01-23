@@ -89,10 +89,13 @@ export OS_INTERFACE=public
 #keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
 ##openstack user create --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com
 #openstack user set --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com
+
 #keystone role-create --name=admin
-openstack role create admin
+#openstack role create admin
+
 #keystone tenant-create --name=admin --description="Admin Tenant"
 #openstack tenant create admin --description="Admin Tenant"
+
 #keystone user-role-add --user=admin --tenant=admin --role=admin
 openstack role add --user admin --project admin admin
 #keystone role-create --name=service
@@ -132,9 +135,6 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
           },
           "scope": {
               "project": {
-                  "domain": {
-                      "name": "Default"
-                  },
                   "name": "admin"
               }
           }
