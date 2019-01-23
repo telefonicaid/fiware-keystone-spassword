@@ -50,7 +50,7 @@ fi
 keystone-manage bootstrap \
   --bootstrap-project-name "admin" \
   --bootstrap-username "admin" \
-  --bootstrap-password $KEYSTONE_ADMIN_PASSWORD \
+  --bootstrap-password "ADMIN" \
   --bootstrap-role-name "admin" \
   --bootstrap-service-name "keystone" \
   --bootstrap-region-id "RegionOne" \
@@ -87,7 +87,8 @@ export OS_INTERFACE=public
 
 
 #keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
-openstack user create --password $KEYSTONE_ADMIN_PASSWORD admin
+##openstack user create --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com
+openstack user update --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com
 #keystone role-create --name=admin
 openstack role create admin
 #keystone tenant-create --name=admin --description="Admin Tenant"
