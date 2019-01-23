@@ -52,8 +52,6 @@ keystone-manage bootstrap \
   --bootstrap-username "admin" \
   --bootstrap-password "ADMIN" \
   --bootstrap-role-name "admin" \
-  --bootstrap-service-name "keystone" \
-  --bootstrap-region-id "RegionOne" \
   --bootstrap-admin-url "http://127.0.0.1:35357" \
   --bootstrap-public-url "http://127.0.0.1:5001" \
   --bootstrap-internal-url "http://127.0.0.1:5001"
@@ -94,7 +92,7 @@ export OS_INTERFACE=public
 #openstack role create admin
 
 #keystone tenant-create --name=admin --description="Admin Tenant"
-#openstack tenant create admin --description="Admin Tenant"
+#openstack domain create admin --description="Admin Tenant"
 
 #keystone user-role-add --user=admin --tenant=admin --role=admin
 openstack role add --user admin --domain Default admin
@@ -140,9 +138,6 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
           },
           "scope": {
               "project": {
-                  "domain": {
-                      "name": "Default"
-                  },
                   "name": "admin"
               }
           }
