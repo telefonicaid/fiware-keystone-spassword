@@ -118,7 +118,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                                                                       user_id=user_id,
                                                                       user=user)
 
-@dependency.requires('spassword_api', 'identity_api')
+@dependency.requires('spassword_api', 'identity_api', 'assignment_api', 'role_api')
 class SPasswordV3Controller(controller.V3Controller, SendMail):
 
     def __init__(self):
@@ -255,3 +255,28 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
                                         headers=headers)
         else:
             return wsgi.render_response(status=('401', 'No valid code. Email not checked'))
+
+    def get_project_roles(self, context, user_id):
+        """Get all user projects and the user roles in each project """
+        user_info = self.identity_api.get_user(user_id)
+        user_projects = self.assignment_api.list_projects_for_user(user_id)
+        LOG.debug('projects of user %s %s' % (user_projects, user_info['id']))
+        user_project_roles = []
+        for user_project in user_projects:
+            LOG.debug('project %s' % (user_project))
+            roles = self.assignment_api.get_roles_for_user_and_project(user_id,
+                                                                       user_project['id'])
+            for role in roles:
+                role_ext = self.role_api.get_role(role)
+                user_project_roles.append(
+                    {
+                        "domain": user_info['domain_id']
+                        "project": user_project['id'],
+                        "project_name": user_project['name'],
+                        "user": user_id,
+                        "user_name": user_info["name"],
+                        "role": role,
+                        "role_name": role_ext["name"]
+                    }
+                )
+        return wsgi.render_response(body=user_project_roles, status=('200', 'OK'))
