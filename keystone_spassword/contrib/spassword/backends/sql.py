@@ -78,7 +78,7 @@ def get_user_session(user_id):
     try:
         session = sql.get_session()
         user_ref = session.query(User).get(user_id)
-    except AttributeError:
+    except Exception:
         with sql.session_for_read() as session:
             user_ref = session.query(User).get(user_id)
     return user_ref, session
@@ -87,7 +87,7 @@ def get_spassword_session(user_id):
     try:
         session = sql.get_session()
         spassword_ref = session.query(SPasswordModel).get(user_id)
-    except AttributeError:
+    except Exception:
         with sql.session_for_read() as session:
             spassword_ref = session.query(SPasswordModel).get(user_id)
     return spassword_ref, session
@@ -312,7 +312,6 @@ class Identity(Identity, SendMail):
         if CONF.spassword.enabled and \
            not (user_id in CONF.spassword.pwd_user_blacklist):
             spassword_ref, session = get_spassword_session(user_id)
-
             if spassword_ref:
                 spassword = spassword_ref.to_dict()
                 if spassword['login_attempts'] > CONF.spassword.pwd_max_tries:
@@ -334,7 +333,6 @@ class Identity(Identity, SendMail):
         if CONF.spassword.enabled:
             spassword_ref, session = get_spassword_session(user_id)
             current_attempt_time = datetime.datetime.utcnow()
-
             if spassword_ref:
                 spassword = spassword_ref.to_dict()
                 if not res:

@@ -5,9 +5,11 @@ MAINTAINER IoT team
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 ENV KEYSTONE_SCIM_VERSION 1.1.8
-ENV KEYSTONE_SPASSWORD_VERSION 1.4.5
+
+ENV KEYSTONE_SPASSWORD_VERSION 1.5.0
 
 COPY ./*.sh /opt/keystone/
+COPY ./*.patch /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
 
 WORKDIR /opt/keystone
@@ -20,10 +22,10 @@ RUN \
     yum -y install mysql git  && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
-    yum -y install python python27  && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-liberty/rdo-release-liberty-5.noarch.rpm?raw=true' > rdo-release-liberty-5.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-liberty-5.noarch.rpm && \
-    # Set Centos mirror to buildlogs to ensure openstack liberty version
+    yum -y install python && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-mitaka/rdo-release-mitaka-7.noarch.rpm?raw=true' > rdo-release-mitaka-7.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-mitaka-7.noarch.rpm && \
+    # Set Centos mirror to buildlogs to ensure openstack Mitaka version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
@@ -40,10 +42,10 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.uuid.Provider && \
-    openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql://keystone:keystone@$DB_HOST/keystone && \
     # Set keystone SSL configuration
+    openstack-config --set /etc/keystone/keystone.conf \
+    token provider keystone.token.providers.uuid.Provider && \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
@@ -52,6 +54,7 @@ RUN \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     #  chown root.root /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
+    ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
@@ -77,6 +80,9 @@ RUN \
     cd ${dir}/${repo_spassword}-${tag} && \
     source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
+    # Patching Mitaka to enable extra fields in token response
+    cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
+    patch -f -p0 < /opt/keystone/common.patch && \
     # LDAP pre-support
     mkdir -p /etc/keystone/domains && \
     chown keystone.keystone /etc/keystone/domains && \

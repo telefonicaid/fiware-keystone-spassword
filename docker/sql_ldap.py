@@ -46,12 +46,20 @@ class IDMapping(sql.ModelBase, sql.ModelDictMixin):
 @dependency.requires('id_generator_api')
 class Mapping(identity.MappingDriverV8):
 
+    def get_session(self):
+        try:
+            session = sql.get_session()
+        except Exception:
+            with sql.session_for_write() as session:
+                None
+        return session
+
     def get_public_id(self, local_entity):
         if (local_entity['entity_type'] == identity_mapping.EntityType.GROUP):
             LOG.debug('Trying to get public_id for group %s in %s' % (local_entity['local_id'],
                                                                       local_entity['domain_id']))
             try:
-                session = sql.get_session()
+                session = self.get_session()
                 query = session.query(model.Group)
                 query = query.filter_by(name=local_entity['local_id'])
                 query = query.filter_by(domain_id=local_entity['domain_id'])
@@ -75,7 +83,7 @@ class Mapping(identity.MappingDriverV8):
             # work if we hashed all the entries, even those that already generate
             # UUIDs, like SQL.  Further, this would only work if the generation
             # algorithm was immutable (e.g. it had always been sha256).
-            session = sql.get_session()
+            session = self.get_session()
             query = session.query(IDMapping.public_id)
             query = query.filter_by(domain_id=local_entity['domain_id'])
             query = query.filter_by(local_id=local_entity['local_id'])
@@ -88,14 +96,14 @@ class Mapping(identity.MappingDriverV8):
                 return None
 
     def get_id_mapping(self, public_id):
-        session = sql.get_session()
+        session = self.get_session()
         mapping_ref = session.query(IDMapping).get(public_id)
         if mapping_ref:
             return mapping_ref.to_dict()
 
     def create_id_mapping(self, local_entity, public_id=None):
         entity = local_entity.copy()
-        with sql.transaction() as session:
+        with sql.session_for_write() as session:
             if public_id is None:
                 public_id = self.id_generator_api.generate_public_ID(entity)
             entity['public_id'] = public_id
@@ -104,7 +112,7 @@ class Mapping(identity.MappingDriverV8):
         return public_id
 
     def delete_id_mapping(self, public_id):
-        with sql.transaction() as session:
+        with sql.session_for_write() as session:
             try:
                 session.query(IDMapping).filter(
                     IDMapping.public_id == public_id).delete()
@@ -114,7 +122,7 @@ class Mapping(identity.MappingDriverV8):
                 pass
 
     def purge_mappings(self, purge_filter):
-        session = sql.get_session()
+        session = self.get_session()
         query = session.query(IDMapping)
         if 'domain_id' in purge_filter:
             query = query.filter_by(domain_id=purge_filter['domain_id'])
