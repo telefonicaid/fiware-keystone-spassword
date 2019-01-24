@@ -1,4 +1,3 @@
 #!/bin/bash
-keystone-wsgi-public -p 5001
+/usr/bin/keystone-wsgi-public --port 5001
 #uwsgi --http-socket :5001 --wsgi-file /usr/bin/keystone-wsgi-public  --master --processes 6 --threads 8 --harakiri 40 --max-requests 5000 --vacuum --enable-threads --disable-logging
-#/usr/bin/keystone-wsgi-admin --port 35357 

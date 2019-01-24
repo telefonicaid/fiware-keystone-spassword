@@ -56,9 +56,10 @@ keystone-manage bootstrap \
   --bootstrap-public-url "http://127.0.0.1:5001" \
   --bootstrap-internal-url "http://127.0.0.1:5001"
 
-/usr/bin/keystone-all &
+/usr/bin/keystone-wsgi-public --port 5001 &
 keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
 /usr/bin/keystone-wsgi-admin --port 35357 &
+keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
 sleep 5
 
 
@@ -67,7 +68,7 @@ sleep 5
 
 export OS_SERVICE_TOKEN=ADMIN
 #export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
-#export KEYSTONE_HOST="127.0.0.1:5001"
+export KEYSTONE_HOST="127.0.0.1:5001"
 #export OS_AUTH_URL="http:/127.0.0.1:5001/v2.0"
 
 export OS_USER_DOMAIN_NAME=Default
@@ -138,6 +139,9 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
           },
           "scope": {
               "project": {
+                  "domain": {
+                      "name": "Default"
+                  },
                   "name": "admin"
               }
           }
@@ -244,6 +248,4 @@ openstack-config --set /etc/keystone/keystone.conf \
                  spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID
 
 kill -9 $keystone_all_pid
-sleep 3
-# Disable in newton
-#chkconfig openstack-keystone on
+kill -9 $keystone_admin_pid
