@@ -20,22 +20,24 @@ RUN \
     yum update -y && yum install -y curl && \
     yum install -y epel-release && yum update -y epel-release && \
     # Install MySQL client
-    yum -y install mysql git  && \
+    yum -y install mysql git && \
+    # yum -y install uwsgi && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python  && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \
     # Set Centos mirror to ctinetworks to ensure openstack Newton version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
-    yum -y install httpd mod_wsgi python-openstackclient && \
+    yum -y install python-openstackclient && \
+    #yum -y install httpd mod_wsgi && \
     # https://docs.openstack.org/newton/install-guide-rdo/keystone-install.html
     #sed -i 's/ / /g' /etc/httpd/conf/httpd.conf && \
-    ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
-    systemctl enable httpd.service && \
+    #ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
+    #systemctl enable httpd.service && \
     #systemctl start httpd.service && \
     cp /opt/keystone/keystone-all /usr/bin && \
     chmod 755 /usr/bin/keystone-all && \
@@ -112,5 +114,5 @@ RUN \
 # Define the entry point
 ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
-EXPOSE 5001
+EXPOSE 5001 35357
 
