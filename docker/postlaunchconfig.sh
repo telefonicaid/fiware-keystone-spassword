@@ -224,7 +224,7 @@ curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLO
       -i                                 \
       -H "X-Auth-Token: $ADMIN_TOKEN"    \
       -H "Accept: application/json"      \
-      -H "Content-Type: application/json"
+      -H "Content-Type: application/json"\
       -d '{ }'
 
 curl -s -L --insecure https://github.com/openstack/keystone/raw/newton-eol/etc/policy.v3cloudsample.json \
