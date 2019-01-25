@@ -208,7 +208,9 @@ curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLO
      -s                                 \
      -i                                 \
      -H "X-Auth-Token: $ADMIN_TOKEN"    \
-     -H "Content-Type: application/json"
+     -H "Accept: application/json"      \
+     -H "Content-Type: application/json"\
+     -d '{ }'
 
 SERVICE_ROLE_ID=$(\
 curl "http://${KEYSTONE_HOST}/v3/roles?name=service" \
@@ -221,7 +223,9 @@ curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLO
       -s                                 \
       -i                                 \
       -H "X-Auth-Token: $ADMIN_TOKEN"    \
+      -H "Accept: application/json"      \
       -H "Content-Type: application/json"
+      -d '{ }'
 
 curl -s -L --insecure https://github.com/openstack/keystone/raw/newton-eol/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
