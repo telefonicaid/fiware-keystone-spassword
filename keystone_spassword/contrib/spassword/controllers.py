@@ -270,7 +270,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
                 role_ext = self.role_api.get_role(role)
                 user_project_roles.append(
                     {
-                        "domain": user_info['domain_id']
+                        "domain": user_info['domain_id'],
                         "project": user_project['id'],
                         "project_name": user_project['name'],
                         "user": user_id,
