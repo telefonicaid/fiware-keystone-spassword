@@ -67,9 +67,7 @@ sleep 5
 # Create Services
 
 export OS_SERVICE_TOKEN=ADMIN
-#export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
-#export OS_AUTH_URL="http:/127.0.0.1:5001/v2.0"
 
 export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_NAME=admin
@@ -78,12 +76,6 @@ export OS_PASSWORD=ADMIN
 export OS_AUTH_URL=http://127.0.0.1:35357
 export OS_USERNAME=admin
 export OS_INTERFACE=public
-
-#export OS_AUTH_URL="http://127.0.0.1:5001"
-#export OS_USER_DOMAIN_ID="default"
-#export OS_PROJECT_DOMAIN_ID="default"
-
-
 
 #keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
 ##openstack user create --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com

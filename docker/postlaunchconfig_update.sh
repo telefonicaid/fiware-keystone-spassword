@@ -31,9 +31,12 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
 
 fi
 
-/usr/bin/keystone-all &
+#/usr/bin/keystone-all &
+/usr/bin/keystone-wsgi-public --port 5001 &
 keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
-sleep 5    
+/usr/bin/keystone-wsgi-admin --port 35357 &
+keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
+sleep 5
 
 export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
@@ -68,9 +71,8 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 
 kill -9 $keystone_all_pid
+kill -9 $keystone_admin_pid
 sleep 3
-# Disable in newton
-#chkconfig openstack-keystone on
 
 IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent"' | awk '{if ($4=="iotagent") print $2}'`
 ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin"' | awk '{if ($4=="cloud_admin") print $2}'`
@@ -82,4 +84,3 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 # Ensure db is migrated to current keystone version
 /usr/bin/keystone-manage db_sync
-#/usr/bin/keystone-manage db_sync --extension spassword

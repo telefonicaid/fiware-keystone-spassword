@@ -33,11 +33,12 @@ RUN \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install python-openstackclient && \
-    #yum -y install httpd mod_wsgi && \
+    yum -y install httpd mod_wsgi && \
     # https://docs.openstack.org/newton/install-guide-rdo/keystone-install.html
-    #sed -i 's/ / /g' /etc/httpd/conf/httpd.conf && \
-    #ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
-    #systemctl enable httpd.service && \
+    sed -i 's/#ServerName www.example.com:80/ServerName controller /g' /etc/httpd/conf/httpd.conf && \
+    sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
+    ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
+    systemctl enable httpd.service && \
     #systemctl start httpd.service && \
     cp /opt/keystone/keystone-all /usr/bin && \
     chmod 755 /usr/bin/keystone-all && \
@@ -105,7 +106,7 @@ RUN \
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
     patch -f -p0 < /opt/keystone/common.patch && \
     # Cleaning unused files...
-    rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
+    #rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
     rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
     rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm
@@ -113,6 +114,7 @@ RUN \
 
 # Define the entry point
 ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
+
 
 EXPOSE 5001 35357
 
