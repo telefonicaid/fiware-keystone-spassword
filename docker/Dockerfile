@@ -105,6 +105,8 @@ RUN \
     # Patching Newton...
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
     patch -f -p0 < /opt/keystone/common.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/identity && \
+    patch -f -p0 < /opt/keystone/core.patch && \
     # Cleaning unused files...
     #rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
