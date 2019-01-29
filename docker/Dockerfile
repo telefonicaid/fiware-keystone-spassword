@@ -4,7 +4,7 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-ENV KEYSTONE_SCIM_VERSION 1.1.8
+ENV KEYSTONE_SCIM_VERSION 1.1.9
 #ENV KEYSTONE_SPASSWORD_VERSION 1.6.0
 ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
 
@@ -39,7 +39,6 @@ RUN \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
     systemctl enable httpd.service && \
-    #systemctl start httpd.service && \
     cp /opt/keystone/keystone-all /usr/bin && \
     chmod 755 /usr/bin/keystone-all && \
     yum -y install unzip tcping jq  && \
@@ -58,6 +57,7 @@ RUN \
     # Set keystone SSL configuration
     openstack-config --set /etc/keystone/keystone.conf \
     token provider keystone.token.providers.uuid.Provider && \
+    #token provider uuid && \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
