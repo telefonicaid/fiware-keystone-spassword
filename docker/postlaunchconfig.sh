@@ -88,11 +88,13 @@ export OS_INTERFACE=public
 #openstack domain create admin --description="Admin Tenant"
 
 #keystone user-role-add --user=admin --tenant=admin --role=admin
-openstack role add --user admin --domain Default admin
+#openstack role add --user admin --domain Default admin
 openstack role add --user admin --project admin admin
 
 #keystone role-create --name=service
 openstack role create service
+
+openstack role delete _member_
 
 #keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iotagent@no.com
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email iotagent@no.com iotagent
@@ -102,6 +104,7 @@ openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com 
 
 #keystone user-role-add --user=nagios --tenant=admin --role=admin
 openstack role add --user nagios --project admin admin
+
 
 #IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
 IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
