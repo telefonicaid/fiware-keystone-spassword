@@ -70,9 +70,6 @@ openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
 
 
-kill -9 $keystone_all_pid
-kill -9 $keystone_admin_pid
-sleep 3
 
 IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent"' | awk '{if ($4=="iotagent") print $2}'`
 ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin"' | awk '{if ($4=="cloud_admin") print $2}'`
@@ -84,3 +81,8 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 # Ensure db is migrated to current keystone version
 /usr/bin/keystone-manage db_sync
+
+
+kill -9 $keystone_all_pid
+kill -9 $keystone_admin_pid
+

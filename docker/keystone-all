@@ -1,2 +1,2 @@
 #!/bin/bash
-/usr/sbin/httpd
+/usr/sbin/httpd -k restart
