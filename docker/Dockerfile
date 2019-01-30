@@ -20,7 +20,6 @@ RUN \
     yum install -y epel-release && yum update -y epel-release && \
     # Install MySQL client
     yum -y install mysql git && \
-    # yum -y install uwsgi && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python  && \
@@ -56,7 +55,6 @@ RUN \
     # Set keystone SSL configuration
     openstack-config --set /etc/keystone/keystone.conf \
     token provider keystone.token.providers.uuid.Provider && \
-    #token provider uuid && \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \

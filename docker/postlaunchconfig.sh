@@ -77,36 +77,14 @@ export OS_AUTH_URL=http://127.0.0.1:35357
 export OS_USERNAME=admin
 export OS_INTERFACE=public
 
-#keystone user-create --name=admin --pass=$KEYSTONE_ADMIN_PASSWORD --email=admin@no.com
-##openstack user create --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com
-#openstack user set --password $KEYSTONE_ADMIN_PASSWORD admin --email admin@no.com
-
-#keystone role-create --name=admin
-#openstack role create admin
-
-#keystone tenant-create --name=admin --description="Admin Tenant"
-#openstack domain create admin --description="Admin Tenant"
-
-#keystone user-role-add --user=admin --tenant=admin --role=admin
-#openstack role add --user admin --domain Default admin
 openstack role add --user admin --project admin admin
-
-#keystone role-create --name=service
 openstack role create service
-
 openstack role delete _member_
-
-#keystone user-create --name=iotagent --pass=$KEYSTONE_ADMIN_PASSWORD --email=iotagent@no.com
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email iotagent@no.com iotagent
-
-#keystone user-create --name=nagios --pass=$KEYSTONE_ADMIN_PASSWORD --email=nagios@no.com
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com nagios
-
-#keystone user-role-add --user=nagios --tenant=admin --role=admin
 openstack role add --user nagios --project admin admin
 
 
-#IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
 IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 
