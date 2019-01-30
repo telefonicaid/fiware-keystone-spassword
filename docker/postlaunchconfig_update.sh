@@ -31,7 +31,6 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
 
 fi
 
-#/usr/bin/keystone-all &
 /usr/bin/keystone-wsgi-public --port 5001 &
 keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
 /usr/bin/keystone-wsgi-admin --port 35357 &
@@ -44,6 +43,7 @@ export KEYSTONE_HOST="127.0.0.1:5001"
 
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
+
 ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from project p where p.name="admin_domain";' | awk '{if ($2=="admin_domain") print $1}'`
 
 
