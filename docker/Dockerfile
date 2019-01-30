@@ -5,8 +5,7 @@ MAINTAINER IoT team
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 ENV KEYSTONE_SCIM_VERSION 1.1.9
-#ENV KEYSTONE_SPASSWORD_VERSION 1.6.0
-ENV KEYSTONE_SPASSWORD_VERSION task/upgrade_to_newton
+ENV KEYSTONE_SPASSWORD_VERSION 1.6.0
 
 COPY ./*.sh /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
@@ -89,7 +88,7 @@ RUN \
     dir=~/fiware-keystone && \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
-    cd ${dir}/${repo_spassword}-task-upgrade_to_newton && \
+    cd ${dir}/${repo_spassword}-${tag} && \
     source ./${pack_spassword} --with-python27 --with-version 1.6.0 --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # LDAP pre-support
