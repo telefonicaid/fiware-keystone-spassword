@@ -35,15 +35,16 @@ fi
 keystone_all_pid=`echo $!`
 sleep 5    
 
-# TODO: Get admin id
-
 export OS_SERVICE_TOKEN=ADMIN
 export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
-ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from domain where name="admin_domain";' | awk '$2=="admin_domain" {print $1}'`
 
-curl -s -L --insecure https://github.com/openstack/keystone/raw/liberty-eol/etc/policy.v3cloudsample.json \
+# Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
+ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from domain d, project p where d.name="admin_domain" or p.name="admin_domain";' | awk '{if ($6=="admin_domain") print $5; else if ($2=="admin_domain") print $1}' | head -n 1`
+
+
+curl -s -L --insecure https://github.com/openstack/keystone/raw/mitaka-eol/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
@@ -70,9 +71,9 @@ kill -9 $keystone_all_pid
 sleep 3
 chkconfig openstack-keystone on
 
-IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from user u where u.name="iotagent"' | awk '{if ($2=="iotagent") print $1}'`
-ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from user u where u.name="cloud_admin"' | awk '{if ($2=="cloud_admin") print $1}'`
-ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from user u where u.name="pep"' | awk '{if ($2=="pep") print $1}'`
+IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent";' | awk '{if ($4=="iotagent") print $2}'`
+ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin";' | awk '{if ($4=="cloud_admin") print $2}'`
+ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="pep";' | awk '{if ($4=="pep") print $2}'`
 
 # Exclude some users from spassword
 openstack-config --set /etc/keystone/keystone.conf \

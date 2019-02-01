@@ -26,7 +26,6 @@ BuildArch: noarch
 %else
 %define keystone_paste /usr/share/keystone/keystone-dist-paste.ini
 %endif
-
 %define keystone_policy /etc/keystone/policy.json
 %define keystone_conf /etc/keystone/keystone.conf
 

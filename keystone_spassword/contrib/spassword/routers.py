@@ -18,8 +18,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import functools
-
 from keystone.common import wsgi
 from keystone_spassword.contrib.spassword import controllers
 
