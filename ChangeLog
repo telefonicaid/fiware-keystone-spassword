@@ -6,6 +6,10 @@ Upgrade plugin for compatibility with Newton version (including docker).
 
 Upgrade plugin for compatibility with Mitaka version (including docker).
 
+1.4.6
+
+Add API to get all user projects and the user roles in each project
+
 1.4.5
 
 Fix user id for blacklist when update docker (#92)

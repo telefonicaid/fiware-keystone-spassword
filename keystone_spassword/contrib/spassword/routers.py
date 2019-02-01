@@ -115,3 +115,9 @@ class SPasswordExtension(wsgi.ExtensionRouter):
             controller=spassword_controller,
             action='check_email_code',
             conditions=dict(method=['GET']))
+
+        mapper.connect(
+            '/users/{user_id}/project_roles',
+            controller=spassword_controller,
+            action='get_project_roles',
+            conditions=dict(method=['GET']))
