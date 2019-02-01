@@ -1,7 +1,10 @@
-
 1.5.0
 
 Upgrade plugin for compatibility with Mitaka version (including docker).
+
+1.4.6
+
+Add API to get all user projects and the user roles in each project
 
 1.4.5
 
