@@ -5,7 +5,7 @@ expiration time for a password, number of bad login attempts before user account
 a recover procedure password, a second factor authentication (2FA)  and so on.
 
 
-## Installing
+## Installing and Configuration
 
 ### RPM installing on RDO Openstack
 
