@@ -33,6 +33,11 @@ smtp_user = 'smtpuser@yourdomain.com'
 smtp_password = 'yourpassword'
 smtp_from = 'smtpuser'
 ```
+* `enabled` is a boolean which enables (true) or disables (false) if Keystone Spassword plugin feature is available in Keystone instance.
+* `pwd_exp_days` indicates the time in days in which user password will be expired if user password is not changed before.
+* `pwd_max_tries` indicate max number of bad login tries before user ccount is blocked (no login/token request is allowed)
+* `pwd_block_minutes` indicate the time in minutes in whcih and user account would be blocked.
+* `pwd_user_blacklist` list of user ids separated by `,` excluded by spassword.
 
 keystone-spassword enables two new authentication and identity plugins, which extends
 default provided plugins to ensure the use of strong passwords, to check expiration time
