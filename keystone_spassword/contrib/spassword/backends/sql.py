@@ -378,9 +378,9 @@ class Identity(Identity, SendMail):
                             subject = 'IoT Platform second factor auth procedure'
                             text = 'The code for verify your access is %s' % code
                             # Check if http is in endpoint
-                            link = ""
+                            link = ''
                             if not 'http' in CONF.spassword.sndfa_endpoint:
-                                link += "http://"
+                                link += 'http://'
                             # Check if /idm is in endpoint
                             if '/idm' in CONF.spassword.sndfa_endpoint:
                                 link += '%s/users/%s/sndfa/%s' % (CONF.spassword.sndfa_endpoint, user_id, code)
