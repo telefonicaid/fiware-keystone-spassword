@@ -377,7 +377,15 @@ class Identity(Identity, SendMail):
                             to = self.get_user(user_id)['email']
                             subject = 'IoT Platform second factor auth procedure'
                             text = 'The code for verify your access is %s' % code
-                            link = 'http://%s/v3/users/%s/sndfa/%s' % (CONF.spassword.sndfa_endpoint, user_id, code)
+                            # Check if http is in endpoint
+                            link = ''
+                            if not 'http' in CONF.spassword.sndfa_endpoint:
+                                link += 'http://'
+                            # Check if /idm is in endpoint
+                            if '/idm' in CONF.spassword.sndfa_endpoint:
+                                link += '%s/users/%s/sndfa/%s' % (CONF.spassword.sndfa_endpoint, user_id, code)
+                            else:
+                                link += '%s/v3/users/%s/sndfa/%s' % (CONF.spassword.sndfa_endpoint, user_id, code)
                             text += '\nLink to verify your access is: %s' % link
                             self.send_email(to, subject, text)
                             res = None
