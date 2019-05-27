@@ -123,6 +123,10 @@ The following steps are needed to populate a LDAP with users and groups.
 
 The following steps are the same that above but for the case of LDAP is in a docker like proposed:
 
+- Configuracion schema [keystone_ldap_schema](./keystone_ldap_schema.py)
+```
+ $ python ./keystone_ldap_schema.py dc=openstack,dc=org openstack > /tmp/openstack_schema.ldif
+```
 - Copy ldif files to container:
 ```
  $ sudo docker cp /tmp/openstack_schema.ldif my-openldap-container:/tmp

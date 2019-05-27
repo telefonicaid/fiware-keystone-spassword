@@ -113,6 +113,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         if CONF.spassword.enabled and 'password' in user:
             super(SPasswordUserV3Controller, self).strong_check_password(
                 user['password'])
+        LOG.info('changing pwd of user %s spasswordusercontroller' % user_id)
         return super(SPasswordUserV3Controller, self).change_password(context,
                                                                       user_id=user_id,
                                                                       user=user)
