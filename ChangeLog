@@ -1,6 +1,11 @@
+1.5.1
+
+Allow sndfa endpoints (keystone) urls with `https` and `/idm`
+
 1.5.0
 
 Upgrade plugin for compatibility with Mitaka version (including docker).
+Mitaka is default version for docker.
 
 1.4.6
 
