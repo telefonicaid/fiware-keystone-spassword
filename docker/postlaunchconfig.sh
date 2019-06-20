@@ -66,6 +66,7 @@ keystone user-create --name=nagios --pass=$KEYSTONE_ADMIN_PASSWORD --email=nagio
 keystone user-role-add --user=nagios --tenant=admin --role=admin
 
 IOTAGENT_ID=`keystone user-list | grep "iotagent" | awk '{print $2}'`
+NAGIOS_ID=`keystone user-list | grep "nagios" | awk '{print $2}'`
 
 ADMIN_TOKEN=$(\
 curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
@@ -197,7 +198,7 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 # Exclude some users from spassword
 openstack-config --set /etc/keystone/keystone.conf \
-                 spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID
+                 spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
 
 kill -9 $keystone_all_pid
 sleep 3
