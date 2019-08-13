@@ -104,8 +104,10 @@ Authentication and Authorization mechanism in it's
 
 Moreover keystone-spassword adds a new API to retrieve all project roles for a user:
         
-GET '/v3/users/{user_id}/project_roles'
+**GET '/v3/users/{user_id}/project_roles'**
 
+
+```
 [
     {
         "domain": "8960989b51164eaeaa42200ecc79a47a",
@@ -118,6 +120,7 @@ GET '/v3/users/{user_id}/project_roles'
     },
   ....
 ]
+```
 
 ## Building and packaging
 
