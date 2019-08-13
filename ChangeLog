@@ -9,6 +9,10 @@ Allow sndfa endpoints (keystone) urls with `https` and `/idm`
 Upgrade plugin for compatibility with Mitaka version (including docker).
 Mitaka is default version for docker.
 
+1.4.7
+
+Add nagios user to black list
+
 1.4.6
 
 Add API to get all user projects and the user roles in each project
