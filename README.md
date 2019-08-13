@@ -102,6 +102,23 @@ Authentication and Authorization mechanism in it's
 [official documentation](https://github.com/openstack/identity-api/blob/master/v3/src/markdown/identity-api-v3.md).
 
 
+Moreover keystone-spassword adds a new API to retrieve all project roles for a user:
+        
+GET '/v3/users/{user_id}/project_roles'
+
+[
+    {
+        "domain": "8960989b51164eaeaa42200ecc79a47a",
+        "project_name": "/smartcity/gardens",
+        "project": "031149af6c5147a782e9cf4c56e1fe11",
+        "role_name": "8960989b51164eaeaa42200ecc79a47a#SubServiceAdmin",
+        "role": "e0da2d91e8154a32980ed4c5a717fd91",
+        "user": "bace4fd6bd9b49fda5727eb83a714a3c",
+        "user_name": "user1"
+    },
+  ....
+]
+
 ## Building and packaging
 
 In any OS (Linux, OSX) with a sane build environment (basically with `rpmbuild`
