@@ -17,6 +17,9 @@ DEFAULT_PASSWORD_VALUE=${4}
 MYSQL_PASSWORD_ARG=${5}
 MYSQL_PASSWORD_VALUE=${6}
 
+TOKEN_EXPIRATION_TIME_ARG=${7}
+TOKEN_EXPIRATION_TIME_VALUE=${8}
+
 if [ "$DEFAULT_PASSWORD_ARG" == "-default_pwd" ]; then
     KEYSTONE_ADMIN_PASSWORD=$DEFAULT_PASSWORD_VALUE
 fi
@@ -42,6 +45,13 @@ GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
 EOF
 
 fi
+
+if [ "$TOKEN_EXPIRATION_TIME_ARG" == "-token_expiration_time" ]; then
+    TOKEN_EXPIRATION_TIME=$TOKEN_EXPIRATION_TIME_VALUE
+    openstack-config --set /etc/keystone/keystone.conf \
+                     token expiration $TOKEN_EXPIRATION_TIME
+fi
+
 
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
