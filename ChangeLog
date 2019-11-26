@@ -1,3 +1,4 @@
+Set to 3 hours default token expiration time in docker
 Add nagios user to black list
 
 1.5.1
