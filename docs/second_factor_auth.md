@@ -16,6 +16,11 @@ This feature provides 2FA for OpenStack Keystone based on email.
      },
 ```
 
+When Keystone is expecting that user accepts 2FA challenge, the following error response is obtained: 
+```
+{"error": {"message": "Expecting Second Factor Authentication, email was sent. Please check it and click in provided link.", "code": 401, "title": "Unauthorized"}}
+```
+
 ## Configuration
 
 Specific options at /etc/keystone/keystone.conf
