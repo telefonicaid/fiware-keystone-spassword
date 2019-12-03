@@ -260,7 +260,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         """Get all user projects and the user roles in each project """
         user_info = self.identity_api.get_user(user_id)
         user_projects = self.assignment_api.list_projects_for_user(user_id)
-        LOG.debug('projects of user %s %s' % (user_projects, user_info['id']))
+        LOG.debug('projects of user %s: %s' % (user_info['id'], user_projects))
         user_project_roles = []
         for user_project in user_projects:
             LOG.debug('project %s' % (user_project))
