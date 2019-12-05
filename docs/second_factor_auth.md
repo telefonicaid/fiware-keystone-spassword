@@ -53,8 +53,10 @@ smtp_from='smtpuser'
 Second Factor authentication introduces new methods:
 
 - Ask to check current user email. A code will be sent to user to that email.
-  
+    
   ```GET /v3/users/<user_id>/checkemail```
+  
+  This call uses a x-auth-token associated to <user_id> user.
 
 - Check a code to validate user email. The code was received by user in his email.
   
@@ -67,6 +69,7 @@ Second Factor authentication introduces new methods:
   ```POST /v3/users/<user_id>/sndfa```
   
   The payload for this request is either `{"enable":true}` to enable second factor or `{"enable":false}` to disable it.
+  This call uses a x-auth-token associated to <user_id> user.
 
 - Check a second factor authentication code to allow user authentication. Code is just valid during sndfa_time_window.
   
