@@ -6,11 +6,11 @@ openstack-config --set /etc/keystone/keystone.conf \
 openstack-config --set /etc/keystone/keystone.conf \
                  identity domain_config_dir /etc/keystone/domains
 openstack-config --set /etc/keystone/keystone.conf \
-              ldap url ldap://172.17.0.1
+              ldap url ldap://<LDAP_IP>
 openstack-config --set /etc/keystone/keystone.conf \
               ldap user dc=admin,dc=openstack,dc=org
 openstack-config --set /etc/keystone/keystone.conf \
-              ldap password 4pass1w0rd
+              ldap password <PWD>
 openstack-config --set /etc/keystone/keystone.conf \
               ldap suffix openstack,dc=org
 openstack-config --set /etc/keystone/keystone.conf \
