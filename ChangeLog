@@ -1,3 +1,4 @@
+Fix: protect grants and sndfa APIs
 Fix: handle unmatch groups from ldap integration (ldap/docker)
 Set to 3 hours default token expiration time in docker
 Add nagios user to black list
