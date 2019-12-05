@@ -106,6 +106,7 @@ Moreover keystone-spassword adds a new API to retrieve all project roles for a u
         
 **GET '/v3/users/{user_id}/project_roles'**
 
+This call uses a x-auth-token associated to <user_id> user.
 
 ```
 [
