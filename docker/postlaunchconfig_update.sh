@@ -28,6 +28,20 @@ if [ "$MYSQL_PASSWORD_ARG" == "-mysql_pwd" ]; then
     MYSQL_ROOT_PASSWORD="$MYSQL_PASSWORD_VALUE"
 fi
 
+[[ "${SPASSWORD_ENABLED}" == "" ]] && export SPASSWORD_ENABLED=True
+[[ "${SPASSWORD_PWD_MAX_TRIES}" == "" ]] && export SPASSWORD_PWD_MAX_TRIES=5
+[[ "${SPASSWORD_PWD_BLOCK_MINUTES}" == "" ]] && export SPASSWORD_PWD_BLOCK_MINUTES=30
+[[ "${SPASSWORD_PWD_EXP_DAYS}" == "" ]] && export SPASSWORD_PWD_EXP_DAYS=365
+[[ "${SPASSWORD_SMTP_SERVER}" == "" ]] && export SPASSWORD_SMTP_SERVER='0.0.0.0'
+[[ "${SPASSWORD_SMTP_PORT}" == "" ]] && export SPASSWORD_SMTP_PORT=587
+[[ "${SPASSWORD_SMTP_TLS}" == "" ]] && export SPASSWORD_SMTP_TLS=True
+[[ "${SPASSWORD_SMTP_USER}" == "" ]] && export SPASSWORD_SMTP_USER='smtpuser@yourdomain.com'
+[[ "${SPASSWORD_SMTP_PASSWORD}" == "" ]] && export SPASSWORD_SMTP_PASSWORD='yourpassword'
+[[ "${SPASSWORD_SMTP_FROM}" == "" ]] && export SPASSWORD_SMTP_FROM='smtpuser'
+[[ "${SPASSWORD_SNDFA}" == "" ]] && export SPASSWORD_SNDFA=False
+[[ "${SPASSWORD_SNDFA_ENDPOINT}" == "" ]] && export SPASSWORD_SNDFA_ENDPOINT='localhost:5001'
+[[ "${SPASSWORD_SNDFA_TIME_WINDOW}" == "" ]] && export SPASSWORD_SNDFA_TIME_WINDOW=24
+
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
                      database connection mysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
@@ -88,6 +102,36 @@ ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password
 # Exclude some users from spassword
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID
+
+
+
+# Set default spassword config
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword enabled $SPASSWORD_ENABLED
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword pwd_max_tries $PASSWORD_PWD_MAX_TRIES
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword pwd_block_minutes $SPASSWORD_PWD_BLOCK_MINUTES
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword pwd_exp_days $SPASSWORD_PWD_EXP_DAYS
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword smtp_server $SPASSWORD_SMTP_SERVER
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword smtp_port $SPASSWORD_SMTP_PORT
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword smtp_tls $SPASSWORD_SMTP_TLS
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword smtp_user $SPASSWORD_SMTP_USER
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword smtp_password $SPASSWORD_SMTP_PASSWORD
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword smtp_from $SPASSWORD_SMTP_FROM
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword sndfa $SPASSWORD_SNDFA
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword sndfa_endpoint $SPASSWORD_SNDFA_ENDPOINT
+openstack-config --set /etc/keystone/keystone.conf \
+                 spassword sndfa_time_window $SPASSWORD_SNDFA_TIME_WINDOW
 
 # Ensure db is migrated to current keystone version
 /usr/bin/keystone-manage db_sync
