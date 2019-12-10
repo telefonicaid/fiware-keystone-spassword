@@ -229,7 +229,7 @@ openstack-config --set /etc/keystone/keystone.conf \
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword enabled $SPASSWORD_ENABLED
 openstack-config --set /etc/keystone/keystone.conf \
-                 spassword pwd_max_tries $PASSWORD_PWD_MAX_TRIES
+                 spassword pwd_max_tries $SPASSWORD_PWD_MAX_TRIES
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword pwd_block_minutes $SPASSWORD_PWD_BLOCK_MINUTES
 openstack-config --set /etc/keystone/keystone.conf \
