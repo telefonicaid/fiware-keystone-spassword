@@ -114,6 +114,7 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
         if CONF.spassword.enabled and 'password' in user:
             super(SPasswordUserV3Controller, self).strong_check_password(
                 user['password'])
+        LOG.info('changing pwd of user %s spasswordusercontroller' % user_id)
         return super(SPasswordUserV3Controller, self).change_password(context,
                                                                       user_id=user_id,
                                                                       user=user)
@@ -184,6 +185,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         text = 'Your new password is %s' % user_password
         return self.send_email(to, subject, text)
 
+    @controller.protected()
     def modify_sndfa(self, context, user_id, enable):
         """Perform user sndfa modification """
         self._check_spassword_configured()
@@ -217,6 +219,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         else:
             return wsgi.render_response(status=('401', 'No valid code. sndfa Unauthorized'))
 
+    @controller.protected()
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
         user_info = self.identity_api.get_user(user_id)
@@ -241,6 +244,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
             LOG.info(msg)
             return wsgi.render_response(body=msg, status=('400', 'Error sending email'))
 
+    # Should be called without provide an auth token
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
         user_info = self.identity_api.get_user(user_id)
@@ -256,11 +260,12 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         else:
             return wsgi.render_response(status=('401', 'No valid code. Email not checked'))
 
+    @controller.protected()
     def get_project_roles(self, context, user_id):
         """Get all user projects and the user roles in each project """
         user_info = self.identity_api.get_user(user_id)
         user_projects = self.assignment_api.list_projects_for_user(user_id)
-        LOG.debug('projects of user %s %s' % (user_projects, user_info['id']))
+        LOG.debug('projects of user %s: %s' % (user_info['id'], user_projects))
         user_project_roles = []
         for user_project in user_projects:
             LOG.debug('project %s' % (user_project))
