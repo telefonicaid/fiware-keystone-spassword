@@ -77,7 +77,7 @@ class SPasswordModel(sql.ModelBase, sql.DictBase):
 def get_user_session(user_id):
     try:
         session = sql.get_session()
-        user_ref = session.query(User).get(user_id)
+        user_ref = session.query(User).get(user_id) # TBD: wath if LDAP
     except Exception:
         with sql.session_for_read() as session:
             user_ref = session.query(User).get(user_id)
@@ -401,7 +401,7 @@ class Identity(Identity, SendMail):
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
-                user = self.get_user(user_id)
+                user = self.get_user(user_id) # TBD: wath if LDAP
                 data_user = {}
                 data_user['user_id'] = user['id']
                 data_user['user_name'] = user['name']
