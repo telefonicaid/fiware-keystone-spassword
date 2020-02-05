@@ -110,7 +110,7 @@ openstack role add --user nagios --project admin admin
 
 
 IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
-NAGIOS_ID=`openstack user | grep "nagios" | awk '{print $2}'`
+NAGIOS_ID=`openstack user list | grep "nagios" | awk '{print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
 
