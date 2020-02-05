@@ -66,9 +66,19 @@ class Mapping(identity.MappingDriverV8):
                 try:
                     group_ref = query.one()
                 except sql.NotFound:
-                    raise exception.GroupNotFound(group_id=local_entity['local_id'])
-                group = group_ref.to_dict()
+                    session = self.get_session()
+                    query = session.query(IDMapping.public_id)
+                    query = query.filter_by(domain_id=local_entity['domain_id'])
+                    query = query.filter_by(local_id=local_entity['local_id'])
+                    query = query.filter_by(entity_type=local_entity['entity_type'])
+                    try:
+                        public_ref = query.one()
+                        public_id = public_ref.public_id
+                        return public_id
+                    except sql.NotFound:
+                        return None
 
+                group = group_ref.to_dict()
                 public_id = group['id']
                 LOG.debug('Public_id for group %s in %s is: %s ' % (local_entity['local_id'],
                                                                     local_entity['domain_id'],

@@ -16,6 +16,11 @@ This feature provides 2FA for OpenStack Keystone based on email.
      },
 ```
 
+When Keystone is expecting that user accepts 2FA challenge, the following error response is obtained: 
+```
+{"error": {"message": "Expecting Second Factor Authentication, email was sent. Please check it and click in provided link.", "code": 401, "title": "Unauthorized"}}
+```
+
 ## Configuration
 
 Specific options at /etc/keystone/keystone.conf
@@ -28,7 +33,7 @@ sndfa_endpoint='localhost:5001'
 
 * `sndfa` is a boolean which enables (true) or disables (false) if Second Factor Authentication feature is available in Keystone instance.
 * `sndfa_time_window` indicates the time in hours in which Second Factor Authentication performed by an user is still valid before ask another new one.
-* `sndfa_endpoint` is the endpoint used in links sent by email to users to check email address and sndfa changes
+* `sndfa_endpoint` is the endpoint used in links sent by email to users to check email address and sndfa changes (i.e. localhost:5001, https://localhost/idm, etc.)
 
 
 In order to work with Second Factor Authentication feature spassword needs a proper smtp configuration; make sure that you provide one.
@@ -48,8 +53,10 @@ smtp_from='smtpuser'
 Second Factor authentication introduces new methods:
 
 - Ask to check current user email. A code will be sent to user to that email.
-  
+    
   ```GET /v3/users/<user_id>/checkemail```
+  
+  This call uses a x-auth-token associated to <user_id> user.
 
 - Check a code to validate user email. The code was received by user in his email.
   
@@ -60,6 +67,9 @@ Second Factor authentication introduces new methods:
 - Modify configuration for second factor authentication for a user, allowing enable or disable it.
   
   ```POST /v3/users/<user_id>/sndfa```
+  
+  The payload for this request is either `{"enable":true}` to enable second factor or `{"enable":false}` to disable it.
+  This call uses a x-auth-token associated to <user_id> user.
 
 - Check a second factor authentication code to allow user authentication. Code is just valid during sndfa_time_window.
   
@@ -72,3 +82,5 @@ Second Factor authentication introduces new methods:
   ```GET /v3/users/<user_id>/recover_password```
   
   This call does not need a x-auth-token
+
+Note that in order to use the `POST /v3/users/<user_id>/sndfa` operation first the user email must be validad. Thus, the `GET /v3/users/<user_id>/checkemail` (and later email validation with `GET /v3/users/<user_id>/checkemail/<code>`) call must be done before.

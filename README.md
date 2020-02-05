@@ -5,7 +5,7 @@ expiration time for a password, number of bad login attempts before user account
 a recover procedure password, a second factor authentication (2FA)  and so on.
 
 
-## Installing
+## Installing and Configuration
 
 ### RPM installing on RDO Openstack
 
@@ -33,6 +33,11 @@ smtp_user = 'smtpuser@yourdomain.com'
 smtp_password = 'yourpassword'
 smtp_from = 'smtpuser'
 ```
+* `enabled` is a boolean which enables (true) or disables (false) if Keystone Spassword plugin feature is available in Keystone instance.
+* `pwd_exp_days` indicates the time in days in which user password will be expired if user password is not changed before.
+* `pwd_max_tries` indicate max number of bad login tries before user ccount is blocked (no login/token request is allowed)
+* `pwd_block_minutes` indicate the time in minutes in whcih and user account would be blocked.
+* `pwd_user_blacklist` list of user ids separated by `,` excluded by spassword.
 
 keystone-spassword enables two new authentication and identity plugins, which extends
 default provided plugins to ensure the use of strong passwords, to check expiration time
@@ -97,6 +102,27 @@ Authentication and Authorization mechanism in it's
 [official documentation](https://github.com/openstack/identity-api/blob/master/v3/src/markdown/identity-api-v3.md).
 
 
+Moreover keystone-spassword adds a new API to retrieve all project roles for a user:
+        
+**GET '/v3/users/{user_id}/project_roles'**
+
+This call uses a x-auth-token associated to <user_id> user.
+
+```
+[
+    {
+        "domain": "8960989b51164eaeaa42200ecc79a47a",
+        "project_name": "/smartcity/gardens",
+        "project": "031149af6c5147a782e9cf4c56e1fe11",
+        "role_name": "8960989b51164eaeaa42200ecc79a47a#SubServiceAdmin",
+        "role": "e0da2d91e8154a32980ed4c5a717fd91",
+        "user": "bace4fd6bd9b49fda5727eb83a714a3c",
+        "user_name": "user1"
+    },
+  ....
+]
+```
+
 ## Building and packaging
 
 In any OS (Linux, OSX) with a sane build environment (basically with `rpmbuild`
@@ -156,4 +182,5 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 
 ## [Second Factor Authentication](docs/second_factor_auth.md)
 
+## [Docker env vars](docs/DOCKER.md)
 

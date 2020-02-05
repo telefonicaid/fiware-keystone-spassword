@@ -79,7 +79,7 @@ class SPasswordModel(sql.ModelBase, sql.DictBase):
 def get_user_session(user_id):
     try:
         session = sql.get_session()
-        user_ref = session.query(User).get(user_id)
+        user_ref = session.query(User).get(user_id) # TBD: wath if LDAP
     except Exception:
         with sql.session_for_read() as session:
             user_ref = session.query(User).get(user_id)
@@ -379,7 +379,15 @@ class Identity(Identity, SendMail):
                             to = self.get_user(user_id)['email']
                             subject = 'IoT Platform second factor auth procedure'
                             text = 'The code for verify your access is %s' % code
-                            link = 'http://%s/v3/users/%s/sndfa/%s' % (CONF.spassword.sndfa_endpoint, user_id, code)
+                            # Check if http is in endpoint
+                            link = ''
+                            if not 'http' in CONF.spassword.sndfa_endpoint:
+                                link += 'http://'
+                            # Check if /idm is in endpoint
+                            if '/idm' in CONF.spassword.sndfa_endpoint:
+                                link += '%s/users/%s/sndfa/%s' % (CONF.spassword.sndfa_endpoint, user_id, code)
+                            else:
+                                link += '%s/v3/users/%s/sndfa/%s' % (CONF.spassword.sndfa_endpoint, user_id, code)
                             text += '\nLink to verify your access is: %s' % link
                             self.send_email(to, subject, text)
                             res = None
@@ -395,7 +403,7 @@ class Identity(Identity, SendMail):
 
             else: # User still not registered in spassword
                 LOG.debug('registering in spassword %s' % user_id)
-                user = self.get_user(user_id)
+                user = self.get_user(user_id) # TBD: wath if LDAP
                 data_user = {}
                 data_user['user_id'] = user['id']
                 data_user['user_name'] = user['name']
