@@ -134,6 +134,10 @@ openstack-config --set /etc/keystone/keystone.conf \
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_time_window $SPASSWORD_SNDFA_TIME_WINDOW
 
+# Some tunnig valus
+openstack-config --set /etc/keystone/keystone.conf \
+                 cache enabled true
+
 # Ensure db is migrated to current keystone version
 /usr/bin/keystone-manage db_sync
 /usr/bin/keystone-manage db_sync --extension spassword
