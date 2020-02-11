@@ -49,7 +49,7 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     cache backend oslo_cache.memcache_pool && \
     openstack-config --set /etc/keystone/keystone.conf \
-    cache backend_argument = url:127.0.0.1:11211 && \
+    cache backend_argument url:127.0.0.1:11211 && \
     openstack-config --set /etc/keystone/keystone.conf \
     token provider keystone.token.providers.uuid.Provider && \
     openstack-config --set /etc/keystone/keystone.conf \
