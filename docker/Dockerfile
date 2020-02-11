@@ -45,8 +45,6 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     cache enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    cache debug_cache_backend true  && \
-    openstack-config --set /etc/keystone/keystone.conf \
     cache backend oslo_cache.memcache_pool && \
     openstack-config --set /etc/keystone/keystone.conf \
     cache backend_argument url:172.17.0.1:11211 && \
