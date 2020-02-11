@@ -29,7 +29,7 @@ RUN \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient && \
-    yum -y install unzip tcping jq initscripts python-memcached  && \
+    yum -y install unzip tcping jq python-memcached && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
