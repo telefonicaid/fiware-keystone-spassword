@@ -39,6 +39,8 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001  && \
     openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT verbose false  && \
+    openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
     cache enabled true  && \

@@ -254,11 +254,6 @@ openstack-config --set /etc/keystone/keystone.conf \
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_time_window $SPASSWORD_SNDFA_TIME_WINDOW
 
-# Some tunnig valus
-openstack-config --set /etc/keystone/keystone.conf \
-                 cache enabled true
-
-
 kill -9 $keystone_all_pid
 sleep 3
 chkconfig openstack-keystone on
