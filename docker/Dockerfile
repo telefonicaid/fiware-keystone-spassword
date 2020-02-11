@@ -28,8 +28,8 @@ RUN \
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
-    yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
-    yum -y install unzip tcping jq  && \
+    yum -y install openstack-utils openstack-keystone python-keystoneclient && \
+    yum -y install unzip tcping jq initscripts memcached  && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
@@ -41,10 +41,18 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    database connection mysql://keystone:keystone@$DB_HOST/keystone && \
-    # Set keystone SSL configuration
+    cache enabled true  && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    cache debug_cache_backend true  && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    cache backend oslo_cache.memcache_pool && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    cache backend_argument = url:127.0.0.1:11211 && \
     openstack-config --set /etc/keystone/keystone.conf \
     token provider keystone.token.providers.uuid.Provider && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    database connection mysql://keystone:keystone@$DB_HOST/keystone && \
+    # Set keystone SSL configuration
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
