@@ -29,7 +29,7 @@ RUN \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient && \
-    yum -y install unzip tcping jq python-memcached && \
+    yum -y install unzip tcping jq python2-redis && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
@@ -45,9 +45,9 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     cache enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    cache backend oslo_cache.memcache_pool && \
+    cache backend dogpile.cache.redis && \
     openstack-config --set /etc/keystone/keystone.conf \
-    cache backend_argument url:172.17.0.1:11211 && \
+    cache backend_argument url:redis://172.17.0.1:6379 && \
     openstack-config --set /etc/keystone/keystone.conf \
     token provider keystone.token.providers.uuid.Provider && \
     openstack-config --set /etc/keystone/keystone.conf \
