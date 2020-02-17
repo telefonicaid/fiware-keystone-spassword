@@ -43,6 +43,8 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
+    revoke expiration_buffer 900  && \
+    openstack-config --set /etc/keystone/keystone.conf \
     cache enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
     cache backend dogpile.cache.redis && \
