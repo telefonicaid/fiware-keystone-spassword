@@ -4,8 +4,13 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
+<<<<<<< HEAD
 ENV KEYSTONE_SCIM_VERSION 1.1.9
 ENV KEYSTONE_SPASSWORD_VERSION 1.6.0
+=======
+ENV KEYSTONE_SCIM_VERSION 1.3.0
+ENV KEYSTONE_SPASSWORD_VERSION 1.5.3
+>>>>>>> master
 
 COPY ./*.sh /opt/keystone/
 COPY ./sql_ldap.py /opt/keystone/
@@ -39,7 +44,7 @@ RUN \
     systemctl enable httpd.service && \
     cp /opt/keystone/keystone-all /usr/bin && \
     chmod 755 /usr/bin/keystone-all && \
-    yum -y install unzip tcping jq  && \
+    yum -y install unzip tcping jq python2-redis && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
@@ -49,12 +54,14 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001  && \
     openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT verbose false  && \
+    openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    token provider keystone.token.providers.uuid.Provider && \
     openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql://keystone:keystone@$DB_HOST/keystone && \
     # Set keystone SSL configuration
-    openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.uuid.Provider && \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \

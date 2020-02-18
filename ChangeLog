@@ -1,6 +1,13 @@
+
 1.6.0
 
 Upgrade plugin for compatibility with Newton version (including docker).
+
+
+
+Add: allow configure keystone cache to use Redis backend with env var
+Add: env vars to token expiration and revocation buffer expiraton
+
 
 1.5.3
 
