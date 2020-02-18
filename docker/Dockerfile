@@ -43,13 +43,7 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    revoke expiration_buffer 900  && \
-    openstack-config --set /etc/keystone/keystone.conf \
     cache enabled true  && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    cache backend dogpile.cache.redis && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    cache backend_argument url:redis://172.17.0.1:6379 && \
     openstack-config --set /etc/keystone/keystone.conf \
     token provider keystone.token.providers.uuid.Provider && \
     openstack-config --set /etc/keystone/keystone.conf \
