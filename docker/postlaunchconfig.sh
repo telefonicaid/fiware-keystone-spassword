@@ -72,6 +72,8 @@ fi
 
 if [ "${REDIS_ENDPOINT}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
+    cache enabled true
+    openstack-config --set /etc/keystone/keystone.conf \
     cache backend dogpile.cache.redis
     openstack-config --set /etc/keystone/keystone.conf \
     cache backend_argument url:redis://$REDIS_ENDPOINT
