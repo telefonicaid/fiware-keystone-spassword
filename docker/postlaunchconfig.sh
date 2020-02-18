@@ -62,7 +62,9 @@ EOF
 fi
 
 if [ "$TOKEN_EXPIRATION_TIME_ARG" == "-token_expiration_time" ]; then
-    TOKEN_EXPIRATION_TIME=$TOKEN_EXPIRATION_TIME_VALUE
+    if [ "${TOKEN_EXPIRATION_TIME}" == "" ]; then
+        TOKEN_EXPIRATION_TIME=$TOKEN_EXPIRATION_TIME_VALUE
+    fi
 fi
 
 if [ "${TOKEN_EXPIRATION_TIME}" != "" ]; then
