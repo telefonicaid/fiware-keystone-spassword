@@ -49,9 +49,28 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
 fi
 
 if [ "$TOKEN_EXPIRATION_TIME_ARG" == "-token_expiration_time" ]; then
-    TOKEN_EXPIRATION_TIME=$TOKEN_EXPIRATION_TIME_VALUE
+    if [ "${TOKEN_EXPIRATION_TIME}" == "" ]; then
+        TOKEN_EXPIRATION_TIME=$TOKEN_EXPIRATION_TIME_VALUE
+    fi
+fi
+
+if [ "${TOKEN_EXPIRATION_TIME}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
                      token expiration $TOKEN_EXPIRATION_TIME
+fi
+
+if [ "${REDIS_ENDPOINT}" != "" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+    cache enabled true
+    openstack-config --set /etc/keystone/keystone.conf \
+    cache backend dogpile.cache.redis
+    openstack-config --set /etc/keystone/keystone.conf \
+    cache backend_argument url:redis://$REDIS_ENDPOINT
+fi
+
+if [ "${REVOKE_EXPIRATION_BUFFER}" != "" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+    revoke expiration_buffer $REVOKE_EXPIRATION_BUFFER
 fi
 
 /usr/bin/keystone-all &

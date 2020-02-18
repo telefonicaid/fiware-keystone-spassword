@@ -28,8 +28,8 @@ RUN \
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
-    yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
-    yum -y install unzip tcping jq  && \
+    yum -y install openstack-utils openstack-keystone python-keystoneclient && \
+    yum -y install unzip tcping jq python2-redis && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
@@ -39,12 +39,14 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001  && \
     openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT verbose false  && \
+    openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    token provider keystone.token.providers.uuid.Provider && \
     openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql://keystone:keystone@$DB_HOST/keystone && \
     # Set keystone SSL configuration
-    openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.uuid.Provider && \
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
     chmod -R o-rwx /etc/keystone/ssl && \
