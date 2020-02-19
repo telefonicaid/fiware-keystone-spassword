@@ -123,8 +123,7 @@ ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password
 
 # Exclude some users from spassword
 openstack-config --set /etc/keystone/keystone.conf \
-                 spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$NAGIOS_ID,$IOTAGENT_ID
-
+                 spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
 
 
 # Set default spassword config
