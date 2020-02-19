@@ -85,11 +85,12 @@ if [ "${REVOKE_EXPIRATION_BUFFER}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
     revoke expiration_buffer $REVOKE_EXPIRATION_BUFFER
 fi
-
+echo "[ postlaunchconfig - bootstrap ] "
 /usr/bin/keystone-manage bootstrap
+echo "[ postlaunchconfig - db_sync ] "
 /usr/bin/keystone-manage db_sync
 
-
+echo "[ postlaunchconfig - bootstrap2 ] "
 keystone-manage bootstrap \
   --bootstrap-project-name "admin" \
   --bootstrap-username "admin" \
@@ -119,7 +120,7 @@ export OS_PASSWORD=ADMIN
 export OS_AUTH_URL=http://127.0.0.1:35357
 export OS_USERNAME=admin
 export OS_INTERFACE=public
-
+echo "[ postlaunchconfig - roles ] "
 openstack role add --user admin --project admin admin
 openstack role create service
 openstack role delete _member_

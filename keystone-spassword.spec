@@ -81,8 +81,8 @@ sndfa_time_window=24
 fi
 
 ln -fs %{python_lib}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib
-ln -s %{python_lib}/keystone_spassword/contrib/spassword/migrate_repo/versions/001_spassword_table.py %{python_lib}/keystone/common/sql/expand_repo/versions/005_spassword_table.py
-ln -s %{python_lib}/keystone_spassword/contrib/spassword/migrate_repo/versions/002_add_sndfa_spassword_table.py %{python_lib}/keystone/common/sql/expand_repo/versions/006_add_sndfa_spassword_table.py
+# ln -s %{python_lib}/keystone_spassword/contrib/spassword/migrate_repo/versions/001_spassword_table.py %{python_lib}/keystone/common/sql/expand_repo/versions/005_spassword_table.py
+# ln -s %{python_lib}/keystone_spassword/contrib/spassword/migrate_repo/versions/002_add_sndfa_spassword_table.py %{python_lib}/keystone/common/sql/expand_repo/versions/006_add_sndfa_spassword_table.py
 /usr/bin/keystone-manage db_sync
 
 echo "SPASSWORD extension installed successfully. Restart Keystone daemon to take effect."
