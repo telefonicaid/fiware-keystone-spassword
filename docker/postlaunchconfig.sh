@@ -43,6 +43,8 @@ fi
 [[ "${SPASSWORD_SNDFA_ENDPOINT}" == "" ]] && export SPASSWORD_SNDFA_ENDPOINT='localhost:5001'
 [[ "${SPASSWORD_SNDFA_TIME_WINDOW}" == "" ]] && export SPASSWORD_SNDFA_TIME_WINDOW=24
 
+[[ "${LOG_LEVEL}" == "" ]] && export LOG_LEVEL=WARN
+
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
@@ -84,6 +86,20 @@ fi
 if [ "${REVOKE_EXPIRATION_BUFFER}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
     revoke expiration_buffer $REVOKE_EXPIRATION_BUFFER
+fi
+
+if [ "${LOG_LEVEL}" == "INFO" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT verbose True
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT debug False
+fi
+
+if [ "${LOG_LEVEL}" == "DEBUG" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT verbose True
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT debug True
 fi
 
 /usr/bin/keystone-manage bootstrap
