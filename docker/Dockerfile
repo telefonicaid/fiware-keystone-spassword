@@ -21,7 +21,7 @@ RUN \
     yum -y install mysql git  && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
-    yum -y install python && \
+    yum -y install python cronie && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-mitaka/rdo-release-mitaka-7.noarch.rpm?raw=true' > rdo-release-mitaka-7.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-mitaka-7.noarch.rpm && \
     # Set Centos mirror to buildlogs to ensure openstack Mitaka version
@@ -94,6 +94,8 @@ RUN \
     cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
+    # Cron task for remove expired tokens
+    echo "0 */1 * * * root /usr/bin/keystone-manage token_flush" >/etc/cron.d/tokenflush && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
