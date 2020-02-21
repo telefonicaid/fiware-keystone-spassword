@@ -33,7 +33,7 @@ RUN \
     yum -y install python-openstackclient && \
     yum -y install httpd mod_wsgi && \
     # https://docs.openstack.org/newton/install-guide-rdo/keystone-install.html
-    sed -i 's/#ServerName www.example.com:80/ServerName controller /g' /etc/httpd/conf/httpd.conf && \
+    sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
     systemctl enable httpd.service && \

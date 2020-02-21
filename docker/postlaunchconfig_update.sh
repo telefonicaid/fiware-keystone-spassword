@@ -80,9 +80,9 @@ if [ "${REVOKE_EXPIRATION_BUFFER}" != "" ]; then
     revoke expiration_buffer $REVOKE_EXPIRATION_BUFFER
 fi
 
-export OS_SERVICE_TOKEN=ADMIN
-export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
-export KEYSTONE_HOST="127.0.0.1:5001"
+# export OS_SERVICE_TOKEN=ADMIN
+# export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
+# export KEYSTONE_HOST="127.0.0.1:5001"
 
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
@@ -157,7 +157,7 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 # Ensure db is migrated to current keystone version
 echo "[ postlaunchconfig - db_sync2 ] "
-/usr/bin/keystone-manage db_sync
+/usr/bin/keystone-manage db_sync --migrate
 
 
 kill -9 $keystone_all_pid

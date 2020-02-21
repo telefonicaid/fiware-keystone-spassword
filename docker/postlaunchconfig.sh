@@ -85,20 +85,28 @@ if [ "${REVOKE_EXPIRATION_BUFFER}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
     revoke expiration_buffer $REVOKE_EXPIRATION_BUFFER
 fi
-echo "[ postlaunchconfig - bootstrap ] "
-/usr/bin/keystone-manage bootstrap
-echo "[ postlaunchconfig - db_sync ] "
+#echo "[ postlaunchconfig - bootstrap ] "
+#/usr/bin/keystone-manage bootstrap
+#echo "[ postlaunchconfig - db_sync ] "
 /usr/bin/keystone-manage db_sync
+/usr/bin/keystone-manage db_sync --expand
+/usr/bin/keystone-manage db_sync --migrate
+/usr/bin/keystone-manage db_sync --contract
+#TBD: /usr/bin/keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
 
-echo "[ postlaunchconfig - bootstrap2 ] "
-keystone-manage bootstrap \
-  --bootstrap-project-name "admin" \
-  --bootstrap-username "admin" \
-  --bootstrap-password "ADMIN" \
-  --bootstrap-role-name "admin" \
-  --bootstrap-admin-url "http://127.0.0.1:35357" \
-  --bootstrap-public-url "http://127.0.0.1:5001" \
-  --bootstrap-internal-url "http://127.0.0.1:5001"
+
+echo "[ postlaunchconfig - bootstrap ] "
+/usr/bin/keystone-manage bootstrap \
+  --bootstrap-password ADMIN \
+  --bootstrap-username admin \
+  --bootstrap-project-name admin \
+  --bootstrap-role-name admin \
+  --bootstrap-service-name keystone \
+  --bootstrap-admin-url http://127.0.0.1:35357 \
+  --bootstrap-public-url http://127.0.0.1:5001 \
+  --bootstrap-internal-url http://127.0.0.1:35357
+
+# TBD: Arrancar apache directamente
 
 /usr/bin/keystone-wsgi-public --port 5001 &
 keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
@@ -110,16 +118,24 @@ sleep 5
 
 # Create Services
 
-export OS_SERVICE_TOKEN=ADMIN
-export KEYSTONE_HOST="127.0.0.1:5001"
+#export OS_SERVICE_TOKEN=ADMIN
+#export KEYSTONE_HOST="127.0.0.1:5001"
+#export OS_INTERFACE=public
 
-export OS_USER_DOMAIN_NAME=Default
-export OS_PROJECT_NAME=admin
-export OS_IDENTITY_API_VERSION=3
-export OS_PASSWORD=ADMIN
-export OS_AUTH_URL=http://127.0.0.1:35357
+
 export OS_USERNAME=admin
-export OS_INTERFACE=public
+export OS_PASSWORD=ADMIN
+export OS_PROJECT_NAME=admin
+export OS_USER_DOMAIN_ID=default
+export OS_PROJECT_DOMAIN_ID=default
+export OS_AUTH_URL=http://127.0.0.1:35357/v3
+export OS_IDENTITY_API_VERSION=3
+
+#openstack project list --os-username admin --os-project-name admin \
+#    --os-user-domain-id default --os-project-domain-id default \
+#    --os-identity-api-version 3 --os-auth-url http://localhost:5001 \
+#    --os-password ADMIN
+
 echo "[ postlaunchconfig - roles ] "
 openstack role add --user admin --project admin admin
 openstack role create service
@@ -133,6 +149,7 @@ IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
 NAGIOS_ID=`openstack user list | grep "nagios" | awk '{print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
+[[ "${NAGIOS_ID}" == "" ]] && exit 0
 
 ADMIN_TOKEN=$(\
 curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
