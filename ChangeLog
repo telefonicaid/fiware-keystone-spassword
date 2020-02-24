@@ -1,3 +1,5 @@
+1.5.4
+
 Add: env var to set LOG_LEVEL
 Add: cron task to flush tokens (expired tokens) in docker container
 Add: allow configure keystone cache to use Redis backend with env var
