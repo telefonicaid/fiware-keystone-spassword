@@ -41,6 +41,7 @@ fi
 [[ "${SPASSWORD_SNDFA}" == "" ]] && export SPASSWORD_SNDFA=False
 [[ "${SPASSWORD_SNDFA_ENDPOINT}" == "" ]] && export SPASSWORD_SNDFA_ENDPOINT='localhost:5001'
 [[ "${SPASSWORD_SNDFA_TIME_WINDOW}" == "" ]] && export SPASSWORD_SNDFA_TIME_WINDOW=24
+[[ "${LOG_LEVEL}" == "" ]] && export LOG_LEVEL=WARN
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
@@ -80,9 +81,28 @@ if [ "${REVOKE_EXPIRATION_BUFFER}" != "" ]; then
     revoke expiration_buffer $REVOKE_EXPIRATION_BUFFER
 fi
 
+if [ "${LOG_LEVEL}" == "INFO" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT verbose True
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT debug False
+fi
+
+if [ "${LOG_LEVEL}" == "DEBUG" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT verbose True
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT debug True
+fi
+
 # export OS_SERVICE_TOKEN=ADMIN
 # export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 # export KEYSTONE_HOST="127.0.0.1:5001"
+
+
+/usr/bin/keystone-all &
+keystone_all_pid=`echo $!`
+sleep 5    
 
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper

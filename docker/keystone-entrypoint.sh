@@ -39,10 +39,8 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     fi
 fi
 
-echo "[ keystone-entrypoint - token_flush ] "
-/usr/bin/keystone-manage token_flush
-
 echo "[ keystone-entrypoint - keystone-all ] "
+crond &
 touch /var/log/keystone/keystone.log
 chmod 666 /var/log/keystone/keystone.log
 /usr/bin/keystone-all &

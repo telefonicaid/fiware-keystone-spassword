@@ -22,7 +22,7 @@ RUN \
     yum -y install mysql git && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
-    yum -y install python  && \
+    yum -y install python cronie && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-newton-5.noarch.rpm && \
     # Set Centos mirror to ctinetworks to ensure openstack Newton version
@@ -108,6 +108,8 @@ RUN \
     patch -f -p0 < /opt/keystone/common.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/identity && \
     patch -f -p0 < /opt/keystone/core.patch && \
+    # Cron task for remove expired tokens
+    echo "0 */1 * * * root /usr/bin/keystone-manage token_flush" >/etc/cron.d/tokenflush && \
     # Cleaning unused files...
     #rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
