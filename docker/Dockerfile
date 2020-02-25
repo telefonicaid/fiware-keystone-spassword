@@ -33,7 +33,7 @@ RUN \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
-    database connection mysql://keystone:keystone@db/keystone && \
+    database connection mysql+pymysql://keystone:keystone@db/keystone && \
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT admin_token ADMIN  && \
     openstack-config --set /etc/keystone/keystone.conf \
