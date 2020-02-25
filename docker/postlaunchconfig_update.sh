@@ -45,16 +45,16 @@ fi
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     database connection mysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
+                     database connection mysql+pymysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
 
 fi
 
 
-/usr/bin/keystone-wsgi-public --port 5001 &
-keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
-/usr/bin/keystone-wsgi-admin --port 35357 &
-keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
-sleep 5
+# /usr/bin/keystone-wsgi-public --port 5001 &
+# keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
+# /usr/bin/keystone-wsgi-admin --port 35357 &
+# keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
+# sleep 5
 
 if [ "$TOKEN_EXPIRATION_TIME_ARG" == "-token_expiration_time" ]; then
     if [ "${TOKEN_EXPIRATION_TIME}" == "" ]; then
@@ -97,7 +97,7 @@ fi
 
 # export OS_SERVICE_TOKEN=ADMIN
 # export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
-# export KEYSTONE_HOST="127.0.0.1:5001"
+export KEYSTONE_HOST="127.0.0.1:5001"
 
 
 /usr/bin/keystone-all &
@@ -181,5 +181,5 @@ echo "[ postlaunchconfig - db_sync2 ] "
 
 
 kill -9 $keystone_all_pid
-kill -9 $keystone_admin_pid
+#kill -9 $keystone_admin_pid
 

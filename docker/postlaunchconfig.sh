@@ -48,7 +48,7 @@ fi
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     database connection mysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
+                     database connection mysql+pymysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
     # Ensure previous keystone database does not exist
     mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
 DROP DATABASE keystone;
@@ -104,71 +104,92 @@ fi
 
 #echo "[ postlaunchconfig - bootstrap ] "
 #/usr/bin/keystone-manage bootstrap
-#echo "[ postlaunchconfig - db_sync ] "
-
-
-# /usr/bin/keystone-manage db_sync
-# /usr/bin/keystone-manage db_sync --expand
-# /usr/bin/keystone-manage db_sync --migrate
+echo "[ postlaunchconfig - db_sync ] "
+/usr/bin/keystone-manage db_sync
+#echo "[ postlaunchconfig - db_sync --expand ] "
+#/usr/bin/keystone-manage db_sync --expand
+#echo "[ postlaunchconfig - db_sync --migrate ] "
+#/usr/bin/keystone-manage db_sync --migrate
 # /usr/bin/keystone-manage db_sync --contract
 #TBD: /usr/bin/keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
 
 
 echo "[ postlaunchconfig - bootstrap ] "
 /usr/bin/keystone-manage bootstrap \
-  --bootstrap-password ADMIN \
-  --bootstrap-username admin \
-  --bootstrap-project-name admin \
-  --bootstrap-role-name admin \
-  --bootstrap-service-name keystone \
+  --bootstrap-password $KEYSTONE_ADMIN_PASSWORD \
   --bootstrap-admin-url http://127.0.0.1:35357 \
   --bootstrap-public-url http://127.0.0.1:5001 \
-  --bootstrap-internal-url http://127.0.0.1:35357
+  --bootstrap-internal-url http://127.0.0.1:35357 \
+  --bootstrap-region-id RegionOne
+
+# --bootstrap-username admin \
+#  --bootstrap-project-name admin \
+#  --bootstrap-role-name admin \
+#  --bootstrap-service-name keystone \
 
 # TBD: Arrancar apache directamente
 
+echo "[ postlaunchconfig - Start UWSGI process ] "
 /usr/bin/keystone-wsgi-public --port 5001 &
+sleep 2
 keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
 /usr/bin/keystone-wsgi-admin --port 35357 &
+sleep 2
 keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
 sleep 5
 
 
 
 # Create Services
-
+export KEYSTONE_HOST="127.0.0.1:5001"
 #export OS_SERVICE_TOKEN=ADMIN
-#export KEYSTONE_HOST="127.0.0.1:5001"
 #export OS_INTERFACE=public
 
 
+# /usr/bin/keystone-all &
+# keystone_all_pid=`echo $!`
+# sleep 5    
+
+
 export OS_USERNAME=admin
-export OS_PASSWORD=ADMIN
+export OS_PASSWORD=$KEYSTONE_ADMIN_PASSWORD
 export OS_PROJECT_NAME=admin
 export OS_USER_DOMAIN_ID=default
+export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_DOMAIN_ID=default
-export OS_AUTH_URL=http://127.0.0.1:35357/v3
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_AUTH_URL=http://127.0.0.1:5001/v3
+#export OS_AUTH_URL=http://127.0.0.1:35357/v3
 export OS_IDENTITY_API_VERSION=3
+#export OS_USER_DOMAIN_NAME=Default
+#export OS_PROJECT_DOMAIN_NAME=Default
 
 #openstack project list --os-username admin --os-project-name admin \
 #    --os-user-domain-id default --os-project-domain-id default \
 #    --os-identity-api-version 3 --os-auth-url http://localhost:5001 \
 #    --os-password ADMIN
 
-echo "[ postlaunchconfig - roles ] "
-openstack role add --user admin --project admin admin
+echo "[ postlaunchconfig - create roles  ] "
+# openstack domain create --description "Default Domain" default
+# openstack project create --domain default --description "Admin Project" admin
+# openstack user create --domain default --password $KEYSTONE_ADMIN_PASSWORD admin
+# openstack role create admin
+openstack role add  --user admin --project admin admin
 openstack role create service
+echo "[ postlaunchconfig - delete roles  ] "
 openstack role delete _member_
+echo "[ postlaunchconfig - create users ] "
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email iotagent@no.com iotagent
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com nagios
+echo "[ postlaunchconfig - assign roles to users ] "
 openstack role add --user nagios --project admin admin
 
-
+echo "[ postlaunchconfig - list users ] "
 IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
 NAGIOS_ID=`openstack user list | grep "nagios" | awk '{print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
-[[ "${NAGIOS_ID}" == "" ]] && exit 0
+[[ "${NAGIOS_ID}" == null ]] && exit 0
 
 ADMIN_TOKEN=$(\
 curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
@@ -188,7 +209,7 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
                           "name": "Default"
                       },
                       "name": "admin",
-                      "password": "ADMIN"
+                      "password": "'$KEYSTONE_ADMIN_PASSWORD'"
                   }
               }
           },
@@ -203,6 +224,7 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
       }
     }' | grep ^X-Subject-Token: | awk '{print $2}' )
 echo "ADMIN_TOKEN: $ADMIN_TOKEN"
+[[ "${ADMIN_TOKEN}" == null ]] && exit 0
 
 ID_ADMIN_DOMAIN=$(\
 curl http://${KEYSTONE_HOST}/v3/domains          \
@@ -213,10 +235,14 @@ curl http://${KEYSTONE_HOST}/v3/domains          \
   {
       "domain": {
       "enabled": true,
-      "name": "admin_domain"
+      "name": "admin_domain",
+      "description": "admin_domain desc"
       }
   }' | jq .domain.id | tr -d '"' )
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
+ID_ADMIN_DOMAIN=`openstack domain list | grep "admin_domain" | awk '{print $2}'`
+echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
+[[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 
 ID_CLOUD_SERVICE=$(\
 curl http://${KEYSTONE_HOST}/v3/users             \
@@ -233,6 +259,8 @@ curl http://${KEYSTONE_HOST}/v3/users             \
           "password": "'$KEYSTONE_ADMIN_PASSWORD'"
       }
   }' | jq .user.id | tr -d '"' )
+echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
+ID_CLOUD_SERVICE=`openstack user list | grep "pep" | awk '{print $2}'`
 echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
 ID_CLOUD_ADMIN=$(\
@@ -251,12 +279,16 @@ curl http://${KEYSTONE_HOST}/v3/users              \
       }
   }' | jq .user.id | tr -d '"' )
 echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
+ID_CLOUD_ADMIN=`openstack user list | grep "cloud_admin" | awk '{print $2}'`
+echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
 
 ADMIN_ROLE_ID=$(\
 curl "http://${KEYSTONE_HOST}/v3/roles?name=admin"  \
          -s                                         \
          -H "X-Auth-Token: $ADMIN_TOKEN" \
         | jq .roles[0].id | tr -d '"' )
+echo "ADMIN_ROLE_ID: $ADMIN_ROLE_ID"
+ADMIN_ROLE_ID=`openstack role list | grep "admin" | awk '{print $2}'`
 echo "ADMIN_ROLE_ID: $ADMIN_ROLE_ID"
 
 curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_ADMIN}/roles/${ADMIN_ROLE_ID} \
@@ -272,6 +304,8 @@ curl "http://${KEYSTONE_HOST}/v3/roles?name=service" \
          -s                                          \
          -H "X-Auth-Token: $ADMIN_TOKEN" \
         | jq .roles[0].id | tr -d '"' )
+echo "SERVICE_ROLE_ID: $SERVICE_ROLE_ID"
+ADMIN_ROLE_ID=`openstack role list | grep "service" | awk '{print $2}'`
 echo "SERVICE_ROLE_ID: $SERVICE_ROLE_ID"
 
 curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_SERVICE}/roles/${SERVICE_ROLE_ID} \

@@ -194,7 +194,7 @@ class Driver(object):
 @dependency.requires('identity_api')
 class SPassword(password.Password):
 
-    def authenticate(self, context, auth_payload, user_context):
+    def authenticate(self, context, auth_payload, user_context = None):
         """Try to authenticate against the identity backend."""
         if ('L' in RELEASES):
             user_info = password.auth_plugins.UserAuthInfo.create(auth_payload, 'password')
