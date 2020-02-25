@@ -33,8 +33,6 @@ RUN \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
-    database connection mysql+pymysql://keystone:keystone@db/keystone && \
-    openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT admin_token ADMIN  && \
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001  && \
@@ -45,7 +43,7 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     token provider keystone.token.providers.uuid.Provider && \
     openstack-config --set /etc/keystone/keystone.conf \
-    database connection mysql://keystone:keystone@$DB_HOST/keystone && \
+    database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
     # Set keystone SSL configuration
     keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
     chown -R keystone:keystone /etc/keystone/ssl && \
