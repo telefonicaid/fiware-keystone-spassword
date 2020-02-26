@@ -221,6 +221,9 @@ class SPassword(password.Password):
             msg = 'Invalid username or password'
             raise exception.Unauthorized(msg)
 
+        if not user_context:
+            user_context = {}
+
         if 'user_id' not in user_context:
             user_context['user_id'] = user_info.user_id
         if 'extras' in res:
