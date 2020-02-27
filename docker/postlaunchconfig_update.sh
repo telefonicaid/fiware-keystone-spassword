@@ -49,7 +49,6 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
 
 fi
 
-
 # /usr/bin/keystone-wsgi-public --port 5001 &
 # keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
 # /usr/bin/keystone-wsgi-admin --port 35357 &
@@ -107,9 +106,11 @@ sleep 5
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
 ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from project p where p.name="admin_domain";' | awk '{if ($2=="admin_domain") print $1}'`
+echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
+[[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
+[[ "${ID_ADMIN_DOMAIN}" == "" ]] && exit 0
 
-
-curl -s -L --insecure https://github.com/openstack/keystone/raw/newton-eol/etc/policy.v3cloudsample.json \
+curl -s -L --insecure https://github.com/openstack/keystone/raw/ocata-em/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
@@ -139,8 +140,10 @@ IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYS
 NAGIOS_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="nagios";' | awk '{if ($4=="nagios") print $2}'`
 ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin"' | awk '{if ($4=="cloud_admin") print $2}'`
 ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="pep"' | awk '{if ($4=="pep") print $2}'`
-
-
+echo "IOTAGENT_ID: $IOTAGENT_ID"
+echo "NAGIOS_ID: $NAGIOS_ID"
+echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
+echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
 # Exclude some users from spassword
 openstack-config --set /etc/keystone/keystone.conf \

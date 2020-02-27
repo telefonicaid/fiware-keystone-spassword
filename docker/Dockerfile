@@ -23,7 +23,7 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python cronie && \
-    #curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
+    # curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-ocata/rdo-release-ocata-3.noarch.rpm?raw=true' > rdo-release-ocata-3.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-ocata-3.noarch.rpm && \
     # Set Centos mirror to ctinetworks to ensure openstack Ocata version
@@ -43,8 +43,8 @@ RUN \
     yum -y install unzip tcping jq python2-redis && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
-    openstack-config --set /etc/keystone/keystone.conf \
-    DEFAULT admin_token ADMIN  && \
+    # openstack-config --set /etc/keystone/keystone.conf \
+    # DEFAULT admin_token ADMIN  && \
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001  && \
     openstack-config --set /etc/keystone/keystone.conf \
@@ -59,6 +59,11 @@ RUN \
     chmod -R o-rwx /etc/keystone/ssl && \
     # Create /opt/keystone
     mkdir -p /opt/keystone && \
+    # TMP
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT verbose True && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT debug True && \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     #  chown root.root /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
@@ -75,7 +80,7 @@ RUN \
     cd ${dir}/${repo_scim}-${tag} && \
     source ./${pack_scim} --with-python27 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
-    # Install Keystone-SPASSWORD
+     # Install Keystone-SPASSWORD
     cd /opt/keystone && \
     tag=$KEYSTONE_SPASSWORD_VERSION && \
     user="telefonicaid" && \

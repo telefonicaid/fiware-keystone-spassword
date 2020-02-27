@@ -122,10 +122,11 @@ echo "[ postlaunchconfig - bootstrap ] "
   --bootstrap-internal-url http://127.0.0.1:35357 \
   --bootstrap-region-id RegionOne
 
-# --bootstrap-username admin \
+#  --bootstrap-username admin \
 #  --bootstrap-project-name admin \
 #  --bootstrap-role-name admin \
 #  --bootstrap-service-name keystone \
+
 
 # TBD: Arrancar apache directamente
 
@@ -142,7 +143,7 @@ sleep 5
 
 # Create Services
 export KEYSTONE_HOST="127.0.0.1:5001"
-#export OS_SERVICE_TOKEN=ADMIN
+#export OS_SERVICE_TOKEN=$KEYSTONE_ADMIN_PASSWORD
 #export OS_INTERFACE=public
 
 
@@ -190,6 +191,7 @@ NAGIOS_ID=`openstack user list | grep "nagios" | awk '{print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
 [[ "${NAGIOS_ID}" == null ]] && exit 0
+[[ "${NAGIOS_ID}" == "" ]] && exit 0
 
 ADMIN_TOKEN=$(\
 curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
@@ -224,7 +226,7 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
       }
     }' | grep ^X-Subject-Token: | awk '{print $2}' )
 echo "ADMIN_TOKEN: $ADMIN_TOKEN"
-[[ "${ADMIN_TOKEN}" == null ]] && exit 0
+[[ "${ADMIN_TOKEN}" == "" ]] && exit 0
 
 ID_ADMIN_DOMAIN=$(\
 curl http://${KEYSTONE_HOST}/v3/domains          \
@@ -316,7 +318,7 @@ curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLO
       -H "Content-Type: application/json"\
       -d '{ }'
 
-curl -s -L --insecure https://github.com/openstack/keystone/raw/newton-eol/etc/policy.v3cloudsample.json \
+curl -s -L --insecure https://github.com/openstack/keystone/raw/ocata-em/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
