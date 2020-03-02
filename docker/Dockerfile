@@ -93,17 +93,17 @@ RUN \
     cd ${dir}/${repo_spassword}-${tag} && \
     source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
-    # # LDAP pre-support
-    # mkdir -p /etc/keystone/domains && \
-    # chown keystone.keystone /etc/keystone/domains && \
-    # openstack-config --set /etc/keystone/keystone.conf \
-    # identity domain_specific_drivers_enabled true && \
-    # openstack-config --set /etc/keystone/keystone.conf \
-    # identity domain_config_dir /etc/keystone/domains && \
-    # cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
-    # openstack-config --set /etc/keystone/keystone.conf \
-    # identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
-    # # Patching Ocata...
+    # LDAP pre-support
+    mkdir -p /etc/keystone/domains && \
+    chown keystone.keystone /etc/keystone/domains && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity domain_specific_drivers_enabled true && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity domain_config_dir /etc/keystone/domains && \
+    cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
+    # Patching Ocata...
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
     patch -f -p0 < /opt/keystone/common.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/identity && \
