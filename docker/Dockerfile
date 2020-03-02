@@ -50,7 +50,7 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    token provider keystone.token.providers.uuid.Provider && \
+    token provider uuid && \
     openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
     # Set keystone SSL configuration

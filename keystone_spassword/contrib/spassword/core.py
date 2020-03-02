@@ -23,6 +23,7 @@
 import uuid
 
 from keystone.auth.plugins import password
+
 from keystone.common import dependency
 from keystone.common import wsgi
 from keystone import notifications
@@ -228,3 +229,8 @@ class SPassword(password.Password):
             user_context['user_id'] = user_info.user_id
         if 'extras' in res:
             user_context['extras'] = res['extras']
+
+        if ('M' in RELEASES):
+            from keystone.auth.plugins import base
+            return base.AuthHandlerResponse(status=True, response_body=None,
+                                            response_data=user_context)
