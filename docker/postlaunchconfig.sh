@@ -122,14 +122,6 @@ echo "[ postlaunchconfig - bootstrap ] "
   --bootstrap-internal-url http://127.0.0.1:35357 \
   --bootstrap-region-id RegionOne
 
-#  --bootstrap-username admin \
-#  --bootstrap-project-name admin \
-#  --bootstrap-role-name admin \
-#  --bootstrap-service-name keystone \
-
-
-# TBD: Arrancar apache directamente
-
 echo "[ postlaunchconfig - Start UWSGI process ] "
 /usr/bin/keystone-wsgi-public --port 5001 &
 sleep 2
@@ -143,14 +135,6 @@ sleep 5
 
 # Create Services
 export KEYSTONE_HOST="127.0.0.1:5001"
-#export OS_SERVICE_TOKEN=$KEYSTONE_ADMIN_PASSWORD
-#export OS_INTERFACE=public
-
-
-# /usr/bin/keystone-all &
-# keystone_all_pid=`echo $!`
-# sleep 5    
-
 
 export OS_USERNAME=admin
 export OS_PASSWORD=$KEYSTONE_ADMIN_PASSWORD
@@ -160,20 +144,9 @@ export OS_USER_DOMAIN_NAME=Default
 export OS_PROJECT_DOMAIN_ID=default
 export OS_PROJECT_DOMAIN_NAME=Default
 export OS_AUTH_URL=http://127.0.0.1:5001/v3
-#export OS_AUTH_URL=http://127.0.0.1:35357/v3
 export OS_IDENTITY_API_VERSION=3
-#export OS_USER_DOMAIN_NAME=Default
-#export OS_PROJECT_DOMAIN_NAME=Default
-
-#openstack project list --os-username admin --os-project-name admin \
-#    --os-user-domain-id default --os-project-domain-id default \
-#    --os-identity-api-version 3 --os-auth-url http://localhost:5001 \
-#    --os-password ADMIN
 
 echo "[ postlaunchconfig - create roles  ] "
-# openstack domain create --description "Default Domain" default
-# openstack project create --domain default --description "Admin Project" admin
-# openstack user create --domain default --password $KEYSTONE_ADMIN_PASSWORD admin
 # openstack role create admin
 openstack role add  --user admin --project admin admin
 openstack role create service
@@ -262,8 +235,6 @@ curl http://${KEYSTONE_HOST}/v3/users             \
       }
   }' | jq .user.id | tr -d '"' )
 echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
-ID_CLOUD_SERVICE=`openstack user list | grep "pep" | awk '{print $2}'`
-echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
 ID_CLOUD_ADMIN=$(\
 curl http://${KEYSTONE_HOST}/v3/users              \
@@ -281,16 +252,12 @@ curl http://${KEYSTONE_HOST}/v3/users              \
       }
   }' | jq .user.id | tr -d '"' )
 echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
-ID_CLOUD_ADMIN=`openstack user list | grep "cloud_admin" | awk '{print $2}'`
-echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
 
 ADMIN_ROLE_ID=$(\
 curl "http://${KEYSTONE_HOST}/v3/roles?name=admin"  \
          -s                                         \
          -H "X-Auth-Token: $ADMIN_TOKEN" \
         | jq .roles[0].id | tr -d '"' )
-echo "ADMIN_ROLE_ID: $ADMIN_ROLE_ID"
-ADMIN_ROLE_ID=`openstack role list | grep "admin" | awk '{print $2}'`
 echo "ADMIN_ROLE_ID: $ADMIN_ROLE_ID"
 
 curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_ADMIN}/roles/${ADMIN_ROLE_ID} \
@@ -306,8 +273,6 @@ curl "http://${KEYSTONE_HOST}/v3/roles?name=service" \
          -s                                          \
          -H "X-Auth-Token: $ADMIN_TOKEN" \
         | jq .roles[0].id | tr -d '"' )
-echo "SERVICE_ROLE_ID: $SERVICE_ROLE_ID"
-ADMIN_ROLE_ID=`openstack role list | grep "service" | awk '{print $2}'`
 echo "SERVICE_ROLE_ID: $SERVICE_ROLE_ID"
 
 curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_SERVICE}/roles/${SERVICE_ROLE_ID} \

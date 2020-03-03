@@ -43,8 +43,6 @@ RUN \
     yum -y install unzip tcping jq python2-redis && \
     yum -y install cracklib cracklib-python && \
     # Set keystone configuration
-    # openstack-config --set /etc/keystone/keystone.conf \
-    # DEFAULT admin_token ADMIN  && \
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001  && \
     openstack-config --set /etc/keystone/keystone.conf \
@@ -59,11 +57,6 @@ RUN \
     chmod -R o-rwx /etc/keystone/ssl && \
     # Create /opt/keystone
     mkdir -p /opt/keystone && \
-    # TMP
-    openstack-config --set /etc/keystone/keystone.conf \
-    DEFAULT verbose True && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    DEFAULT debug True && \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     #  chown root.root /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
@@ -106,8 +99,6 @@ RUN \
     # Patching Ocata...
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
     patch -f -p0 < /opt/keystone/common.patch && \
-    cd /usr/lib/python2.7/site-packages/keystone/identity && \
-    patch -f -p0 < /opt/keystone/core.patch && \
     # Cron task for remove expired tokens
     echo "0 */1 * * * root /usr/bin/keystone-manage token_flush" >/etc/cron.d/tokenflush && \
     # Cleaning unused files...
