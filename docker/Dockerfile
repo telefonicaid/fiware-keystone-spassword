@@ -23,10 +23,9 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python cronie && \
-    # curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-newton/rdo-release-newton-5.noarch.rpm?raw=true' > rdo-release-newton-5.noarch.rpm && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-ocata/rdo-release-ocata-3.noarch.rpm?raw=true' > rdo-release-ocata-3.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-ocata-3.noarch.rpm && \
-    # Set Centos mirror to ctinetworks to ensure openstack Ocata version
+    # Set Centos mirror to ctinetworks to ensure openstack version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
@@ -59,7 +58,6 @@ RUN \
     mkdir -p /opt/keystone && \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
-    #  chown root.root /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
@@ -96,13 +94,17 @@ RUN \
     cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
-    # Patching Ocata...
+    # Patching ...
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
     patch -f -p0 < /opt/keystone/common.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/identity && \
+    patch -f -p0 < /opt/keystone/core.patch && \
+    find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
+    find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
     # Cron task for remove expired tokens
     echo "0 */1 * * * root /usr/bin/keystone-manage token_flush" >/etc/cron.d/tokenflush && \
     # Cleaning unused files...
-    #rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
+    rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
     rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
     rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm
