@@ -102,17 +102,8 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT debug True
 fi
 
-#echo "[ postlaunchconfig - bootstrap ] "
-#/usr/bin/keystone-manage bootstrap
 echo "[ postlaunchconfig - db_sync ] "
 /usr/bin/keystone-manage db_sync
-#echo "[ postlaunchconfig - db_sync --expand ] "
-#/usr/bin/keystone-manage db_sync --expand
-#echo "[ postlaunchconfig - db_sync --migrate ] "
-#/usr/bin/keystone-manage db_sync --migrate
-# /usr/bin/keystone-manage db_sync --contract
-#TBD: /usr/bin/keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
-
 
 echo "[ postlaunchconfig - bootstrap ] "
 /usr/bin/keystone-manage bootstrap \
