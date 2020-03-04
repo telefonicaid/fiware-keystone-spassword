@@ -23,6 +23,7 @@
 import uuid
 
 from keystone.auth.plugins import password
+
 from keystone.common import dependency
 from keystone.common import wsgi
 from keystone import notifications
@@ -194,7 +195,7 @@ class Driver(object):
 @dependency.requires('identity_api')
 class SPassword(password.Password):
 
-    def authenticate(self, context, auth_payload, user_context):
+    def authenticate(self, context, auth_payload, user_context = None):
         """Try to authenticate against the identity backend."""
         if ('L' in RELEASES):
             user_info = password.auth_plugins.UserAuthInfo.create(auth_payload, 'password')
@@ -221,7 +222,15 @@ class SPassword(password.Password):
             msg = 'Invalid username or password'
             raise exception.Unauthorized(msg)
 
+        if not user_context:
+            user_context = {}
+
         if 'user_id' not in user_context:
             user_context['user_id'] = user_info.user_id
         if 'extras' in res:
             user_context['extras'] = res['extras']
+
+        if ('M' in RELEASES):
+            from keystone.auth.plugins import base
+            return base.AuthHandlerResponse(status=True, response_body=None,
+                                            response_data=user_context)

@@ -26,7 +26,6 @@ BuildArch: noarch
 %else
 %define keystone_paste /usr/share/keystone/keystone-dist-paste.ini
 %endif
-%define keystone_policy /etc/keystone/policy.json
 %define keystone_conf /etc/keystone/keystone.conf
 
 %description
@@ -81,7 +80,9 @@ sndfa_time_window=24
 fi
 
 ln -fs %{python_lib}/keystone_spassword/contrib/spassword %{python_lib}/keystone/contrib
-keystone-manage db_sync --extension spassword
+ln -s %{python_lib}/keystone_spassword/contrib/spassword/migrate_repo/versions/001_spassword_table.py %{python_lib}/keystone/common/sql/data_migration_repo/versions/017_spassword_table.py
+ln -s %{python_lib}/keystone_spassword/contrib/spassword/migrate_repo/versions/002_add_sndfa_spassword_table.py %{python_lib}/keystone/common/sql/data_migration_repo/versions/018_add_sndfa_spassword_table.py
+/usr/bin/keystone-manage db_sync --migrate
 
 echo "SPASSWORD extension installed successfully. Restart Keystone daemon to take effect."
 

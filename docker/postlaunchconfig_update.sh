@@ -45,7 +45,7 @@ fi
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     database connection mysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
+                     database connection mysql+pymysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
 
 fi
 
@@ -88,21 +88,21 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT debug True
 fi
 
+export KEYSTONE_HOST="127.0.0.1:5001"
 
+echo "[ postlaunchconfig_update - Start UWSGI process ] "
 /usr/bin/keystone-all &
 keystone_all_pid=`echo $!`
-sleep 5    
-
-export OS_SERVICE_TOKEN=ADMIN
-export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
-export KEYSTONE_HOST="127.0.0.1:5001"
+sleep 5
 
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
-ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from domain d, project p where d.name="admin_domain" or p.name="admin_domain";' | awk '{if ($6=="admin_domain") print $5; else if ($2=="admin_domain") print $1}' | head -n 1`
+ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from project p where p.name="admin_domain";' | awk '{if ($2=="admin_domain") print $1}'`
+echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
+[[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
+[[ "${ID_ADMIN_DOMAIN}" == "" ]] && exit 0
 
-
-curl -s -L --insecure https://github.com/openstack/keystone/raw/mitaka-eol/etc/policy.v3cloudsample.json \
+curl -s -L --insecure https://github.com/openstack/keystone/raw/ocata-em/etc/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
@@ -119,6 +119,7 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/mitaka-eol/etc/p
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
 
+echo "[ postlaunchconfig_update - db_sync ] "
 /usr/bin/keystone-manage db_sync
 
 # Set another ADMIN TOKEN
@@ -126,19 +127,19 @@ openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
 
 
-kill -9 $keystone_all_pid
-sleep 3
-chkconfig openstack-keystone on
 
-IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent";' | awk '{if ($4=="iotagent") print $2}'`
+IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent"' | awk '{if ($4=="iotagent") print $2}'`
 NAGIOS_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="nagios";' | awk '{if ($4=="nagios") print $2}'`
-ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin";' | awk '{if ($4=="cloud_admin") print $2}'`
-ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="pep";' | awk '{if ($4=="pep") print $2}'`
+ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin"' | awk '{if ($4=="cloud_admin") print $2}'`
+ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="pep"' | awk '{if ($4=="pep") print $2}'`
+echo "IOTAGENT_ID: $IOTAGENT_ID"
+echo "NAGIOS_ID: $NAGIOS_ID"
+echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
+echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
 # Exclude some users from spassword
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
-
 
 
 # Set default spassword config
@@ -170,5 +171,8 @@ openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_time_window $SPASSWORD_SNDFA_TIME_WINDOW
 
 # Ensure db is migrated to current keystone version
-/usr/bin/keystone-manage db_sync
-/usr/bin/keystone-manage db_sync --extension spassword
+echo "[ postlaunchconfig_update - db_sync --migrate ] "
+/usr/bin/keystone-manage db_sync --migrate
+
+
+kill -9 $keystone_all_pid

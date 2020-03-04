@@ -1,9 +1,14 @@
+1.6.0
+
+Upgrade plugin for compatibility with Ocata version (including docker).
+
 1.5.4
 
 Add: env var to set LOG_LEVEL
 Add: cron task to flush tokens (expired tokens) in docker container
 Add: allow configure keystone cache to use Redis backend with env var
 Add: env vars to token expiration and revocation buffer expiraton
+
 
 1.5.3
 
@@ -19,6 +24,7 @@ Add nagios user to black list
 1.5.1
 
 Allow sndfa endpoints (keystone) urls with `https` and `/idm`
+
 
 1.5.0
 
