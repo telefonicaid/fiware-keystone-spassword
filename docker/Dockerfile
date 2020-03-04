@@ -25,7 +25,7 @@ RUN \
     yum -y install python cronie && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-ocata/rdo-release-ocata-3.noarch.rpm?raw=true' > rdo-release-ocata-3.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-ocata-3.noarch.rpm && \
-    # Set Centos mirror to ctinetworks to ensure openstack version
+    # Set Centos mirror to ensure openstack version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
