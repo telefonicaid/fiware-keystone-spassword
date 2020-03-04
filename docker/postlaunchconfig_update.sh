@@ -49,12 +49,6 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
 
 fi
 
-# /usr/bin/keystone-wsgi-public --port 5001 &
-# keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
-# /usr/bin/keystone-wsgi-admin --port 35357 &
-# keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
-# sleep 5
-
 if [ "$TOKEN_EXPIRATION_TIME_ARG" == "-token_expiration_time" ]; then
     if [ "${TOKEN_EXPIRATION_TIME}" == "" ]; then
         TOKEN_EXPIRATION_TIME=$TOKEN_EXPIRATION_TIME_VALUE
@@ -94,14 +88,12 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT debug True
 fi
 
-# export OS_SERVICE_TOKEN=ADMIN
-# export OS_SERVICE_ENDPOINT=http://127.0.0.1:35357/v2.0
 export KEYSTONE_HOST="127.0.0.1:5001"
 
-
+echo "[ postlaunchconfig_update - Start UWSGI process ] "
 /usr/bin/keystone-all &
 keystone_all_pid=`echo $!`
-sleep 5    
+sleep 5
 
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
@@ -127,7 +119,7 @@ curl -s -L --insecure https://github.com/openstack/keystone/raw/ocata-em/etc/pol
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
 
-echo "[ postlaunchconfig - db_sync1 ] "
+echo "[ postlaunchconfig_update - db_sync ] "
 /usr/bin/keystone-manage db_sync
 
 # Set another ADMIN TOKEN
@@ -179,7 +171,7 @@ openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_time_window $SPASSWORD_SNDFA_TIME_WINDOW
 
 # Ensure db is migrated to current keystone version
-echo "[ postlaunchconfig - db_sync2 ] "
+echo "[ postlaunchconfig_update - db_sync --migrate ] "
 /usr/bin/keystone-manage db_sync --migrate
 
 
