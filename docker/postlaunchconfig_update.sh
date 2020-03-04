@@ -176,5 +176,3 @@ echo "[ postlaunchconfig_update - db_sync --migrate ] "
 
 
 kill -9 $keystone_all_pid
-#kill -9 $keystone_admin_pid
-

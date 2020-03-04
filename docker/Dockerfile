@@ -71,7 +71,7 @@ RUN \
     cd ${dir}/${repo_scim}-${tag} && \
     source ./${pack_scim} --with-python27 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
-     # Install Keystone-SPASSWORD
+    # Install Keystone-SPASSWORD
     cd /opt/keystone && \
     tag=$KEYSTONE_SPASSWORD_VERSION && \
     user="telefonicaid" && \
