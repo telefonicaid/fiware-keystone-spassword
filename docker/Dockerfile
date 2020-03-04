@@ -23,16 +23,16 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-ocata/rdo-release-ocata-3.noarch.rpm?raw=true' > rdo-release-ocata-3.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-ocata-3.noarch.rpm && \
-    # Set Centos mirror to ensure openstack version
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-pike/rdo-release-pike-1.noarch.rpm?raw=true' > rdo-release-pike-1.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-pike-1.noarch.rpm && \
+    # Set Centos mirror to ctinetworks to ensure openstack version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install python-openstackclient && \
     yum -y install httpd mod_wsgi && \
-    # https://docs.openstack.org/ocata/install-guide-rdo/keystone-install.html
+    # https://docs.openstack.org/pike/install-guide-rdo/keystone-install.html
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
@@ -50,10 +50,10 @@ RUN \
     token provider uuid && \
     openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
-    # Set keystone SSL configuration
-    keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
-    chown -R keystone:keystone /etc/keystone/ssl && \
-    chmod -R o-rwx /etc/keystone/ssl && \
+    # # Set keystone SSL configuration
+    # keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
+    # chown -R keystone:keystone /etc/keystone/ssl && \
+    # chmod -R o-rwx /etc/keystone/ssl && \
     # Create /opt/keystone
     mkdir -p /opt/keystone && \
     # Keystone postconfig file
@@ -84,21 +84,27 @@ RUN \
     cd ${dir}/${repo_spassword}-${tag} && \
     source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
-    # LDAP pre-support
-    mkdir -p /etc/keystone/domains && \
-    chown keystone.keystone /etc/keystone/domains && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    identity domain_specific_drivers_enabled true && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    identity domain_config_dir /etc/keystone/domains && \
-    cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
+    # openstack-config --set /etc/keystone/keystone.conf \
+    # auth password password && \
+    # openstack-config --set /etc/keystone/keystone.conf \
+    # identity driver sql && \
+    # # LDAP pre-support
+    # mkdir -p /etc/keystone/domains && \
+    # chown keystone.keystone /etc/keystone/domains && \
+    # openstack-config --set /etc/keystone/keystone.conf \
+    # identity domain_specific_drivers_enabled true && \
+    # openstack-config --set /etc/keystone/keystone.conf \
+    # identity domain_config_dir /etc/keystone/domains && \
+    # cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
+    # openstack-config --set /etc/keystone/keystone.conf \
+    # identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
     # Patching ...
     cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
     patch -f -p0 < /opt/keystone/common.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/identity && \
     patch -f -p0 < /opt/keystone/core.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/common && \
+    patch -f -p0 < /opt/keystone/manager.patch && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
     # Cron task for remove expired tokens
