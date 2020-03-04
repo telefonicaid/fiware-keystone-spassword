@@ -26,7 +26,9 @@ from keystone.common import dependency
 try: from oslo_utils import timeutils
 except ImportError: from keystone.openstack.common import timeutils
 from keystone import exception
-from keystone.identity.backends.sql import User, Identity
+from keystone.identity.backends.sql import Identity
+try: from keystone.identity.backends.sql import User
+except ImportError: from keystone.identity.backends.sql_model import User
 from keystone_spassword.contrib.spassword import Driver
 from keystone_spassword.contrib.spassword.mailer import SendMail
 try: from oslo_log import log

@@ -19,6 +19,7 @@ from keystone.common import dependency
 from keystone.common import sql
 from keystone import identity
 from keystone import exception
+from keystone.identity.mapping_backends import base
 from keystone.identity.mapping_backends import mapping as identity_mapping
 from keystone.identity.backends import sql as model
 try: from oslo_log import log
@@ -44,8 +45,7 @@ class IDMapping(sql.ModelBase, sql.ModelDictMixin):
 
 
 @dependency.requires('id_generator_api')
-class Mapping(identity.MappingDriverV8):
-
+class Mapping(base.MappingDriverBase):
     def get_session(self):
         try:
             session = sql.get_session()
@@ -104,6 +104,10 @@ class Mapping(identity.MappingDriverV8):
                 return public_id
             except sql.NotFound:
                 return None
+
+    def get_domain_mapping_list(self, domain_id):
+        session = self.get_session()
+        return session.query(IDMapping).filter_by(domain_id=domain_id)
 
     def get_id_mapping(self, public_id):
         session = self.get_session()
