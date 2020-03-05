@@ -230,7 +230,7 @@ class SPassword(password.Password):
         if 'extras' in res:
             user_context['extras'] = res['extras']
 
-        if ('M' in RELEASES):
+        if ('O' in RELEASES): # true when current version is Newton or upper
             from keystone.auth.plugins import base
             return base.AuthHandlerResponse(status=True, response_body=None,
                                             response_data=user_context)
