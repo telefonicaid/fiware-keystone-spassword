@@ -25,7 +25,7 @@ RUN \
     yum -y install python cronie && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-pike/rdo-release-pike-1.noarch.rpm?raw=true' > rdo-release-pike-1.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-pike-1.noarch.rpm && \
-    # Set Centos mirror to ctinetworks to ensure openstack version
+    # Set Centos mirror to ensure openstack version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     # Install keystone dependencies
@@ -50,11 +50,6 @@ RUN \
     token provider uuid && \
     openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
-    # # Set keystone SSL configuration
-    # keystone-manage pki_setup --keystone-user keystone --keystone-group keystone  && \
-    # chown -R keystone:keystone /etc/keystone/ssl && \
-    # chmod -R o-rwx /etc/keystone/ssl && \
-    # Create /opt/keystone
     mkdir -p /opt/keystone && \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
