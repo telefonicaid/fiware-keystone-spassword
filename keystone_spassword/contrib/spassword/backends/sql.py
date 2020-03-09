@@ -52,7 +52,7 @@ class SPasswordUnauthorized(SPasswordSecurityError):
     title = 'Unauthorized'
 
 
-class SPasswordModel(sql.ModelBase, sql.DictBase):
+class SPasswordModel(sql.ModelBase, sql.ModelDictMixinWithExtras):
     __tablename__ = 'spassword'
     attributes = ['user_id', 'user_name', 'domain_id', 'creation_time',
                   'login_attempts', 'last_login_attempt_time',
