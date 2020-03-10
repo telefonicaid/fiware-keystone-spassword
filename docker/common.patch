@@ -11,7 +11,7 @@
                         include_catalog=True, bind=None, access_token=None,
                         issued_at=None, audit_info=None):
 -        token_data = {'methods': method_names}
-+	 if extras is None:
++        if extras is None:
 +            extras = {}
 +        token_data = {'methods': method_names, 'extras': extras}
  
