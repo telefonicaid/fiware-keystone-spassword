@@ -105,6 +105,9 @@ fi
 echo "[ postlaunchconfig - db_sync ] "
 /usr/bin/keystone-manage db_sync
 
+echo "[ postlaunchconfig - fernet_setup ] "
+/usr/bin/keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+
 echo "[ postlaunchconfig - bootstrap ] "
 /usr/bin/keystone-manage bootstrap \
   --bootstrap-password $KEYSTONE_ADMIN_PASSWORD \

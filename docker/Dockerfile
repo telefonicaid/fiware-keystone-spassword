@@ -1,4 +1,4 @@
-FROM centos:centos7
+FROM centos:7.7.1908
 
 MAINTAINER IoT team
 
@@ -8,7 +8,6 @@ ENV KEYSTONE_SCIM_VERSION 1.3.0
 ENV KEYSTONE_SPASSWORD_VERSION 1.7.0
 
 COPY ./*.sh /opt/keystone/
-COPY ./sql_ldap.py /opt/keystone/
 COPY ./*.patch /opt/keystone/
 COPY ./keystone-all /opt/keystone/
 
@@ -23,8 +22,8 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-pike/rdo-release-pike-1.noarch.rpm?raw=true' > rdo-release-pike-1.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-pike-1.noarch.rpm && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-queens/rdo-release-queens-2.noarch.rpm' > rdo-release-queens-2.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-queens-2.noarch.rpm && \
     # Set Centos mirror to ensure openstack version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
@@ -32,7 +31,7 @@ RUN \
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install python-openstackclient && \
     yum -y install httpd mod_wsgi && \
-    # https://docs.openstack.org/pike/install-guide-rdo/keystone-install.html
+    # https://docs.openstack.org/keystone/queens/install/
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
@@ -47,9 +46,15 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    token provider uuid && \
-    openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
+    # Set keystone Fernet tokens
+    openstack-config --set /etc/keystone/keystone.conf \
+    token provider fernet && \
+    mkdir -p /etc/keystone/fernet-keys && \
+    chown -R keystone:keystone /etc/keystone/fernet-keys && \
+    chmod -R o-rwx /etc/keystone/fernet-keys && \
+    keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone  && \
+    # Create /opt/keystone
     mkdir -p /opt/keystone && \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \

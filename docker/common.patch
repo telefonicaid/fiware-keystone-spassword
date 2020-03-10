@@ -21,7 +21,7 @@
              user_id,
              method_names,
              system=system,
-+            auth_context.get('extras') if auth_context else None,
++            extras=auth_context.get('extras') if auth_context else None,
              domain_id=domain_id,
              project_id=project_id,
              expires=expires_at,
