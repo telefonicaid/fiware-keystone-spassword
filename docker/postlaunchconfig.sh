@@ -146,6 +146,8 @@ openstack role add  --user admin --project admin admin
 openstack role create service
 echo "[ postlaunchconfig - delete roles  ] "
 openstack role delete _member_
+openstack role delete member
+openstack role delete reader
 echo "[ postlaunchconfig - create users ] "
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email iotagent@no.com iotagent
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com nagios
