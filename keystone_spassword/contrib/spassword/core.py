@@ -24,7 +24,7 @@ import uuid
 
 from keystone.auth.plugins import password
 
-from keystone.common import dependency
+from keystone.common import provider_api
 from keystone.common import wsgi
 from keystone import notifications
 from keystone import exception
@@ -59,11 +59,11 @@ CONF.register_opt(cfg.BoolOpt('sndfa', default=False), group='spassword')
 CONF.register_opt(cfg.StrOpt('sndfa_endpoint', default='localhost:5001'), group='spassword')
 CONF.register_opt(cfg.IntOpt('sndfa_time_window', default=24), group='spassword')
 
+PROVIDERS = provider_api.ProviderAPIs
 
 RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
 
 @notifications.listener  # NOTE(dstanek): only needed if using event_callbacks
-@dependency.provider('spassword_api')
 class SPasswordManager(manager.Manager):
     """SPassword Manager.
 
@@ -192,7 +192,6 @@ class Driver(object):
         """
         raise exception.NotImplemented()
 
-@dependency.requires('identity_api')
 class SPassword(password.Password):
 
     def authenticate(self, context, auth_payload, user_context = None):
@@ -207,12 +206,12 @@ class SPassword(password.Password):
         try:
             if (('J' in RELEASES) or
                 ('K' in RELEASES)):
-                res = self.identity_api.authenticate(
+                res = PROVIDERS.identity_api.authenticate(
                     context,
                     user_id=user_info.user_id,
                     password=user_info.password)
             else:
-                res = self.identity_api.authenticate(
+                res = PROVIDERS.identity_api.authenticate(
                     context,
                     user_id=user_info.user_id,
                     password=user_info.password,

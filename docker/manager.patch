@@ -14,7 +14,7 @@
          return driver_manager.driver
 -    except stevedore.exception.NoMatches:
 -        msg = (_('Unable to find %(name)r driver in %(namespace)r.'))
--        raise ImportError(msg, {'name': driver_name, 'namespace': namespace})
+-        raise ImportError(msg % {'name': driver_name, 'namespace': namespace})
 +    except RuntimeError as e:
 +        LOG.debug('Failed to load %r using stevedore: %s', driver_name, e)
 +        # Ignore failure and continue on.

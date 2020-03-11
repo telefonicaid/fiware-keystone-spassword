@@ -23,7 +23,7 @@
 import uuid
 
 from keystone.common import controller
-from keystone.common import dependency
+from keystone.common import provider_api
 from keystone.common import wsgi
 from keystone import exception
 from keystone.identity.controllers import UserV3
@@ -38,7 +38,7 @@ try: from oslo_config import cfg
 except ImportError: from oslo.config import cfg
 
 CONF = cfg.CONF
-
+PROVIDERS = provider_api.ProviderAPIs
 LOG = log.getLogger(__name__)
 
 class SPasswordNotConfigured(exception.Error):
@@ -118,7 +118,6 @@ class SPasswordUserV3Controller(UserV3, CheckPassword):
                                                                       user_id=user_id,
                                                                       user=user)
 
-@dependency.requires('spassword_api', 'identity_api', 'assignment_api', 'role_api')
 class SPasswordV3Controller(controller.V3Controller, SendMail):
 
     def __init__(self):
@@ -141,7 +140,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
 
     def _check_user_has_email_validated(self, user_info):
         # Check if user has a email validated
-        if not self.spassword_api.already_user_check_email(user_info['id']):
+        if not PROVIDERS.spassword_api.already_user_check_email(user_info['id']):
             msg = 'User %s %s has no email verified' % (user_info['id'],
                                                         user_info['name'])
             LOG.error('%s' % msg)
@@ -150,7 +149,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
     def recover_password(self, context, user_id):
         """Perform user password recover procedure."""
         self._check_spassword_configured()
-        user_info = self.identity_api.get_user(user_id)
+        user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('recover password invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
         self._check_user_has_email_defined(user_info)
@@ -162,7 +161,7 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
         # Set new user password
         try:
             update_dict = { 'password': new_password }
-            self.identity_api.update_user(user_id, user_ref=update_dict)
+            PROVIDERS.identity_api.update_user(user_id, user_ref=update_dict)
         except AssertionError:
             # authentication failed because of invalid username or password
             msg = 'Invalid username or password'
@@ -188,13 +187,13 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
     def modify_sndfa(self, context, user_id, enable):
         """Perform user sndfa modification """
         self._check_spassword_configured()
-        user_info = self.identity_api.get_user(user_id)
+        user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('modify sndfa for user %s %s' % (user_info['id'],
                                                     user_info['name']))
         self._check_user_has_email_defined(user_info)
         self._check_user_has_email_validated(user_info)
         if (type(enable) == type(True)):
-            res = self.spassword_api.user_modify_sndfa(user_id,
+            res = PROVIDERS.spassword_api.user_modify_sndfa(user_id,
                                                        enable)
             response = { "modified" : res }
             return wsgi.render_response(body=response, status=('200', 'OK'))
@@ -205,11 +204,11 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
     def check_sndfa_code(self, context, user_id, code):
         """Perform user sndfa code check """
         self._check_spassword_configured()
-        user_info = self.identity_api.get_user(user_id)
+        user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
         self._check_user_has_email_validated(user_info)
-        if self.spassword_api.user_check_sndfa_code(user_id, code):
+        if PROVIDERS.spassword_api.user_check_sndfa_code(user_id, code):
             # Render response in HTML
             headers = [('Content-Type', 'text/html')]
             return wsgi.render_response(body="Valid code. Sndfa successfully authorized",
@@ -221,11 +220,11 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
     @controller.protected()
     def ask_for_check_email_code(self, context, user_id):
         """Ask a code for user email check """
-        user_info = self.identity_api.get_user(user_id)
+        user_info = PROVIDERS.identity_api.get_user(user_id)
         self._check_user_has_email_defined(user_info)
         LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
                                                                 user_info['name']))
-        code = self.spassword_api.user_ask_check_email_code(user_id)
+        code = PROVIDERS.spassword_api.user_ask_check_email_code(user_id)
         to = user_info['email'] # must be a list
         subject = 'IoT Platform verify email '
         text = 'The code for verify your email is %s' % code
@@ -246,11 +245,11 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
     # Should be called without provide an auth token
     def check_email_code(self, context, user_id, code):
         """Check a code for for user email check """
-        user_info = self.identity_api.get_user(user_id)
+        user_info = PROVIDERS.identity_api.get_user(user_id)
         self._check_user_has_email_defined(user_info)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
-        if self.spassword_api.user_check_email_code(user_id, code):
+        if PROVIDERS.spassword_api.user_check_email_code(user_id, code):
             # Render response in HTML
             headers = [('Content-Type', 'text/html')]
             return wsgi.render_response(body="Valid code. Email sucessfully checked",
@@ -262,16 +261,16 @@ class SPasswordV3Controller(controller.V3Controller, SendMail):
     @controller.protected()
     def get_project_roles(self, context, user_id):
         """Get all user projects and the user roles in each project """
-        user_info = self.identity_api.get_user(user_id)
-        user_projects = self.assignment_api.list_projects_for_user(user_id)
+        user_info = PROVIDERS.identity_api.get_user(user_id)
+        user_projects = PROVIDERS.assignment_api.list_projects_for_user(user_id)
         LOG.debug('projects of user %s: %s' % (user_info['id'], user_projects))
         user_project_roles = []
         for user_project in user_projects:
             LOG.debug('project %s' % (user_project))
-            roles = self.assignment_api.get_roles_for_user_and_project(user_id,
+            roles = PROVIDERS.assignment_api.get_roles_for_user_and_project(user_id,
                                                                        user_project['id'])
             for role in roles:
-                role_ext = self.role_api.get_role(role)
+                role_ext = PROVIDERS.role_api.get_role(role)
                 user_project_roles.append(
                     {
                         "domain": user_info['domain_id'],
