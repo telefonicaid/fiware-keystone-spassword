@@ -54,6 +54,8 @@ RUN \
     chown -R keystone:keystone /etc/keystone/fernet-keys && \
     chmod -R o-rwx /etc/keystone/fernet-keys && \
     keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone  && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    fernet_tokens max_active_keys 6 && \
     # Create /opt/keystone
     mkdir -p /opt/keystone && \
     # Keystone postconfig file
@@ -101,7 +103,7 @@ RUN \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
     # Cron task for remove expired tokens
-    echo "0 */1 * * * root /usr/bin/keystone-manage token_flush" >/etc/cron.d/tokenflush && \
+    echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
