@@ -121,3 +121,11 @@ class SPasswordExtension(wsgi.ExtensionRouter):
             controller=spassword_controller,
             action='get_project_roles',
             conditions=dict(method=['GET']))
+
+class Routers(SPasswordExtension):
+    _path_prefixes = ('users', 'OS-SCIM')
+    def __init__(self):
+        super(Routers, self).__init__('spassword')
+
+    def append_v3_routers(self, mapper, routers):
+        self.add_routes(mapper)
