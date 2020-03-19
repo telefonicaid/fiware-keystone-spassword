@@ -1,0 +1,12 @@
+diff --git a/keystone/token/provider.py b/keystone/token/provider.py
+index 50ada78b1..82a1a17ce 100644
+--- a/keystone/token/provider.py
++++ b/keystone/token/provider.py
+@@ -258,6 +258,7 @@ class Manager(manager.Manager):
+             # so I've put it here for convenience - any placeholder is fine.
+             self._validate_token.set(token, self, token.id)
+ 
++        token['extras'] = auth_context.get('extras') if auth_context else None
+         return token
+ 
+     def invalidate_individual_token_cache(self, token_id):

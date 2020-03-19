@@ -1,0 +1,14 @@
+--- controller.py
++++ controller.py_new
+@@ -253,6 +253,11 @@ def render_token_response_from_model(token, include_catalog=True):
+         restricted = not token.application_credential['unrestricted']
+         token_reference['token'][key]['restricted'] = restricted
+ 
++    if token.extras:
++        token_reference['token']['extras'] = token.extras
++    else:
++        token_reference['token']['extras'] = {}
++
+     return token_reference
+ 
+ 
