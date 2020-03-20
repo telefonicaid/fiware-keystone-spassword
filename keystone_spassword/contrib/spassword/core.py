@@ -72,6 +72,7 @@ class SPasswordManager(manager.Manager):
 
     """
     driver_namespace = 'keystone.contrib.spassword'
+    _provides_api = 'spassword_api'
 
     def __init__(self):
         LOG.debug("Manager INIT")
@@ -91,9 +92,9 @@ class SPasswordManager(manager.Manager):
                     self.user_deleted_callback]
                 },
             }
-
         super(SPasswordManager, self).__init__(
             'keystone_spassword.contrib.spassword.backends.sql.SPassword')
+        LOG.debug("Manager INIT end")
 
     def user_updated_callback(self, service, resource_type, operation,
                               payload):
@@ -228,7 +229,7 @@ class SPassword(password.Password):
             user_context['user_id'] = user_info.user_id
         if 'extras' in res:
             user_context['extras'] = res['extras']
-
+        LOG.debug("authenticate %s" % user_context)
         if ('O' in RELEASES): # true when current version is Newton or upper
             from keystone.auth.plugins import base
             return base.AuthHandlerResponse(status=True, response_body=None,
