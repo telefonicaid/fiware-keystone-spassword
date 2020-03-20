@@ -4,8 +4,8 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-ENV KEYSTONE_SCIM_VERSION 1.3.0
-ENV KEYSTONE_SPASSWORD_VERSION 1.7.0
+ENV KEYSTONE_SCIM_VERSION 1.4.0
+ENV KEYSTONE_SPASSWORD_VERSION 1.9.0
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
@@ -54,6 +54,8 @@ RUN \
     chown -R keystone:keystone /etc/keystone/fernet-keys && \
     chmod -R o-rwx /etc/keystone/fernet-keys && \
     keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone  && \
+    openstack-config --set /etc/keystone/keystone.conf \
+    fernet_tokens max_active_keys 6 && \
     # Create /opt/keystone
     mkdir -p /opt/keystone && \
     # Keystone postconfig file
@@ -96,10 +98,26 @@ RUN \
     patch -f -p0 < /opt/keystone/core.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/common && \
     patch -f -p0 < /opt/keystone/manager.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/auth && \
+    patch -f -p0 < /opt/keystone/core_auth.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/server && \
+    patch -f -p0 < /opt/keystone/backends.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/server/flask && \
+    patch -f -p0 < /opt/keystone/application.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/auth && \
+    patch -f -p0 < /opt/keystone/auth_controllers.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/auth/plugins && \
+    patch -f -p0 < /opt/keystone/auth_plugins_token.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/common && \
+    patch -f -p0 < /opt/keystone/common_controller.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/models && \
+    patch -f -p0 < /opt/keystone/token_model.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/token && \
+    patch -f -p0 < /opt/keystone/token_provider.patch && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
-    # Cron task for remove expired tokens
-    echo "0 */1 * * * root /usr/bin/keystone-manage token_flush" >/etc/cron.d/tokenflush && \
+    # Cron task to rotate fernet tokens once a day
+    echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
