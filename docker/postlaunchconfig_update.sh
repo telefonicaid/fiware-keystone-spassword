@@ -102,7 +102,8 @@ echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 [[ "${ID_ADMIN_DOMAIN}" == "" ]] && exit 0
 
-curl -s -L --insecure https://github.com/openstack/keystone/raw/rocky-em/etc/policy.v3cloudsample.json \
+
+cat /opt/keystone/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
