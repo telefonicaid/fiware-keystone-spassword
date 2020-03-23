@@ -105,6 +105,9 @@ fi
 echo "[ postlaunchconfig - db_sync ] "
 /usr/bin/keystone-manage db_sync
 
+echo "[ postlaunchconfig - fernet_setup ] "
+/usr/bin/keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+
 echo "[ postlaunchconfig - bootstrap ] "
 /usr/bin/keystone-manage bootstrap \
   --bootstrap-password $KEYSTONE_ADMIN_PASSWORD \
@@ -274,7 +277,7 @@ curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLO
       -H "Content-Type: application/json"\
       -d '{ }'
 
-curl -s -L --insecure https://github.com/openstack/keystone/raw/pike-em/etc/policy.v3cloudsample.json \
+cat /opt/keystone/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_list_roles"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
