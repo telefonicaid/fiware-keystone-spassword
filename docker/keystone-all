@@ -1,2 +1,2 @@
 #!/bin/bash
-/usr/sbin/httpd -k restart
+while ! tcping -t 1 localhost 5001; do /usr/sbin/httpd -k restart; sleep 10; done
