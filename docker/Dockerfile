@@ -24,6 +24,7 @@ RUN \
     yum -y install python cronie && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-queens/rdo-release-queens-2.noarch.rpm' > rdo-release-queens-2.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-queens-2.noarch.rpm && \
+    curl -s -L --insecure https://github.com/openstack/keystone/raw/queens-em/etc/policy.v3cloudsample.json > /opt/keystone/policy.v3cloudsample.json && \
     # Set Centos mirror to ensure openstack version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
