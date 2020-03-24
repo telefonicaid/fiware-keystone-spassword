@@ -1,0 +1,11 @@
+--- token_model.py
++++ token_model.py_new
+@@ -78,6 +78,8 @@ class TokenModel(object):
+         self.application_credential_id = None
+         self.__application_credential = None
+ 
++        self.extras = None
++
+     def __repr__(self):
+         """Return string representation of TokenModel."""
+         desc = ('<%(type)s (audit_id=%(audit_id)s, '

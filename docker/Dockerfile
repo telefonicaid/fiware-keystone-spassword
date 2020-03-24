@@ -4,6 +4,8 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
+ENV KEYSTONE_SCIM_VERSION 1.4.0
+ENV KEYSTONE_SPASSWORD_VERSION 1.9.0
 ENV KEYSTONE_SCIM_VERSION 1.3.0
 ENV KEYSTONE_SPASSWORD_VERSION 1.8.0
 
@@ -22,9 +24,9 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-queens/rdo-release-queens-2.noarch.rpm' > rdo-release-queens-2.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-queens-2.noarch.rpm && \
-    curl -s -L --insecure https://github.com/openstack/keystone/raw/queens-em/etc/policy.v3cloudsample.json > /opt/keystone/policy.v3cloudsample.json && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-rocky/rdo-release-rocky-2.noarch.rpm' > rdo-release-rocky-2.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-rocky-2.noarch.rpm && \
+    curl -s -L --insecure https://github.com/openstack/keystone/raw/rocky-em/etc/policy.v3cloudsample.json > /opt/keystone/policy.v3cloudsample.json && \
     # Set Centos mirror to ensure openstack version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
@@ -95,15 +97,29 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_config_dir /etc/keystone/domains && \
     # Patching ...
-    cd /usr/lib/python2.7/site-packages/keystone/token/providers && \
-    patch -f -p0 < /opt/keystone/common.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/identity && \
     patch -f -p0 < /opt/keystone/core.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/common && \
     patch -f -p0 < /opt/keystone/manager.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/auth && \
+    patch -f -p0 < /opt/keystone/core_auth.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/server && \
+    patch -f -p0 < /opt/keystone/backends.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/server/flask && \
+    patch -f -p0 < /opt/keystone/application.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/auth && \
+    patch -f -p0 < /opt/keystone/auth_controllers.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/auth/plugins && \
+    patch -f -p0 < /opt/keystone/auth_plugins_token.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/common && \
+    patch -f -p0 < /opt/keystone/common_controller.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/models && \
+    patch -f -p0 < /opt/keystone/token_model.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/token && \
+    patch -f -p0 < /opt/keystone/token_provider.patch && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
-    # Cron task for remove expired tokens
+    # Cron task to rotate fernet tokens once a day
     echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \

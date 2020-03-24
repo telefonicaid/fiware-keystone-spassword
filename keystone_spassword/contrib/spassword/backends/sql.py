@@ -22,7 +22,7 @@ import datetime
 import uuid
 
 from keystone.common import sql
-from keystone.common import dependency
+from keystone.common import provider_api
 try: from oslo_utils import timeutils
 except ImportError: from keystone.openstack.common import timeutils
 from keystone import exception
@@ -38,7 +38,7 @@ except ImportError: from oslo.config import cfg
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
-
+PROVIDERS = provider_api.ProviderAPIs
 
 class SPasswordSecurityError(exception.Error):
     def _build_message(self, message, **kwargs):
@@ -285,7 +285,6 @@ class SPassword(Driver):
             LOG.warn('user %s still has not spassword data' % user_id)
         return False
 
-@dependency.requires('spassword_api')
 class Identity(Identity, SendMail):
     def _check_password(self, password, user_ref):
         if CONF.spassword.enabled:
@@ -375,7 +374,7 @@ class Identity(Identity, SendMail):
                                 code = spassword['sndfa_code']
                             else:
                                 code = uuid.uuid4().hex[:6]
-                                self.spassword_api.set_user_sndfa_code(self.get_user(user_id), code)
+                                PROVIDERS.spassword_api.set_user_sndfa_code(self.get_user(user_id), code)
                             to = self.get_user(user_id)['email']
                             subject = 'IoT Platform second factor auth procedure'
                             text = 'The code for verify your access is %s' % code
