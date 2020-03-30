@@ -1,11 +1,13 @@
 --- token.py
 +++ token.py_new
-@@ -119,6 +119,8 @@ def token_authenticate(request, token):
+@@ -119,6 +119,10 @@ def token_authenticate(request, token):
          response_data['audit_id'] = token_audit_id
          response_data.setdefault('user_id', token.user_id)
  
-+        response_data.setdefault('extras', {}).update(
-+            token.get('extras', {}))
++        if token.extras:
++            response_data.setdefault('extras', {}).update(token.extras)
++        else:
++            response_data.setdefault('extras', {})
          return response_data
  
      except AssertionError as e:
