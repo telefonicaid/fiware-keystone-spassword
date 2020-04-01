@@ -25,7 +25,6 @@ import uuid
 from keystone.auth.plugins import password
 
 from keystone.common import provider_api
-from keystone.common import wsgi
 from keystone import notifications
 from keystone import exception
 try: from oslo_log import log
@@ -33,9 +32,6 @@ except ImportError: from keystone.openstack.common import log
 try: from oslo_log import versionutils
 except ImportError: from keystone.openstack.common import versionutils
 from keystone.common import manager
-from keystone_spassword.contrib.spassword.controllers import SPasswordScimUserV3Controller
-from keystone_spassword.contrib.spassword.controllers import SPasswordUserV3Controller
-from keystone_spassword.contrib.spassword.controllers import SPasswordV3Controller
 
 LOG = log.getLogger(__name__)
 

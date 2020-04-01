@@ -24,9 +24,7 @@ import uuid
 import flask
 import flask_restful
 from six.moves import http_client
-#from keystone.common import controller
 from keystone.common import provider_api
-from keystone.common import wsgi
 from keystone import exception
 from keystone.api.users import UserResource
 from keystone_scim.contrib.scim.scim import ScimUserResource
@@ -55,7 +53,7 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
     member_name = 'user'
     collection_key = 'users'
     member_key = 'user'
-    api_prefix = '/users'
+    api_prefix = '/OS-SCIM/Users'
 
     #def patch_user(self, context, user_id, **kwargs):
     def patch(self, user_id):
@@ -93,7 +91,7 @@ class SPasswordUserResource(UserResource, CheckPassword):
     member_name = 'user'
     collection_key = 'users'
     member_key = 'user'
-    api_prefix = '/OS-SCIM/Users'
+    api_prefix = '/users'
     
     def post(self, user):
         user_data = self.request_body_json.get('user', {})
@@ -308,9 +306,8 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
 class SPasswordAPI(ks_flask.APIBase):
     _name = 'spassword'
     _import_name = __name__
-    _api_url_prefix = ''
     resources = [SPasswordScimUserResource, SPasswordUserResource, 
                  SPasswordResource]
 
 
-APIs = (SpasswordAPI,)    
+APIs = (SPasswordAPI,)
