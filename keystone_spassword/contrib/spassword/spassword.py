@@ -308,6 +308,7 @@ class SPasswordAPI(ks_flask.APIBase):
     _import_name = __name__
     resources = [SPasswordScimUserResource, SPasswordUserResource, 
                  SPasswordResource]
+    resource_mapping = []
 
 
 APIs = (SPasswordAPI,)

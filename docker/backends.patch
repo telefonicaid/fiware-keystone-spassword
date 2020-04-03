@@ -8,12 +8,13 @@
  
  LOG = log.getLogger(__name__)
  
-@@ -54,7 +55,7 @@ def load_backends():
+@@ -54,8 +55,8 @@ def load_backends():
                  identity.Manager, identity.ShadowUsersManager,
                  limit.Manager, oauth1.Manager, policy.Manager,
                  resource.Manager, revoke.Manager, assignment.RoleManager,
--                trust.Manager, token.provider.Manager]
-+                trust.Manager, token.provider.Manager, spassword.SPasswordManager]
+                 receipt.provider.Manager, trust.Manager,
+-                token.provider.Manager]
++                token.provider.Manager, spassword.SPasswordManager]
  
      drivers = {d._provides_api: d() for d in managers}
  
