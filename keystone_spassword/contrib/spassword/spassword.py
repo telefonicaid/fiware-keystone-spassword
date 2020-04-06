@@ -23,6 +23,7 @@
 import uuid
 import flask
 import flask_restful
+from keystone.server import flask as ks_flask
 from six.moves import http_client
 from keystone.common import provider_api
 from keystone import exception
@@ -48,14 +49,10 @@ class SPasswordNotConfigured(exception.Error):
     title = 'Not Configured'
 
 class SPasswordScimUserResource(ScimUserResource, CheckPassword):
-
-    collection_name = 'users'
-    member_name = 'user'
-    collection_key = 'users'
+    collection_key = '/OS-SCIM/Users'
     member_key = 'user'
-    api_prefix = '/OS-SCIM/Users'
+    #api_prefix = '/OS-SCIM/Users'
 
-    #def patch_user(self, context, user_id, **kwargs):
     def patch(self, user_id):
         user_data = self.request_body_json.get('user', {})
         user_data = self._normalize_dict(user_data)        
@@ -78,7 +75,7 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
                 user_data['password'])
 
         return super(SPasswordScimUserResource, self).post(user=user_data)
-    
+
     def delete(self, user_id):
         # Delete user from spassword table
         LOG.info('deleting user %s spasswordscimusercontroller' % user_id)
@@ -86,12 +83,9 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
 
 
 class SPasswordUserResource(UserResource, CheckPassword):
-
-    collection_name = 'users'
-    member_name = 'user'
     collection_key = 'users'
     member_key = 'user'
-    api_prefix = '/users'
+    #api_prefix = '/users'
     
     def post(self, user):
         user_data = self.request_body_json.get('user', {})
@@ -112,7 +106,11 @@ class SPasswordUserResource(UserResource, CheckPassword):
         LOG.info('deleting user %s spasswordusercontroller' % user_id)
         return super(SPasswordUserResource, self).delete(user_id=user_id)
 
-    def change_password(self, user_id, user):
+
+
+class SPasswordUserPasswordResource(SPasswordUserResource):
+
+    def post(self, user_id, user):
         user_data = self.request_body_json.get('user', {})        
         if CONF.spassword.enabled and 'password' in user_data:
             super(SPasswordUserResource, self).strong_check_password(
@@ -122,13 +120,10 @@ class SPasswordUserResource(UserResource, CheckPassword):
                                                                   user=user_data)
 
 class SPasswordResource(ks_flask.ResourceBase, SendMail):
-
-    collection_name = 'users'
-    member_name = 'user'
     collection_key = 'users'
     member_key = 'user'
     api_prefix = '/users'
-    
+
     def _check_spassword_configured(self):
         # Check if spassword and sndfa are enabled
         if not CONF.spassword.enabled or not CONF.spassword.sndfa:
@@ -151,6 +146,8 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
                                                         user_info['name'])
             LOG.error('%s' % msg)
             raise exception.Unauthorized(msg)
+
+class SPasswordRecoverResource(SPasswordResource):
 
     def recover_password(self, user_id):
         """Perform user password recover procedure."""
@@ -193,7 +190,16 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
         text = 'Your new password is %s' % user_password
         return self.send_email(to, subject, text)
 
-    def modify_sndfa(self, user_id, enable):
+
+class SPasswordSndfaResource(SPasswordResource):
+
+    def get(self, user_id, code=None):
+        return self._check_sndfa_code(user_id, code)
+
+    def post(self, user_id):
+        return self._modify_sndfa(user_id)
+
+    def _modify_sndfa(self, user_id, enable):
         """Perform user sndfa modification """
         self._check_spassword_configured()
         user_info = PROVIDERS.identity_api.get_user(user_id)
@@ -212,7 +218,7 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
             raise exception.ValidationError(message='invalid body format')
 
     # Should be called without provide an auth token
-    def check_sndfa_code(self, user_id, code):
+    def _check_sndfa_code(self, user_id, code):
         """Perform user sndfa code check """
         self._check_spassword_configured()
         user_info = PROVIDERS.identity_api.get_user(user_id)
@@ -229,7 +235,16 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
             resp.headers['Content-Type'] = 'application/json'
             return resp            
 
-    def ask_for_check_email_code(self, user_id):
+
+class SPasswordUserEmailResource(SPasswordUserResource):
+
+    def get(self, user_id, code=None):
+        if (code):
+            return self._check_email_code(user_id, code)
+        else:
+            return self._ask_for_check_email_code(user_id)
+
+    def _ask_for_check_email_code(self, user_id):
         """Ask a code for user email check """
         user_info = PROVIDERS.identity_api.get_user(user_id)
         self._check_user_has_email_defined(user_info)
@@ -258,7 +273,7 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
             return resp
 
     # Should be called without provide an auth token
-    def check_email_code(self, user_id, code):
+    def _check_email_code(self, user_id, code):
         """Check a code for for user email check """
         user_info = PROVIDERS.identity_api.get_user(user_id)
         self._check_user_has_email_defined(user_info)
@@ -274,7 +289,10 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
             resp.headers['Content-Type'] = 'application/json'
             return resp
 
-    def get_project_roles(self, user_id):
+
+class SPasswordUserProjectRolesResource(SPasswordUserResource):
+
+    def get(self, user_id):
         """Get all user projects and the user roles in each project """
         user_info = PROVIDERS.identity_api.get_user(user_id)
         user_projects = PROVIDERS.assignment_api.list_projects_for_user(user_id)
@@ -302,13 +320,42 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
         return resp        
 
 
-
 class SPasswordAPI(ks_flask.APIBase):
     _name = 'spassword'
     _import_name = __name__
-    resources = [SPasswordScimUserResource, SPasswordUserResource, 
-                 SPasswordResource]
-    resource_mapping = []
+    api_url_prefix = '/'
+    resources = [SPasswordScimUserResource, SPasswordUserResource]
+
+    resource_mapping = [
+        ks_flask.construct_resource_map(
+            resource=[SPasswordUserPasswordResource,
+            url='/users/<string:user_id>/password',
+            resource_kwargs={},
+            rel='change_password',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        ),
+        ks_flask.construct_resource_map(
+            resource=[SPasswordUserSndfaResource,
+            url='/users/<string:user_id>/sndfa/<string:code>',
+            resource_kwargs={},
+            rel='sndfa',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        ),
+        ks_flask.construct_resource_map(
+            resource=[SPasswordUserEmailResource,
+            url='/users/<string:user_id>/checkemail/<string:code>',
+            resource_kwargs={},
+            rel='email',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        ),
+        ks_flask.construct_resource_map(
+            resource=[SPasswordUserProjectRolesResource,
+            url='/users/<string:user_id>/project_roles',
+            resource_kwargs={},
+            rel='get_project_roles',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        )
+    ]
 
 
 APIs = (SPasswordAPI,)
