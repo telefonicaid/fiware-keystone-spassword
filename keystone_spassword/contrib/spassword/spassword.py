@@ -25,6 +25,7 @@ import flask
 import flask_restful
 from keystone.server import flask as ks_flask
 from six.moves import http_client
+from keystone.common import json_home
 from keystone.common import provider_api
 from keystone import exception
 from keystone.api.users import UserResource
@@ -335,7 +336,7 @@ class SPasswordAPI(ks_flask.APIBase):
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
-            resource=SPasswordUserSndfaResource,
+            resource=SPasswordSndfaResource,
             url='/users/<string:user_id>/sndfa/<string:code>',
             resource_kwargs={},
             rel='sndfa',
