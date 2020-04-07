@@ -191,28 +191,16 @@ class Driver(object):
 
 class SPassword(password.Password):
 
-    def authenticate(self, context, auth_payload, user_context = None):
+    def authenticate(self, auth_payload, user_context = None):
         """Try to authenticate against the identity backend."""
-        if ('L' in RELEASES):
-            user_info = password.auth_plugins.UserAuthInfo.create(auth_payload, 'password')
-        else:
-            user_info = password.UserAuthInfo.create(auth_payload)
+        user_info = password.auth_plugins.UserAuthInfo.create(auth_payload, 'password')
 
         # FIXME(gyee): identity.authenticate() can use some refactoring since
         # all we care is password matches
         try:
-            if (('J' in RELEASES) or
-                ('K' in RELEASES)):
-                res = PROVIDERS.identity_api.authenticate(
-                    context,
-                    user_id=user_info.user_id,
-                    password=user_info.password)
-            else:
-                res = PROVIDERS.identity_api.authenticate(
-                    context,
-                    user_id=user_info.user_id,
-                    password=user_info.password,
-                    domain_scope=user_info.domain_id)
+            res = PROVIDERS.identity_api.authenticate(
+                user_id=user_info.user_id,
+                password=user_info.password)
         except AssertionError:
             # authentication failed because of invalid username or password
             msg = 'Invalid username or password'
