@@ -328,28 +328,28 @@ class SPasswordAPI(ks_flask.APIBase):
 
     resource_mapping = [
         ks_flask.construct_resource_map(
-            resource=[SPasswordUserPasswordResource,
+            resource=SPasswordUserPasswordResource,
             url='/users/<string:user_id>/password',
             resource_kwargs={},
             rel='change_password',
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
-            resource=[SPasswordUserSndfaResource,
+            resource=SPasswordUserSndfaResource,
             url='/users/<string:user_id>/sndfa/<string:code>',
             resource_kwargs={},
             rel='sndfa',
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
-            resource=[SPasswordUserEmailResource,
+            resource=SPasswordUserEmailResource,
             url='/users/<string:user_id>/checkemail/<string:code>',
             resource_kwargs={},
             rel='email',
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
-            resource=[SPasswordUserProjectRolesResource,
+            resource=SPasswordUserProjectRolesResource,
             url='/users/<string:user_id>/project_roles',
             resource_kwargs={},
             rel='get_project_roles',
