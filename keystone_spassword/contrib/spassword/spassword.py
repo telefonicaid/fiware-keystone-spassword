@@ -27,6 +27,7 @@ from keystone.server import flask as ks_flask
 from six.moves import http_client
 from keystone.common import json_home
 from keystone.common import provider_api
+from keystone.common import rbac_enforcer
 from keystone import exception
 from keystone.api.users import UserResource
 from keystone_scim.contrib.scim.scim import ScimUserResource
@@ -42,7 +43,25 @@ from oslo_serialization import jsonutils
 
 CONF = cfg.CONF
 PROVIDERS = provider_api.ProviderAPIs
+ENFORCER = rbac_enforcer.RBACEnforcer
 LOG = log.getLogger(__name__)
+
+def _build_user_target_enforcement():
+    target = {}
+    try:
+        target['user'] = PROVIDERS.identity_api.get_user(
+            flask.request.view_args.get('user_id')
+        )
+        if flask.request.view_args.get('group_id'):
+            target['group'] = PROVIDERS.identity_api.get_group(
+                flask.request.view_args.get('group_id')
+            )
+    except ks_exception.NotFound:  # nosec
+        # Defer existence in the event the user doesn't exist, we'll
+        # check this later anyway.
+        pass
+
+    return target
 
 class SPasswordNotConfigured(exception.Error):
     message_format = "The action you have requested needs spassword configured"
@@ -153,6 +172,10 @@ class SPasswordRecoverResource(SPasswordResource):
     def recover_password(self, user_id):
         """Perform user password recover procedure."""
         self._check_spassword_configured()
+        ENFORCER.enforce_call(
+            action='identity:update_user',
+            build_target=_build_user_target_enforcement
+        )
         user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('recover password invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
@@ -203,6 +226,10 @@ class SPasswordSndfaResource(SPasswordResource):
     def _modify_sndfa(self, user_id, enable):
         """Perform user sndfa modification """
         self._check_spassword_configured()
+        ENFORCER.enforce_call(
+            action='identity:update_user',
+            build_target=_build_user_target_enforcement
+        )
         user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('modify sndfa for user %s %s' % (user_info['id'],
                                                     user_info['name']))
@@ -222,6 +249,10 @@ class SPasswordSndfaResource(SPasswordResource):
     def _check_sndfa_code(self, user_id, code):
         """Perform user sndfa code check """
         self._check_spassword_configured()
+        ENFORCER.enforce_call(
+            action='identity:update_user',
+            build_target=_build_user_target_enforcement
+        )
         user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
@@ -247,6 +278,10 @@ class SPasswordUserEmailResource(SPasswordUserResource):
 
     def _ask_for_check_email_code(self, user_id):
         """Ask a code for user email check """
+        ENFORCER.enforce_call(
+            action='identity:update_user',
+            build_target=_build_user_target_enforcement
+        )
         user_info = PROVIDERS.identity_api.get_user(user_id)
         self._check_user_has_email_defined(user_info)
         LOG.debug('verify sndfa code invoked for user %s %s' % (user_info['id'],
@@ -276,6 +311,10 @@ class SPasswordUserEmailResource(SPasswordUserResource):
     # Should be called without provide an auth token
     def _check_email_code(self, user_id, code):
         """Check a code for for user email check """
+        ENFORCER.enforce_call(
+            action='identity:update_user',
+            build_target=_build_user_target_enforcement
+        )
         user_info = PROVIDERS.identity_api.get_user(user_id)
         self._check_user_has_email_defined(user_info)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
@@ -295,6 +334,10 @@ class SPasswordUserProjectRolesResource(SPasswordUserResource):
 
     def get(self, user_id):
         """Get all user projects and the user roles in each project """
+        ENFORCER.enforce_call(
+            action='identity:get_user',
+            build_target=_build_user_target_enforcement
+        )
         user_info = PROVIDERS.identity_api.get_user(user_id)
         user_projects = PROVIDERS.assignment_api.list_projects_for_user(user_id)
         LOG.debug('projects of user %s: %s' % (user_info['id'], user_projects))
