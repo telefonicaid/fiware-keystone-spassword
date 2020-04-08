@@ -215,17 +215,15 @@ class SPasswordRecoverResource(SPasswordResource):
         return self.send_email(to, subject, text)
 
 
-class SPasswordSndfaResource(SPasswordResource):
-
-    def get(self, user_id, code=None):
-        return self._check_sndfa_code(user_id, code)
+class SPasswordModifySndfaResource(SPasswordResource):
 
     def post(self, user_id):
         return self._modify_sndfa(user_id)
 
-    def _modify_sndfa(self, user_id, enable):
+    def _modify_sndfa(self, user_id):
         """Perform user sndfa modification """
         self._check_spassword_configured()
+        enable = self.request_body_json.get('enable', False)
         ENFORCER.enforce_call(
             action='identity:update_user',
             build_target=_build_user_target_enforcement
@@ -245,6 +243,11 @@ class SPasswordSndfaResource(SPasswordResource):
         else:
             raise exception.ValidationError(message='invalid body format')
 
+class SPasswordCheckSndfaResource(SPasswordResource):
+
+    def get(self, user_id, code=None):
+        return self._check_sndfa_code(user_id, code)
+
     # Should be called without provide an auth token
     def _check_sndfa_code(self, user_id, code):
         """Perform user sndfa code check """
@@ -261,20 +264,17 @@ class SPasswordSndfaResource(SPasswordResource):
             # Render response in HTML
             resp = flask.make_response('Valid code. Sndfa successfully authorized', http_client.OK)
             resp.headers['Content-Type'] = 'text/html'
-            return resp                        
+            return resp
         else:
             resp = flask.make_response('No valid code. sndfa Unauthorized', http_client.UNAUTHORIZED)
             resp.headers['Content-Type'] = 'application/json'
-            return resp            
+            return resp
 
 
-class SPasswordUserEmailResource(SPasswordUserResource):
+class SPasswordUserAskCheckEmailResource(SPasswordUserResource):
 
-    def get(self, user_id, code=None):
-        if (code):
-            return self._check_email_code(user_id, code)
-        else:
-            return self._ask_for_check_email_code(user_id)
+    def get(self, user_id):
+        return self._ask_check_email_code(user_id)
 
     def _ask_for_check_email_code(self, user_id):
         """Ask a code for user email check """
@@ -307,6 +307,11 @@ class SPasswordUserEmailResource(SPasswordUserResource):
             resp = flask.make_response(msg, http_client.BAD_REQUEST)
             resp.headers['Content-Type'] = 'application/json'
             return resp
+
+class SPasswordUserCheckEmailResource(SPasswordUserResource):
+
+    def get(self, user_id, code=None):
+        return self._check_email_code(user_id, code)
 
     # Should be called without provide an auth token
     def _check_email_code(self, user_id, code):
@@ -379,10 +384,31 @@ class SPasswordAPI(ks_flask.APIBase):
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
-            resource=SPasswordSndfaResource,
+            resource=SPassworRecoverResource,
+            url='/users/<string:user_id>/recover_password',
+            resource_kwargs={},
+            rel='recover_password',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        ),
+        ks_flask.construct_resource_map(
+            resource=SPasswordModifySndfaResource,
+            url='/users/<string:user_id>/sndfa',
+            resource_kwargs={},
+            rel='sndfa',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        ),
+        ks_flask.construct_resource_map(
+            resource=SPasswordCheckSndfaResource,
             url='/users/<string:user_id>/sndfa/<string:code>',
             resource_kwargs={},
             rel='sndfa',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        ),
+        ks_flask.construct_resource_map(
+            resource=SPasswordUserEmailResource,
+            url='/users/<string:user_id>/checkemail',
+            resource_kwargs={},
+            rel='email',
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
