@@ -1,0 +1,12 @@
+--- authentication.py
++++ authentication.py_new
+@@ -181,7 +181,8 @@ def authenticate_for_token(auth=None):
+     """Authenticate user and issue a token."""
+     try:
+         auth_info = core.AuthInfo.create(auth=auth)
+-        auth_context = core.AuthContext(method_names=[],
++        auth_context = core.AuthContext(extras = {},
++                                        method_names=[],
+                                         bind={})
+         authenticate(auth_info, auth_context)
+         if auth_context.get('access_token_id'):
