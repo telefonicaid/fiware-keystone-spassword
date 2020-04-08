@@ -105,10 +105,10 @@ source ./${pack_scim} --with-python27 --with-version 1.5.0 --with-release 0 && \
     # Patching ...
     ln -s /usr/lib/python2.7/site-packages/keystone/contrib/scim/scim.py  /usr/lib/python2.7/site-packages/keystone/api && \
     ln -s /usr/lib/python2.7/site-packages/keystone/contrib/spassword/spassword.py  /usr/lib/python2.7/site-packages/keystone/api && \
-    rm /usr/lib/python2.7/site-packages/keystone/contrib/spassword/controller.* && \
-    rm /usr/lib/python2.7/site-packages/keystone/contrib/spassword/routes.* && \
-    rm /usr/lib/python2.7/site-packages/keystone/contrib/scim/controller.* && \
-    rm /usr/lib/python2.7/site-packages/keystone/contrib/scim/routers.* && \
+    rm -f /usr/lib/python2.7/site-packages/keystone/contrib/spassword/controllers.* && \
+    rm -f /usr/lib/python2.7/site-packages/keystone/contrib/spassword/routers.* && \
+    rm -f /usr/lib/python2.7/site-packages/keystone/contrib/scim/controllers.* && \
+    rm -f /usr/lib/python2.7/site-packages/keystone/contrib/scim/routers.* && \
     cd /usr/lib/python2.7/site-packages/keystone/identity && \
     patch -f -p0 < /opt/keystone/core.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/common && \
@@ -117,20 +117,20 @@ source ./${pack_scim} --with-python27 --with-version 1.5.0 --with-release 0 && \
     patch -f -p0 < /opt/keystone/core_auth.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/server && \
     patch -f -p0 < /opt/keystone/backends.patch && \
-    #cd /usr/lib/python2.7/site-packages/keystone/server/flask && \
-    #patch -f -p0 < /opt/keystone/application.patch && \
-    # cd /usr/lib/python2.7/site-packages/keystone/auth && \
-    # patch -f -p0 < /opt/keystone/auth_controllers.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/auth/plugins && \
     patch -f -p0 < /opt/keystone/auth_plugins_token.patch && \
-    # cd /usr/lib/python2.7/site-packages/keystone/common && \
-    # patch -f -p0 < /opt/keystone/common_controller.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/common && \
+    patch -f -p0 < /opt/keystone/common_render_token.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/models && \
     patch -f -p0 < /opt/keystone/token_model.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/token && \
     patch -f -p0 < /opt/keystone/token_provider.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/api && \
     patch -f -p0 < /opt/keystone/apis.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/api && \
+    patch -f -p0 < /opt/keystone/api_role_assignments.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/api/_shared && \
+    patch -f -p0 < /opt/keystone/api_auth.patch && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
     # Cron task to rotate fernet tokens once a day
