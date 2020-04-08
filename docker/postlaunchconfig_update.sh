@@ -86,6 +86,10 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT verbose True
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT debug True
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT insecure_debug True
+    openstack-config --set /etc/keystone/keystone.conf \
+    wsgi debug_middleware True
 fi
 
 export KEYSTONE_HOST="127.0.0.1:5001"
@@ -115,6 +119,10 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .["identity:list_role_assignments"]="rule:cloud_admin or rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter"
      | .["identity:list_projects"]="rule:cloud_admin or rule:admin_and_matching_domain_id or rule:cloud_service"
      | .["identity:get_project_roles"]=""
+     | .["identity:get_user"]="rule:cloud_admin or rule:admin_and_matching_target_user_domain_id"
+     | .["identity:list_roles"]="rule:admin_required"
+     | .["identity:ilst_role_assignments"]="rule:cloud_admin or rule:admin_on_domain_filter or rule:admin_on_project_filter"
+     | .["identity:list_domains"]="rule:cloud_admin or rule:cloud_service"
      | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
