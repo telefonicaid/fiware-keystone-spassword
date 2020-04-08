@@ -271,10 +271,10 @@ class SPasswordCheckSndfaResource(SPasswordResource):
             return resp
 
 
-class SPasswordUserAskCheckEmailResource(SPasswordUserResource):
+class SPasswordAskCheckEmailResource(SPasswordResource):
 
     def get(self, user_id):
-        return self._ask_check_email_code(user_id)
+        return self._ask_for_check_email_code(user_id)
 
     def _ask_for_check_email_code(self, user_id):
         """Ask a code for user email check """
@@ -308,7 +308,7 @@ class SPasswordUserAskCheckEmailResource(SPasswordUserResource):
             resp.headers['Content-Type'] = 'application/json'
             return resp
 
-class SPasswordUserCheckEmailResource(SPasswordUserResource):
+class SPasswordCheckEmailResource(SPasswordResource):
 
     def get(self, user_id, code=None):
         return self._check_email_code(user_id, code)
@@ -384,7 +384,7 @@ class SPasswordAPI(ks_flask.APIBase):
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
-            resource=SPassworRecoverResource,
+            resource=SPasswordRecoverResource,
             url='/users/<string:user_id>/recover_password',
             resource_kwargs={},
             rel='recover_password',
@@ -405,14 +405,14 @@ class SPasswordAPI(ks_flask.APIBase):
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
-            resource=SPasswordUserEmailResource,
+            resource=SPasswordAskCheckEmailResource,
             url='/users/<string:user_id>/checkemail',
             resource_kwargs={},
             rel='email',
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
-            resource=SPasswordUserEmailResource,
+            resource=SPasswordCheckEmailResource,
             url='/users/<string:user_id>/checkemail/<string:code>',
             resource_kwargs={},
             rel='email',
