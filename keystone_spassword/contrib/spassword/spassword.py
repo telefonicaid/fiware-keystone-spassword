@@ -56,7 +56,7 @@ def _build_user_target_enforcement():
             target['group'] = PROVIDERS.identity_api.get_group(
                 flask.request.view_args.get('group_id')
             )
-    except ks_exception.NotFound:  # nosec
+    except exception.NotFound:  # nosec
         # Defer existence in the event the user doesn't exist, we'll
         # check this later anyway.
         pass
@@ -71,17 +71,20 @@ class SPasswordNotConfigured(exception.Error):
 class SPasswordScimUserResource(ScimUserResource, CheckPassword):
     collection_key = '/OS-SCIM/Users'
     member_key = 'user'
-    #api_prefix = '/OS-SCIM/Users'
 
     def patch(self, user_id):
-        user_data = self.request_body_json.get('user', {})
+        user_data = self.request_body_json
         user_data = self._normalize_dict(user_data)        
         scim = self._denormalize(user_data)
         user = conv.user_scim2key(scim)
         if CONF.spassword.enabled and 'password' in user:
-            super(SPasswordScimUserResource, self).strong_check_password(
-                user['password'])
-
+            try:
+                super(SPasswordScimUserResource, self).strong_check_password(
+                    user['password'])
+            except Exception as e:
+                raise exception.Unauthorized(
+                    _('Error when changing user password: %s') % e
+                )
         # TODO: update_user_modification_time()
         return super(SPasswordScimUserResource, self).patch(user_id)
 
@@ -89,11 +92,15 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
         return self.patch_(user_id)
 
     def post(self, user):
-        user_data = self.request_body_json.get('user', {})
+        user_data = self.request_body_json
         if CONF.spassword.enabled and 'password' in user_data:
-            super(SPasswordScimUserResource, self).strong_check_password(
-                user_data['password'])
-
+            try:
+                super(SPasswordScimUserResource, self).strong_check_password(
+                    user_data['password'])
+            except Exception as e:
+                raise exception.Unauthorized(
+                    _('Error when changing user password: %s') % e
+                )
         return super(SPasswordScimUserResource, self).post(user=user_data)
 
     def delete(self, user_id):
@@ -105,20 +112,29 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
 class SPasswordUserResource(UserResource, CheckPassword):
     collection_key = 'users'
     member_key = 'user'
-    #api_prefix = '/users'
     
     def post(self, user):
         user_data = self.request_body_json.get('user', {})
         if CONF.spassword.enabled and 'password' in user_data:
-            super(SPasswordUserResource, self).strong_check_password(
-                user_data['password'])
+            try:
+                super(SPasswordUserResource, self).strong_check_password(
+                    user_data['password'])
+            except Exception as e:
+                raise exception.Unauthorized(
+                    _('Error when changing user password: %s') % e
+                )
         return super(SPasswordUserResource, self).post(user=user_data)
 
     def put(self, user_id, user):
         user_data = self.request_body_json.get('user', {})
         if CONF.spassword.enabled and 'password' in user_data:
-            super(SPasswordUserResource, self).strong_check_password(
-                user_data['password'])
+            try:
+                super(SPasswordUserResource, self).strong_check_password(
+                    user_data['password'])
+            except Exception as e:
+                raise exception.Unauthorized(
+                    _('Error when changing user password: %s') % e
+                )
         return super(SPasswordUserResource, self).put(user_id=user_id,
                                                       user=user_data)
     def delete(self, user_id):
@@ -133,8 +149,13 @@ class SPasswordUserPasswordResource(SPasswordUserResource):
     def post(self, user_id, user):
         user_data = self.request_body_json.get('user', {})        
         if CONF.spassword.enabled and 'password' in user_data:
-            super(SPasswordUserResource, self).strong_check_password(
-                user_data['password'])
+            try:
+                super(SPasswordUserResource, self).strong_check_password(
+                    user_data['password'])
+            except Exception as e:
+                raise exception.Unauthorized(
+                    _('Error when changing user password: %s') % e
+                )
         LOG.info('changing pwd of user %s spasswordusercontroller' % user_id)
         return super(SPasswordUserResource, self).change_password(user_id=user_id,
                                                                   user=user_data)
@@ -169,7 +190,10 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
 
 class SPasswordRecoverResource(SPasswordResource):
 
-    def recover_password(self, user_id):
+    def post(self, user_id):
+        return self._recover_password(user_id)
+
+    def _recover_password(self, user_id):
         """Perform user password recover procedure."""
         self._check_spassword_configured()
         ENFORCER.enforce_call(
