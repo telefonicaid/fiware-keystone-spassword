@@ -91,7 +91,7 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
     def put(self, user_id):
         return self.patch_(user_id)
 
-    def post(self, user):
+    def post(self):
         user_data = self.request_body_json
         if CONF.spassword.enabled and 'password' in user_data:
             try:
@@ -113,7 +113,7 @@ class SPasswordUserResource(UserResource, CheckPassword):
     collection_key = 'users'
     member_key = 'user'
     
-    def post(self, user):
+    def post(self):
         user_data = self.request_body_json.get('user', {})
         if CONF.spassword.enabled and 'password' in user_data:
             try:
@@ -125,7 +125,7 @@ class SPasswordUserResource(UserResource, CheckPassword):
                 )
         return super(SPasswordUserResource, self).post(user=user_data)
 
-    def put(self, user_id, user):
+    def put(self, user_id):
         user_data = self.request_body_json.get('user', {})
         if CONF.spassword.enabled and 'password' in user_data:
             try:
@@ -146,7 +146,7 @@ class SPasswordUserResource(UserResource, CheckPassword):
 
 class SPasswordUserPasswordResource(SPasswordUserResource):
 
-    def post(self, user_id, user):
+    def post(self, user_id):
         user_data = self.request_body_json.get('user', {})        
         if CONF.spassword.enabled and 'password' in user_data:
             try:
@@ -404,7 +404,7 @@ class SPasswordAPI(ks_flask.APIBase):
             resource=SPasswordUserPasswordResource,
             url='/users/<string:user_id>/password',
             resource_kwargs={},
-            rel='change_password',
+            rel='user_change_password',
             path_vars={'user_id': json_home.Parameters.USER_ID}
         ),
         ks_flask.construct_resource_map(
