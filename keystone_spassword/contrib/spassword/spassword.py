@@ -190,7 +190,7 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
 
 class SPasswordRecoverResource(SPasswordResource):
 
-    def post(self, user_id):
+    def get(self, user_id):
         return self._recover_password(user_id)
 
     def _recover_password(self, user_id):
