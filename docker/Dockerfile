@@ -129,6 +129,8 @@ source ./${pack_scim} --with-python27 --with-version 1.5.0 --with-release 0 && \
     patch -f -p0 < /opt/keystone/apis.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/api && \
     patch -f -p0 < /opt/keystone/api_role_assignments.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/api && \
+    patch -f -p0 < /opt/keystone/projects.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/api/_shared && \
     patch -f -p0 < /opt/keystone/api_auth.patch && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \

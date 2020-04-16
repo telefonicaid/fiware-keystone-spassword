@@ -1,9 +1,11 @@
 --- role_assignments.py
 +++ role_assignments.py_new
-@@ -70,6 +70,8 @@ class RoleAssignmentsResource(ks_flask.ResourceBase):
+@@ -70,6 +70,10 @@ class RoleAssignmentsResource(ks_flask.ResourceBase):
                      project = PROVIDERS.resource_api.get_project(project_id)
                      if project.get('domain_id') == self.oslo_context.domain_id:
                          domain_assignments.append(assignment)
++                    else:
++                        domain_assignments.append(assignment)
 +                else:
 +                    domain_assignments.append(assignment)
  
