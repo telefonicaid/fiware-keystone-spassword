@@ -30,6 +30,7 @@ from keystone.common import provider_api
 from keystone.common import rbac_enforcer
 from keystone import exception
 from keystone.api.users import UserResource
+from keystone.api.users import UserChangePasswordResource
 from keystone_scim.contrib.scim.scim import ScimUserResource
 from keystone_scim.contrib.scim import converter as conv
 from keystone_spassword.contrib.spassword.checker import CheckPassword
@@ -72,6 +73,7 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
     collection_key = '/OS-SCIM/Users'
     member_key = 'user'
 
+    @ks_flask.unenforced_api
     def patch(self, user_id):
         user_data = self.request_body_json
         user_data = self._normalize_dict(user_data)        
@@ -82,15 +84,17 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
                 super(SPasswordScimUserResource, self).strong_check_password(
                     user['password'])
             except Exception as e:
-                raise exception.Unauthorized(
-                    _('Error when changing user password: %s') % e
-                )
+                msg = '%s' % e
+                resp = flask.make_response(msg, http_client.BAD_REQUEST)
+                resp.headers['Content-Type'] = 'application/json'
+                return resp
         # TODO: update_user_modification_time()
         return super(SPasswordScimUserResource, self).patch(user_id)
 
     def put(self, user_id):
         return self.patch_(user_id)
 
+    @ks_flask.unenforced_api
     def post(self):
         user_data = self.request_body_json
         if CONF.spassword.enabled and 'password' in user_data:
@@ -98,10 +102,11 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
                 super(SPasswordScimUserResource, self).strong_check_password(
                     user_data['password'])
             except Exception as e:
-                raise exception.Unauthorized(
-                    _('Error when changing user password: %s') % e
-                )
-        return super(SPasswordScimUserResource, self).post(user=user_data)
+                msg = '%s' % e
+                resp = flask.make_response(msg, http_client.BAD_REQUEST)
+                resp.headers['Content-Type'] = 'application/json'
+                return resp
+        return super(SPasswordScimUserResource, self).post()
 
     def delete(self, user_id):
         # Delete user from spassword table
@@ -112,7 +117,9 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
 class SPasswordUserResource(UserResource, CheckPassword):
     collection_key = 'users'
     member_key = 'user'
-    
+    api_prefix = '/users'
+
+    @ks_flask.unenforced_api
     def post(self):
         user_data = self.request_body_json.get('user', {})
         if CONF.spassword.enabled and 'password' in user_data:
@@ -120,10 +127,11 @@ class SPasswordUserResource(UserResource, CheckPassword):
                 super(SPasswordUserResource, self).strong_check_password(
                     user_data['password'])
             except Exception as e:
-                raise exception.Unauthorized(
-                    _('Error when changing user password: %s') % e
-                )
-        return super(SPasswordUserResource, self).post(user=user_data)
+                msg = '%s' % e
+                resp = flask.make_response(msg, http_client.BAD_REQUEST)
+                resp.headers['Content-Type'] = 'application/json'
+                return resp
+        return super(SPasswordUserResource, self).post()
 
     def put(self, user_id):
         user_data = self.request_body_json.get('user', {})
@@ -135,30 +143,35 @@ class SPasswordUserResource(UserResource, CheckPassword):
                 raise exception.Unauthorized(
                     _('Error when changing user password: %s') % e
                 )
-        return super(SPasswordUserResource, self).put(user_id=user_id,
-                                                      user=user_data)
+        return super(SPasswordUserResource, self).put(user_id)
+
     def delete(self, user_id):
         # Delete user from spassword table
         LOG.info('deleting user %s spasswordusercontroller' % user_id)
-        return super(SPasswordUserResource, self).delete(user_id=user_id)
+        return super(SPasswordUserResource, self).delete(user_id)
 
 
 
-class SPasswordUserPasswordResource(SPasswordUserResource):
+class SPasswordUserPasswordResource(UserChangePasswordResource, CheckPassword):
+    collection_key = 'users'
+    member_key = 'user'
+    api_prefix = '/users'
 
+    @ks_flask.unenforced_api
     def post(self, user_id):
         user_data = self.request_body_json.get('user', {})        
         if CONF.spassword.enabled and 'password' in user_data:
             try:
-                super(SPasswordUserResource, self).strong_check_password(
+                super(SPasswordUserPasswordResource, self).strong_check_password(
                     user_data['password'])
             except Exception as e:
-                raise exception.Unauthorized(
-                    _('Error when changing user password: %s') % e
-                )
+                msg = '%s' % e
+                resp = flask.make_response(msg, http_client.BAD_REQUEST)
+                resp.headers['Content-Type'] = 'application/json'
+                return resp
         LOG.info('changing pwd of user %s spasswordusercontroller' % user_id)
-        return super(SPasswordUserResource, self).change_password(user_id=user_id,
-                                                                  user=user_data)
+        return super(SPasswordUserPasswordResource, self).post(user_id)
+
 
 class SPasswordResource(ks_flask.ResourceBase, SendMail):
     collection_key = 'users'
