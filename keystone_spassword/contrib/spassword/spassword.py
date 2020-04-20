@@ -70,8 +70,6 @@ class SPasswordNotConfigured(exception.Error):
     title = 'Not Configured'
 
 class SPasswordScimUserResource(ScimUserResource, CheckPassword):
-    collection_key = '/OS-SCIM/Users'
-    member_key = 'user'
 
     @ks_flask.unenforced_api
     def patch(self, user_id):
@@ -117,7 +115,6 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
 class SPasswordUserResource(UserResource, CheckPassword):
     collection_key = 'users'
     member_key = 'user'
-    api_prefix = '/users'
 
     @ks_flask.unenforced_api
     def post(self):
@@ -133,7 +130,7 @@ class SPasswordUserResource(UserResource, CheckPassword):
                 return resp
         return super(SPasswordUserResource, self).post()
 
-    def put(self, user_id):
+    def patch(self, user_id):
         user_data = self.request_body_json.get('user', {})
         if CONF.spassword.enabled and 'password' in user_data:
             try:
@@ -143,7 +140,7 @@ class SPasswordUserResource(UserResource, CheckPassword):
                 raise exception.Unauthorized(
                     _('Error when changing user password: %s') % e
                 )
-        return super(SPasswordUserResource, self).put(user_id)
+        return super(SPasswordUserResource, self).patch(user_id)
 
     def delete(self, user_id):
         # Delete user from spassword table
@@ -410,9 +407,16 @@ class SPasswordAPI(ks_flask.APIBase):
     _name = 'spassword'
     _import_name = __name__
     api_url_prefix = '/'
-    resources = [SPasswordScimUserResource, SPasswordUserResource]
+    resources = [SPasswordUserResource]
 
     resource_mapping = [
+        ks_flask.construct_resource_map(
+            resource=SPasswordScimUserResource,
+            url='/OS-SCIM/Users/<string:user_id>',
+            resource_kwargs={},
+            rel='spassword-user-scim',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        ),
         ks_flask.construct_resource_map(
             resource=SPasswordUserPasswordResource,
             url='/users/<string:user_id>/password',
