@@ -12,8 +12,8 @@
 @@ -64,6 +66,8 @@ __all__ = (
      'system',
      'trusts',
-+    'scim',
 +    'spassword',
++    'scim',
      'users',
  )
  
@@ -21,7 +21,7 @@
 @@ -93,4 +97,6 @@ __apis__ = (
      system,
      trusts,
-+    scim,
 +    spassword,
++    scim,
      users,
  )
