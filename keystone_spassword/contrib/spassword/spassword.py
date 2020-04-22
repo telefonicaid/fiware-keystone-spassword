@@ -287,10 +287,6 @@ class SPasswordCheckSndfaResource(SPasswordResource):
     def _check_sndfa_code(self, user_id, code):
         """Perform user sndfa code check """
         self._check_spassword_configured()
-        ENFORCER.enforce_call(
-            action='identity:update_user',
-            build_target=_build_user_target_enforcement
-        )
         user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
@@ -352,10 +348,6 @@ class SPasswordCheckEmailResource(SPasswordResource):
     # Should be called without provide an auth token
     def _check_email_code(self, user_id, code):
         """Check a code for for user email check """
-        ENFORCER.enforce_call(
-            action='identity:update_user',
-            build_target=_build_user_target_enforcement
-        )
         user_info = PROVIDERS.identity_api.get_user(user_id)
         self._check_user_has_email_defined(user_info)
         LOG.debug('check sndfa code invoked for user %s %s' % (user_info['id'],
