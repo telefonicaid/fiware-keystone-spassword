@@ -279,6 +279,7 @@ class SPasswordModifySndfaResource(SPasswordResource):
 
 class SPasswordCheckSndfaResource(SPasswordResource):
 
+    @ks_flask.unenforced_api
     def get(self, user_id, code=None):
         return self._check_sndfa_code(user_id, code)
 
@@ -344,6 +345,7 @@ class SPasswordAskCheckEmailResource(SPasswordResource):
 
 class SPasswordCheckEmailResource(SPasswordResource):
 
+    @ks_flask.unenforced_api
     def get(self, user_id, code=None):
         return self._check_email_code(user_id, code)
 
