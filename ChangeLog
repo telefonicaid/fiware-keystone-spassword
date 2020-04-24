@@ -1,3 +1,7 @@
+1.10.0
+
+Upgrade plugin for compatibility with Stein version (including docker).
+
 1.9.0
 
 Upgrade plugin for compatibility with Rocky version (including docker).

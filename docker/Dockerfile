@@ -4,10 +4,8 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-#ENV KEYSTONE_SCIM_VERSION 1.4.0
-ENV KEYSTONE_SCIM_VERSION task/stein
-#ENV KEYSTONE_SPASSWORD_VERSION 1.9.0
-ENV KEYSTONE_SPASSWORD_VERSION task/stein
+ENV KEYSTONE_SCIM_VERSION 1.5.0
+ENV KEYSTONE_SPASSWORD_VERSION 1.10.0
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
@@ -75,10 +73,8 @@ RUN \
     dir=~/fiware-keystone && \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_scim}" | tar zxvf - -C ${dir} && \
-    #cd ${dir}/${repo_scim}-${tag} && \
-    cd ${dir}/${repo_scim}-task-stein && \    
-    #source ./${pack_scim} --with-python27 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
-source ./${pack_scim} --with-python27 --with-version 1.5.0 --with-release 0 && \
+    cd ${dir}/${repo_scim}-${tag} && \
+    source ./${pack_scim} --with-python27 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Install Keystone-SPASSWORD
     cd /opt/keystone && \
@@ -90,10 +86,8 @@ source ./${pack_scim} --with-python27 --with-version 1.5.0 --with-release 0 && \
     dir=~/fiware-keystone && \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
-    #cd ${dir}/${repo_spassword}-${tag} && \
-    cd ${dir}/${repo_spassword}-task-stein && \    
-    #source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
-    source ./${pack_spassword} --with-python27 --with-version 1.10.0 --with-release 0 && \        
+    cd ${dir}/${repo_spassword}-${tag} && \
+    source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # LDAP pre-support
     mkdir -p /etc/keystone/domains && \
