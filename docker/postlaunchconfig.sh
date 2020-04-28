@@ -100,6 +100,10 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT verbose True
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT debug True
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT insecure_debug True
+    openstack-config --set /etc/keystone/keystone.conf \
+    wsgi debug_middleware True
 fi
 
 echo "[ postlaunchconfig - db_sync ] "
@@ -292,6 +296,24 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .["identity:list_role_assignments"]="rule:cloud_admin or rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter"
      | .["identity:list_projects"]="rule:cloud_admin or rule:admin_and_matching_domain_id or rule:cloud_service"
      | .["identity:get_project_roles"]=""
+     | .["identity:get_user"]="rule:cloud_admin or rule:admin_and_matching_target_user_domain_id or rule:owner"
+     | .["identity:list_users"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
+     | .["identity:create_user"]="rule:cloud_admin or rule:admin_and_matching_user_domain_id"
+     | .["identity:update_user"]="rule:cloud_admin or rule:admin_and_matching_target_user_domain_id or rule:owner"
+     | .["identity:delete_user"]="rule:cloud_admin or rule:admin_and_matching_target_user_domain_id"
+     | .["identity:get_group"]="rule:cloud_admin or rule:admin_and_matching_target_group_domain_id"
+     | .["identity:list_groups"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
+     | .["identity:list_groups_for_user"]="rule:owner or rule:admin_and_matching_target_user_domain_id"
+     | .["identity:create_group"]="rule:cloud_admin or rule:admin_and_matching_group_domain_id"
+     | .["identity:update_group"]="rule:cloud_admin or rule:admin_and_matching_target_group_domain_id"
+     | .["identity:delete_group"]="rule:cloud_admin or rule:admin_and_matching_target_group_domain_id"
+     | .["identity:list_users_in_group"]="rule:cloud_admin or rule:admin_and_matching_target_group_domain_id"
+     | .["identity:get_role"]="rule:admin_required"
+     | .["identity:list_roles"]="rule:admin_required"
+     | .["identity:create_role"]="rule:admin_required"
+     | .["identity:update_role"]="rule:admin_required"
+     | .["identity:delete_role"]="rule:admin_required"
+     | .["identity:list_domains"]="rule:cloud_admin or rule:cloud_service"
      | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
@@ -313,6 +335,8 @@ openstack-config --set /etc/keystone/keystone.conf \
                  spassword pwd_block_minutes $SPASSWORD_PWD_BLOCK_MINUTES
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword pwd_exp_days $SPASSWORD_PWD_EXP_DAYS
+openstack-config --set /etc/keystone/keystone.conf \
+                 security_compliance password_expires_days $SPASSWORD_PWD_EXP_DAYS
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword smtp_server $SPASSWORD_SMTP_SERVER
 openstack-config --set /etc/keystone/keystone.conf \

@@ -4,8 +4,8 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-ENV KEYSTONE_SCIM_VERSION 1.4.0
-ENV KEYSTONE_SPASSWORD_VERSION 1.9.0
+ENV KEYSTONE_SCIM_VERSION 1.5.0
+ENV KEYSTONE_SPASSWORD_VERSION 1.10.0
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
@@ -22,9 +22,9 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-rocky/rdo-release-rocky-2.noarch.rpm' > rdo-release-rocky-2.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-rocky-2.noarch.rpm && \
-    curl -s -L --insecure https://github.com/openstack/keystone/raw/rocky-em/etc/policy.v3cloudsample.json > /opt/keystone/policy.v3cloudsample.json && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-stein/rdo-release-stein-3.noarch.rpm' > rdo-release-stein-3.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-stein-3.noarch.rpm && \
+    curl -s -L --insecure https://raw.githubusercontent.com/openstack/keystone/stable/stein/etc/policy.v3cloudsample.json > /opt/keystone/policy.v3cloudsample.json && \
     # Set Centos mirror to ensure openstack version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
@@ -62,6 +62,8 @@ RUN \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
+    mkdir -p /usr/lib/python2.7/site-packages/keystone/contrib && \
+    touch /usr/lib/python2.7/site-packages/keystone/contrib/__init__.py && \    
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
@@ -95,6 +97,12 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_config_dir /etc/keystone/domains && \
     # Patching ...
+    ln -s /usr/lib/python2.7/site-packages/keystone/contrib/scim/scim.py  /usr/lib/python2.7/site-packages/keystone/api && \
+    ln -s /usr/lib/python2.7/site-packages/keystone/contrib/spassword/spassword.py  /usr/lib/python2.7/site-packages/keystone/api && \
+    rm -f /usr/lib/python2.7/site-packages/keystone/contrib/spassword/controllers.* && \
+    rm -f /usr/lib/python2.7/site-packages/keystone/contrib/spassword/routers.* && \
+    rm -f /usr/lib/python2.7/site-packages/keystone/contrib/scim/controllers.* && \
+    rm -f /usr/lib/python2.7/site-packages/keystone/contrib/scim/routers.* && \
     cd /usr/lib/python2.7/site-packages/keystone/identity && \
     patch -f -p0 < /opt/keystone/core.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/common && \
@@ -103,18 +111,22 @@ RUN \
     patch -f -p0 < /opt/keystone/core_auth.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/server && \
     patch -f -p0 < /opt/keystone/backends.patch && \
-    cd /usr/lib/python2.7/site-packages/keystone/server/flask && \
-    patch -f -p0 < /opt/keystone/application.patch && \
-    cd /usr/lib/python2.7/site-packages/keystone/auth && \
-    patch -f -p0 < /opt/keystone/auth_controllers.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/auth/plugins && \
     patch -f -p0 < /opt/keystone/auth_plugins_token.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/common && \
-    patch -f -p0 < /opt/keystone/common_controller.patch && \
+    patch -f -p0 < /opt/keystone/common_render_token.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/models && \
     patch -f -p0 < /opt/keystone/token_model.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/token && \
     patch -f -p0 < /opt/keystone/token_provider.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/api && \
+    patch -f -p0 < /opt/keystone/apis.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/api && \
+    patch -f -p0 < /opt/keystone/api_role_assignments.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/api && \
+    patch -f -p0 < /opt/keystone/projects.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/api/_shared && \
+    patch -f -p0 < /opt/keystone/api_auth.patch && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
     # Cron task to rotate fernet tokens once a day

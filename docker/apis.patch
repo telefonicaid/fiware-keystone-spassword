@@ -1,0 +1,27 @@
+--- __init__.py
++++ __init__.py_new
+@@ -36,6 +36,8 @@ from keystone.api import services
+ from keystone.api import system
+ from keystone.api import trusts
+ from keystone.api import users
++from keystone.api import scim
++from keystone.api import spassword
+ 
+ __all__ = (
+     'auth',
+@@ -64,6 +66,8 @@ __all__ = (
+     'system',
+     'trusts',
++    'spassword',
++    'scim',
+     'users',
+ )
+ 
+ __apis__ = (
+@@ -93,4 +97,6 @@ __apis__ = (
+     system,
+     trusts,
++    spassword,
++    scim,
+     users,
+ )

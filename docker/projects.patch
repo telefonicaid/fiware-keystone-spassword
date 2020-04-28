@@ -1,0 +1,11 @@
+--- projects.py
++++ projects.py_new
+@@ -135,7 +135,7 @@ class ProjectResource(ks_flask.ResourceBase):
+         if self.oslo_context.domain_id:
+             domain_id = self.oslo_context.domain_id
+             filtered_refs = [
+-                ref for ref in refs if ref['domain_id'] == domain_id
++                ref for ref in refs
+             ]
+         else:
+             filtered_refs = refs
