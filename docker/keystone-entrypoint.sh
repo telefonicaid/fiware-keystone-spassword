@@ -43,5 +43,6 @@ echo "[ keystone-entrypoint - keystone-all ] "
 crond &
 touch /var/log/keystone/keystone.log
 chmod 666 /var/log/keystone/keystone.log
+ln -snf /dev/stdout /var/log/keystone/keystone.log
 /usr/bin/keystone-all &
-tail -f /var/log/keystone/keystone.log
+
