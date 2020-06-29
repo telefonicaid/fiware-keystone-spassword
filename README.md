@@ -93,6 +93,35 @@ There is a complete guide to install step by step keystone for development purpo
 
 https://github.com/telefonicaid/fiware-pep-steelskin/blob/master/keystoneInstallation.md
 
+
+### Docker Installation
+Thre is a docker container image which includes keystone + keystone scim plugin + keystone spassword plugin:
+https://hub.docker.com/repository/docker/telefonicaiot/fiware-keystone-spassword
+
+There are some [env vars  for configuration](docs/DOCKER.md)
+
+#### Upgrade from a older version:
+How to upgrade to latest (1.10.0) docker release:
+
+Normal procedure is stop container, update version in docker-compose and then up container; then container will be recreated.
+
+##### Upgrade from 1.4.X, 1.5.X or 1.6.0
+-> needs a workaround:
+Before update image in docker-compose the following commands should be executed:
+
+```
+mysql -h iot-mysql -u root -p
+use keystone;
+drop table spassword;
+delete from migrate_version where repository_id='keystone_spassword';
+```
+Then stop container and update image in docker-compose and up again container; then container will be recreated.
+
+
+##### Upgrade from 1.7.0,  1.8.0, 1.9.0 
+-> no workaround needed
+
+
 ## Usage
 
 SPASSWORD extension reuses the authentication and authorization mechanisms provided
@@ -183,4 +212,3 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 ## [Second Factor Authentication](docs/second_factor_auth.md)
 
 ## [Docker env vars](docs/DOCKER.md)
-
