@@ -115,7 +115,7 @@ use keystone;
 drop table spassword;
 delete from migrate_version where repository_id='keystone_spassword';
 ```
-Then stop container and updaet image in docker-compose and up again container; then container will be recreated.
+Then stop container and update image in docker-compose and up again container; then container will be recreated.
 
 
 ##### Upgrade from 1.7.0,  1.8.0, 1.9.0 
@@ -212,4 +212,3 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 ## [Second Factor Authentication](docs/second_factor_auth.md)
 
 ## [Docker env vars](docs/DOCKER.md)
-
