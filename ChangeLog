@@ -1,3 +1,5 @@
+Ensure start uwsgi process when new container starts with new data
+
 1.10.0
 
 Upgrade plugin for compatibility with Stein version (including docker).
