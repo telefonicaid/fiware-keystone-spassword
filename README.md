@@ -131,7 +131,7 @@ Authentication and Authorization mechanism in it's
 [official documentation](https://github.com/openstack/identity-api/blob/master/v3/src/markdown/identity-api-v3.md).
 
 
-Moreover keystone-spassword adds a new API to retrieve all project roles for a user:
+Moreover keystone-spassword adds a new API to retrieve all project roles for a user (aka Grants):
         
 **GET '/v3/users/{user_id}/project_roles'**
 
