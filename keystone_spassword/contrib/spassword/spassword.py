@@ -167,6 +167,7 @@ class SPasswordUserPasswordResource(UserChangePasswordResource, CheckPassword):
                 resp.headers['Content-Type'] = 'application/json'
                 return resp
         LOG.info('changing pwd of user %s spasswordusercontroller' % user_id)
+        PROVIDERS.spassword_api.set_user_updated(user_id)
         return super(SPasswordUserPasswordResource, self).post(user_id)
 
 
