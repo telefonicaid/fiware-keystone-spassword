@@ -131,7 +131,7 @@ class SPasswordUserResource(UserResource, CheckPassword):
                 resp = flask.make_response(msg, http_client.BAD_REQUEST)
                 resp.headers['Content-Type'] = 'application/json'
                 return resp
-        LOG.info('post changing pwd of user %s UserResource' % user_id)
+        LOG.info('post for changing pwd of user %s UserResource' % user_id)
         #PROVIDERS.spassword_api.set_user_updated(user_data['user_id'])
         return super(SPasswordUserResource, self).post()
 
@@ -145,6 +145,8 @@ class SPasswordUserResource(UserResource, CheckPassword):
                 raise exception.Unauthorized(
                     _('Error when changing user password: %s') % e
                 )
+        LOG.info('patch for changing pwd of user %s UserResource' % user_id)
+        PROVIDERS.spassword_api.set_user_updated(user_id)
         return super(SPasswordUserResource, self).patch(user_id)
 
     def delete(self, user_id):
