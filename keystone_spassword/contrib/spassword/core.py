@@ -143,7 +143,7 @@ class SPasswordManager(manager.Manager):
 
     def set_user_updated(self, user_id):
         if CONF.spassword.enabled:
-            user = { 'user_id': user_id }
+            user = { 'id': user_id }
             self.driver.update_user_modification_time(user)
 
 

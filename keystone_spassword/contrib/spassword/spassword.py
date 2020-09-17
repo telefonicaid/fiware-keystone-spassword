@@ -86,7 +86,7 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
                 resp = flask.make_response(msg, http_client.BAD_REQUEST)
                 resp.headers['Content-Type'] = 'application/json'
                 return resp
-        LOG.info('patch for changing pwd of user %s ScimUserResource' % user_id)
+        LOG.debug('patch for changing pwd of user %s ScimUserResource' % user_id)
         PROVIDERS.spassword_api.set_user_updated(user_id)
         return super(SPasswordScimUserResource, self).patch(user_id)
 
@@ -105,8 +105,7 @@ class SPasswordScimUserResource(ScimUserResource, CheckPassword):
                 resp = flask.make_response(msg, http_client.BAD_REQUEST)
                 resp.headers['Content-Type'] = 'application/json'
                 return resp
-        LOG.info('post changing pwd of user %s ScimUserResource' % user_id)
-        #PROVIDERS.spassword_api.set_user_updated(user_data['user_id)']
+        LOG.debug('post user ScimUserResource')
         return super(SPasswordScimUserResource, self).post()
 
     def delete(self, user_id):
@@ -131,8 +130,7 @@ class SPasswordUserResource(UserResource, CheckPassword):
                 resp = flask.make_response(msg, http_client.BAD_REQUEST)
                 resp.headers['Content-Type'] = 'application/json'
                 return resp
-        LOG.info('post for changing pwd of user %s UserResource' % user_id)
-        #PROVIDERS.spassword_api.set_user_updated(user_data['user_id'])
+        LOG.debug('post user UserResource')
         return super(SPasswordUserResource, self).post()
 
     def patch(self, user_id):
@@ -145,7 +143,7 @@ class SPasswordUserResource(UserResource, CheckPassword):
                 raise exception.Unauthorized(
                     _('Error when changing user password: %s') % e
                 )
-        LOG.info('patch for changing pwd of user %s UserResource' % user_id)
+        LOG.debug('patch for changing pwd of user %s UserResource' % user_id)
         PROVIDERS.spassword_api.set_user_updated(user_id)
         return super(SPasswordUserResource, self).patch(user_id)
 
@@ -173,7 +171,7 @@ class SPasswordUserPasswordResource(UserChangePasswordResource, CheckPassword):
                 resp = flask.make_response(msg, http_client.BAD_REQUEST)
                 resp.headers['Content-Type'] = 'application/json'
                 return resp
-        LOG.info('post changing pwd of user %s UserChangePasswordResource' % user_id)
+        LOG.debug('post changing pwd of user %s UserChangePasswordResource' % user_id)
         PROVIDERS.spassword_api.set_user_updated(user_id)
         return super(SPasswordUserPasswordResource, self).post(user_id)
 
