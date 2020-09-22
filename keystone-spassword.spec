@@ -34,12 +34,17 @@ SPASSWORD (System for ensure Strong passwords) extension for Keystone
 
 %install
 mkdir -p $RPM_BUILD_ROOT/%{python_lib}
+mkdir -p $RPM_BUILD_ROOT/opt/keystone-patch
 cp -a %{_root}/keystone_spassword $RPM_BUILD_ROOT/%{python_lib}
+cp -a %{_root}/docker/*.patch $RPM_BUILD_ROOT/opt/keystone-patch
+chmod 755 $RPM_BUILD_ROOT/opt/keystone-patch
+chmod 644 $RPM_BUILD_ROOT/opt/keystone-patch/*.patch
 find $RPM_BUILD_ROOT/%{python_lib}/keystone_spassword -name "*.pyc" -delete
 
 %files
 %defattr(644,root,root,755)
 %{python_lib}/keystone_spassword/*
+/opt/keystone-patch
 
 %post
 if ! grep -q -F "[filter:spassword_checker]" "%{keystone_paste}"; then
