@@ -48,6 +48,8 @@ RUN \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
+    mkdir -p /etc/keystone/policy.d && \
+    chown keystone.keystone /etc/keystone/policy.d && \
     # Set keystone Fernet tokens
     openstack-config --set /etc/keystone/keystone.conf \
     token provider fernet && \
