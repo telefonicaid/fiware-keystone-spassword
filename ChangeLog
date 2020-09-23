@@ -1,3 +1,5 @@
+Include patch files in RPM builds
+
 Ensure start uwsgi process when new container starts with new data
 
 1.10.0
