@@ -48,7 +48,7 @@ RUN \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
-        # Set log configuration
+    # Set log configuration
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT default_log_levels amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=ERROR,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,oslo_policy=ERROR,dogpile.core.dogpile=INFO && \
     mkdir -p /etc/keystone/policy.d && \
@@ -148,4 +148,3 @@ ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
 
 EXPOSE 5001 35357
-
