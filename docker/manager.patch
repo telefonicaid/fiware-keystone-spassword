@@ -26,7 +26,7 @@
 +        'favor of its entrypoint from %(namespace)r and may be removed in '
 +        'N.') %
 +        {'name': driver_name, 'namespace': namespace})
-+    versionutils.report_deprecated_feature(LOG, msg)
++    #versionutils.report_deprecated_feature(LOG, msg)
 +
 +    return driver
  
