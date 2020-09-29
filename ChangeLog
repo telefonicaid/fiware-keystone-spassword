@@ -1,3 +1,5 @@
+Remove automigrate spassword inside rpm
+
 Include patch files in RPM builds
 
 Ensure start uwsgi process when new container starts with new data
