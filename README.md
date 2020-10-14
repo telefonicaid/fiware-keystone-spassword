@@ -196,8 +196,16 @@ tox -e py27
 Setting up local development server. First populate database (remember that
 this will use `sqlite`).
 
+(until spassword 1.9.0)
+
 ```sh
 keystone-manage db_sync --extension spassword
+```
+
+(from spassword 1.10.0)
+
+```sh
+keystone-manage db_sync
 ```
 
 Launch server
