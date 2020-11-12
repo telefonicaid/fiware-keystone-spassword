@@ -1,3 +1,5 @@
+1.11.0
+
 Remove automigrate spassword inside rpm
 
 Include patch files in RPM builds
