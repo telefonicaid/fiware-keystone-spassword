@@ -9,6 +9,7 @@ Ensure start uwsgi process when new container starts with new data
 1.10.0
 
 Upgrade plugin for compatibility with Stein version (including docker).
+Fix. get_project_roles API bug of version 1.9.0
 
 1.9.0
 
