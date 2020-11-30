@@ -109,6 +109,11 @@ Normal procedure is stop container, update version in docker-compose and then up
 -> needs a workaround:
 Before update image in docker-compose the following commands should be executed:
 
+Backup `keystone.spassword` table
+```
+mysqldump -u root -p keystone spassword > table_spassword.sql
+```
+Exec the following commands
 ```
 mysql -h iot-mysql -u root -p
 use keystone;
@@ -117,6 +122,11 @@ delete from migrate_version where repository_id='keystone_spassword';
 ```
 Then stop container and update image in docker-compose and up again container; then container will be recreated.
 
+Recover keystone.spassword table using backup.
+```
+mysql -u root -p keystone < table_spassword.sql
+```
+Restart again keystone container
 
 ##### Upgrade from 1.7.0,  1.8.0, 1.9.0 
 -> no workaround needed
