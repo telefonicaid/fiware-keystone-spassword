@@ -18,4 +18,6 @@ The following environment variables are available for keystone-spassword docker
 | TOKEN_EXPIRATION_TIME       | token expiration            | 10800                   |
 | REVOKE_EXPIRATION_BUFFER    | revoke expiration_buffer    | 1800                    |
 | REDIS_ENDPOINT              | cache backend_argument      | N/A                     |
+| LOG_LEVEL                   | n/a                         | INFO                    |
+| ROTATE_FERNET_KEYS          | n/a                         | True                    |
 

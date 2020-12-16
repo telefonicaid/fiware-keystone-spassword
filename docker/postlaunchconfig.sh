@@ -44,7 +44,7 @@ fi
 [[ "${SPASSWORD_SNDFA_TIME_WINDOW}" == "" ]] && export SPASSWORD_SNDFA_TIME_WINDOW=24
 
 [[ "${LOG_LEVEL}" == "" ]] && export LOG_LEVEL=WARN
-
+[[ "${ROTATE_FERNET_KEYS}" == "" ]] && export ROTATE_FERNET_KEYS=True
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
@@ -106,10 +106,19 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     wsgi debug_middleware True
 fi
 
+if [ "${ROTATE_FERNET_KEYS}" == "True" ]; then
+    # Cron task to rotate fernet tokens once a day
+    echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate
+fi
+
+
 echo "[ postlaunchconfig - db_sync ] "
 /usr/bin/keystone-manage db_sync
 
 echo "[ postlaunchconfig - fernet_setup ] "
+# Ensure directory /etc/keystone/fernet-keys to be configured as volume
+chown -R keystone:keystone /etc/keystone/fernet-keys
+chmod -R o-rwx /etc/keystone/fernet-keys
 /usr/bin/keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 
 echo "[ postlaunchconfig - bootstrap ] "

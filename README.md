@@ -171,6 +171,21 @@ installed), the RPM package can be built invoking the following command:
 sh ./package-keystone-spassword.sh
 ```
 
+## Fernet keys and HA
+
+Since version 1.10 keystone-spassword is based on Keystone Stein and therefore uses Fernet keys. Full detail about these token could be found at [this faq](https://docs.openstack.org/keystone/stein/admin/fernet-token-faq.html).
+
+Sumarizing the implications for HA enviroment we can say:
+- Fernet keys are stored in /etc/keystone/fernet-keys folder
+- Fernet keys should periodically rotated
+- Fernet keys should be the same for all nodes of an HA environment.
+
+To achieve that there are two options:
+- Distribute fernet keys folder content with a `rsync` command abroad all keystone nodes
+- Ensure keystone Load Balancer is using sticky sessions (example for ha proxy)[https://thisinterestsme.com/haproxy-sticky-sessions/]
+
+For non production environments there is another option: disable fernet keys rotation by setting env var: `ROTATE_FERNET_KEYS=False`
+
 ## Hacking
 
 Local development (by default using `sqlite`). Running a local development

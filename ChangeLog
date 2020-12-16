@@ -1,3 +1,4 @@
+Add env var to enable/disable fernet token rotation
 Upgrade Dockerfile base image from centos7.7.1908 to centos7.9.2009
 
 1.11.0

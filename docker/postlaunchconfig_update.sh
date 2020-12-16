@@ -42,6 +42,7 @@ fi
 [[ "${SPASSWORD_SNDFA_ENDPOINT}" == "" ]] && export SPASSWORD_SNDFA_ENDPOINT='localhost:5001'
 [[ "${SPASSWORD_SNDFA_TIME_WINDOW}" == "" ]] && export SPASSWORD_SNDFA_TIME_WINDOW=24
 [[ "${LOG_LEVEL}" == "" ]] && export LOG_LEVEL=WARN
+[[ "${ROTATE_FERNET_KEYS}" == "" ]] && export ROTATE_FERNET_KEYS=True
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
@@ -91,6 +92,12 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
     wsgi debug_middleware True
 fi
+
+if [ "${ROTATE_FERNET_KEYS}" == "True" ]; then
+    # Cron task to rotate fernet tokens once a day
+    echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate
+fi
+
 
 export KEYSTONE_HOST="127.0.0.1:5001"
 
@@ -143,6 +150,12 @@ cat /opt/keystone/policy.v3cloudsample.json \
 echo "[ postlaunchconfig_update - db_sync ] "
 /usr/bin/keystone-manage db_sync
 
+# Ensure directory /etc/keystone/fernet-keys to be configured as volume
+echo "[ postlaunchconfig_update - fernet_setup ] "
+chown -R keystone:keystone /etc/keystone/fernet-keys
+chmod -R o-rwx /etc/keystone/fernet-keys
+/usr/bin/keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+
 # Set another ADMIN TOKEN
 openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
@@ -190,6 +203,9 @@ openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_endpoint $SPASSWORD_SNDFA_ENDPOINT
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_time_window $SPASSWORD_SNDFA_TIME_WINDOW
+
+
+
 
 # Ensure db is migrated to current keystone version
 echo "[ postlaunchconfig_update - db_sync --migrate ] "
