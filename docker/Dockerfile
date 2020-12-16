@@ -134,8 +134,8 @@ RUN \
     patch -f -p0 < /opt/keystone/api_auth.patch && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
-    # Cron task to rotate fernet tokens once a day
-    echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate && \
+    # # Cron task to rotate fernet tokens once a day
+    # echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \

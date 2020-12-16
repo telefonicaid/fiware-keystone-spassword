@@ -42,6 +42,7 @@ fi
 [[ "${SPASSWORD_SNDFA_ENDPOINT}" == "" ]] && export SPASSWORD_SNDFA_ENDPOINT='localhost:5001'
 [[ "${SPASSWORD_SNDFA_TIME_WINDOW}" == "" ]] && export SPASSWORD_SNDFA_TIME_WINDOW=24
 [[ "${LOG_LEVEL}" == "" ]] && export LOG_LEVEL=WARN
+[[ "${ROTATE_FERNET_KEYS}" == "" ]] && export ROTATE_FERNET_KEYS=True
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
@@ -91,6 +92,12 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
     wsgi debug_middleware True
 fi
+
+if [ "${ROTATE_FERNET_KEYS}" == "True" ]; then
+    # Cron task to rotate fernet tokens once a day
+    echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate
+fi
+
 
 export KEYSTONE_HOST="127.0.0.1:5001"
 
@@ -196,6 +203,9 @@ openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_endpoint $SPASSWORD_SNDFA_ENDPOINT
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_time_window $SPASSWORD_SNDFA_TIME_WINDOW
+
+
+
 
 # Ensure db is migrated to current keystone version
 echo "[ postlaunchconfig_update - db_sync --migrate ] "
