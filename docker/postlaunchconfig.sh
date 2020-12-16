@@ -110,6 +110,9 @@ echo "[ postlaunchconfig - db_sync ] "
 /usr/bin/keystone-manage db_sync
 
 echo "[ postlaunchconfig - fernet_setup ] "
+# Ensure directory /etc/keystone/fernet-keys to be configured as volume
+chown -R keystone:keystone /etc/keystone/fernet-keys
+chmod -R o-rwx /etc/keystone/fernet-keys
 /usr/bin/keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 
 echo "[ postlaunchconfig - bootstrap ] "

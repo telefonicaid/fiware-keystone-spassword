@@ -143,6 +143,12 @@ cat /opt/keystone/policy.v3cloudsample.json \
 echo "[ postlaunchconfig_update - db_sync ] "
 /usr/bin/keystone-manage db_sync
 
+# Ensure directory /etc/keystone/fernet-keys to be configured as volume
+echo "[ postlaunchconfig_update - fernet_setup ] "
+chown -R keystone:keystone /etc/keystone/fernet-keys
+chmod -R o-rwx /etc/keystone/fernet-keys
+/usr/bin/keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+
 # Set another ADMIN TOKEN
 openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
