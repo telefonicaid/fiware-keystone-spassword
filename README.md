@@ -182,9 +182,9 @@ Sumarizing the implications for HA enviroment we can say:
 
 To achieve that there are two options:
 - Distribute fernet keys folder content with a `rsync` command abroad all keystone nodes
-- Ensure keystone Load Balancer is using sticky sessions (example for ha proxy)[https://thisinterestsme.com/haproxy-sticky-sessions/]
+- Ensure keystone Load Balancer is using sticky sessions [example for ha proxy](https://thisinterestsme.com/haproxy-sticky-sessions)
 
-For non production environments there is another option: disable fernet keys rotation by setting env var: `ROTATE_FERNET_KEYS=False`
+For non production environments there is another option: disable fernet keys rotation (i.e. by setting env var `ROTATE_FERNET_KEYS=False` in spassword 1.12.0+)
 
 ## Hacking
 
