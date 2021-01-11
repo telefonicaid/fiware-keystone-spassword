@@ -60,6 +60,13 @@ Allow sndfa endpoints (keystone) urls with `https` and `/idm`
 Upgrade plugin for compatibility with Mitaka version (including docker).
 Mitaka is default version for docker.
 
+1.4.8
+
+Fix: add missed keystone permission for get_project_roles to policy.json (#123)
+Fix: protect grants and sndfa APIs
+Fix: handle unmatch groups from ldap integration (ldap/docker)
+Set to 3 hours default token expiration time in docker
+
 1.4.7
 
 Add nagios user to black list
