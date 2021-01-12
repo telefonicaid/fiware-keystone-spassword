@@ -60,6 +60,10 @@ Allow sndfa endpoints (keystone) urls with `https` and `/idm`
 Upgrade plugin for compatibility with Mitaka version (including docker).
 Mitaka is default version for docker.
 
+1.4.9
+
+Add: cron task to flush tokens (expired tokens) in docker container
+
 1.4.8
 
 Fix: add missed keystone permission for get_project_roles to policy.json (#123)
