@@ -1,3 +1,7 @@
+1.4.9
+
+Add: cron task to flush tokens (expired tokens) in docker container
+
 1.4.8
 
 Fix: add missed keystone permission for get_project_roles to policy.json (#123)
