@@ -93,6 +93,45 @@ There is a complete guide to install step by step keystone for development purpo
 
 https://github.com/telefonicaid/fiware-pep-steelskin/blob/master/keystoneInstallation.md
 
+
+### Docker Installation
+Thre is a docker container image which includes keystone + keystone scim plugin + keystone spassword plugin:
+https://hub.docker.com/repository/docker/telefonicaiot/fiware-keystone-spassword
+
+There are some [env vars  for configuration](docs/DOCKER.md)
+
+#### Upgrade from a older version:
+How to upgrade to latest (1.10.0) docker release:
+
+Normal procedure is stop container, update version in docker-compose and then up container; then container will be recreated.
+
+##### Upgrade from 1.4.X, 1.5.X or 1.6.0
+-> needs a workaround:
+Before update image in docker-compose the following commands should be executed:
+
+Backup `keystone.spassword` table
+```
+mysqldump -u root -p keystone spassword > table_spassword.sql
+```
+Exec the following commands
+```
+mysql -h iot-mysql -u root -p
+use keystone;
+drop table spassword;
+delete from migrate_version where repository_id='keystone_spassword';
+```
+Then stop container and update image in docker-compose and up again container; then container will be recreated.
+
+Recover keystone.spassword table using backup.
+```
+mysql -u root -p keystone < table_spassword.sql
+```
+Restart again keystone container
+
+##### Upgrade from 1.7.0,  1.8.0, 1.9.0 
+-> no workaround needed
+
+
 ## Usage
 
 SPASSWORD extension reuses the authentication and authorization mechanisms provided
@@ -102,7 +141,7 @@ Authentication and Authorization mechanism in it's
 [official documentation](https://github.com/openstack/identity-api/blob/master/v3/src/markdown/identity-api-v3.md).
 
 
-Moreover keystone-spassword adds a new API to retrieve all project roles for a user:
+Moreover keystone-spassword adds a new API to retrieve all project roles for a user (aka Grants):
         
 **GET '/v3/users/{user_id}/project_roles'**
 
@@ -131,6 +170,21 @@ installed), the RPM package can be built invoking the following command:
 ```
 sh ./package-keystone-spassword.sh
 ```
+
+## Fernet keys and HA
+
+Since version 1.10 keystone-spassword is based on Keystone Stein and therefore uses Fernet keys. Full detail about these token could be found at [this faq](https://docs.openstack.org/keystone/stein/admin/fernet-token-faq.html).
+
+Sumarizing the implications for HA enviroment we can say:
+- Fernet keys are stored in /etc/keystone/fernet-keys folder
+- Fernet keys should periodically rotated
+- Fernet keys should be the same for all nodes of an HA environment.
+
+To achieve that there are two options:
+- Distribute fernet keys folder content with a `rsync` command abroad all keystone nodes
+- Ensure keystone Load Balancer is using sticky sessions [example for ha proxy](https://thisinterestsme.com/haproxy-sticky-sessions)
+
+For non production environments there is another option: disable fernet keys rotation (i.e. by setting env var `ROTATE_FERNET_KEYS=False` in spassword 1.12.0+)
 
 ## Hacking
 
@@ -167,8 +221,16 @@ tox -e py27
 Setting up local development server. First populate database (remember that
 this will use `sqlite`).
 
+(until spassword 1.9.0)
+
 ```sh
 keystone-manage db_sync --extension spassword
+```
+
+(from spassword 1.10.0)
+
+```sh
+keystone-manage db_sync
 ```
 
 Launch server
@@ -183,4 +245,3 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 ## [Second Factor Authentication](docs/second_factor_auth.md)
 
 ## [Docker env vars](docs/DOCKER.md)
-
