@@ -135,9 +135,9 @@ RUN \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
     sed -ri \
-		-e 's!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g' \
-		-e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g' \
-		/etc/httpd/conf.d/wsgi-keystone.conf && \
+              -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
+              -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
+              /etc/httpd/conf.d/wsgi-keystone.conf && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
