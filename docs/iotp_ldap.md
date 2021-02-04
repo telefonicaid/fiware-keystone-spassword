@@ -28,7 +28,7 @@ This solution about integrate LDAP with Keystone expects:
 - Users are in LDAP for authentication: name, description, email, password.
 - Users in LDAP could belong to LDAP groups.
 - Both LDAP Users and LDAP Groups could be asigned to IoT Platform roles, as described in [user role assigment API](https://orchestrator2.docs.apiary.io/#reference/orchestrator/user-role-assigment) and [group role assignment API](https://orchestrator2.docs.apiary.io/#reference/orchestrator/group-role-assigment) and [IoT Platform roles](https://thinking-cities.readthedocs.io/en/master/topics/user_permissions/index.html)
-- Optionally IoTPlatform, throught Orchestrator (since version 1.5.0 or upper), could create a predefined groups when create a new Service which are:
+- Optionally IoTPlatform, through Orchestrator (since version 1.5.0 or upper), could create a predefined groups when create a new Service which are:
   - ServiceCustomerGroup: with role ServiceCustomer assigned in service.
   - SubServiceCustomerGroup: with role SubServiceCustomer assigned in all posible subservices
   - SubServiceAdminGroup: with role SubServiceAdmin assigned in all posible subservices
