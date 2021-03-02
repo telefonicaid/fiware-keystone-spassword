@@ -84,9 +84,6 @@ RUN \
     identity domain_specific_drivers_enabled true && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_config_dir /etc/keystone/domains && \
-    cp /opt/keystone/sql_ldap.py /usr/lib/python2.7/site-packages/keystone/identity/mapping_backends && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    identity_mapping driver keystone.identity.mapping_backends.sql_ldap.Mapping && \
     # Cron task for remove expired tokens
     echo "0 */1 * * * root /usr/bin/keystone-manage token_flush" >/etc/cron.d/tokenflush && \
     # Cleaning unused files...
