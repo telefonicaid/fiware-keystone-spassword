@@ -1,3 +1,6 @@
+1.4.10
+Fix: use default mapping for groups (ldap/docker)
+
 1.4.9
 
 Add: cron task to flush tokens (expired tokens) in docker container
