@@ -14,8 +14,8 @@ The following environment variables are available for keystone-spassword docker
 | SPASSWORD_SMTP_FROM         | spassword smtp_from         | smtpuser                |
 | SPASSWORD_SNDFA             | spassword sndfa             | False                   |
 | SPASSWORD_SNDFA_ENDPOINT    | spassword sndfa_endpoint    | localhost:5001          |
-| SPASSWORD_SNDFA_TIME_WINDOW | spassword sndfa_time_window | 24                      |
-| TOKEN_EXPIRATION_TIME       | token expiration            | 10800                   |
+| SPASSWORD_SNDFA_TIME_WINDOW | spassword sndfa_time_window (hours) | 24              |
+| TOKEN_EXPIRATION_TIME       | token expiration (seconds)  | 10800                   |
 | REVOKE_EXPIRATION_BUFFER    | revoke expiration_buffer    | 1800                    |
 | REDIS_ENDPOINT              | cache backend_argument      | N/A                     |
 | LOG_LEVEL                   | n/a                         | INFO                    |
