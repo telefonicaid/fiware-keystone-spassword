@@ -1,11 +1,13 @@
 # Integrate LDAP into IoTP Keystone
 
 
-* [Describe Solution](#describe-solution)
-* [Requirements](#requirements)
-* [Install & Configure a LDAP](#install-ldap)
-* [Populate a LDAP](#populate-ldap)
-* [Configure Keystone for use a LDAP](#configure-keystone)
+- [Describe Solution](#describe-solution)
+- [Requirements](#requirements)
+- [Install and Configure a LDAP](#install-ldap)
+  - [Configure LDAP](#configure-ldap)
+  - [Populate LDAP](#populate-ldap)
+  - [Adapt existing LDAP](#adapt-existing-ldap)
+- [Configure Keystone for use a LDAP](#configure-keystone)
 
 
 ## Describe Solution
@@ -45,7 +47,7 @@ This solution about integrate LDAP with Keystone expects:
   - External LDAP: [OpenLDAP](http://www.openldap.org) 2.4.40 or upper.
 
 
-## Install and configure an LDAP (not exists previous LDAP)
+## Install and configure a LDAP (not exists previous LDAP)
 
 This procedure describe how to install from the scratch and configure a new LDAP instance in order to be used as external LDAP for keystone authentication.
 
@@ -154,7 +156,12 @@ The following steps are the same that above but for the case of LDAP is in a doc
 ```
 
 
-## Adapt existing LDAP (creating needed groups)
+### Adapt existing LDAP (creating groups)
+
+In order of discover existing users and groups in already configured LDAP you should try to run a command like
+```
+ldapsearch -x -h localhost -w <ldap_admin_password> -D "cn=admin,dc=openstack,dc=org" -b "dc=openstack,dc=org" "(objectclass=*)"
+```
 
 In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies (described in [fiware-iot-stack.readthedocs.io](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html#users-and-permissions)
 
