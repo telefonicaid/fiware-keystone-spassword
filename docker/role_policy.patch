@@ -1,0 +1,11 @@
+--- role.py
++++ role.py_new
+@@ -53,7 +53,7 @@ role_policies = [
+         # modification depending on the roles created in keystone. Once that is
+         # no longer true we should consider adding `project` to the list of
+         # scope_types.
+-        scope_types=['system'],
++        scope_types=['system','domain'],
+         description='Show role details.',
+         operations=[{'path': '/v3/roles/{role_id}',
+                      'method': 'GET'},

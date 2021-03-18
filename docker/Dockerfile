@@ -112,6 +112,8 @@ RUN \
     patch -f -p0 < /opt/keystone/core.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/common && \
     patch -f -p0 < /opt/keystone/manager.patch && \
+    cd /usr/lib/python2.7/site-packages/keystone/common/policies && \
+    patch -f -p0 < /opt/keystone/role_policy.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/auth && \
     patch -f -p0 < /opt/keystone/core_auth.patch && \
     cd /usr/lib/python2.7/site-packages/keystone/server && \
