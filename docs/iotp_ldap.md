@@ -4,9 +4,9 @@
 - [Describe Solution](#describe-solution)
 - [Requirements](#requirements)
 - [Install and Configure a LDAP](#install-ldap)
- - [Configure LDAP](#configure-ldap)
- - [Populate LDAP](#populate-ldap)
- - [Adapt existing LDAP](#adapt-existing-ldap)
+  - [Configure LDAP](#configure-ldap)
+  - [Populate LDAP](#populate-ldap)
+  - [Adapt existing LDAP](#adapt-existing-ldap)
 - [Configure Keystone for use a LDAP](#configure-keystone)
 
 
