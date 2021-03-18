@@ -199,6 +199,7 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .["identity:list_system_grants_for_group"]="role:reader and system_scope:all"
      | .["identity:revoke_system_grant_for_group"]="role:admin and system_scope:all"
      | .["identity:delete_project"]="(role:admin and system_scope:all) or (role:admin and domain_id:%(target.project.domain_id)s)"
+     | .["identity:get_mapping"]="role:reader and system_scope:all"
      | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
