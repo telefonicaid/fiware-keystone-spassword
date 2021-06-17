@@ -1,11 +1,11 @@
-FROM centos:7.7.1908
+FROM centos:7.9.2009
 
 MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 ENV KEYSTONE_SCIM_VERSION 1.5.0
-ENV KEYSTONE_SPASSWORD_VERSION 1.10.0
+ENV KEYSTONE_SPASSWORD_VERSION 1.12.0
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
@@ -48,6 +48,11 @@ RUN \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
     database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
+    # Set log configuration
+    openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT default_log_levels amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=ERROR,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,oslo.policy=ERROR,oslo_policy=ERROR,dogpile.core.dogpile=INFO,keystone.server.flask.application=ERROR && \
+    mkdir -p /etc/keystone/policy.d && \
+    chown keystone.keystone /etc/keystone/policy.d && \
     # Set keystone Fernet tokens
     openstack-config --set /etc/keystone/keystone.conf \
     token provider fernet && \
@@ -129,8 +134,6 @@ RUN \
     patch -f -p0 < /opt/keystone/api_auth.patch && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
-    # Cron task to rotate fernet tokens once a day
-    echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
@@ -143,4 +146,3 @@ ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
 
 EXPOSE 5001 35357
-
