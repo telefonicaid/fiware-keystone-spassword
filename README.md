@@ -180,7 +180,8 @@ Sumarizing the implications for HA enviroment we can say:
 - Fernet keys should periodically rotated
 - Fernet keys should be the same for all nodes of an HA environment.
 
-To achieve that there are two options:
+To achieve that there are some options:
+- Use a volumen for fernet keys folder content in docker based deployments.
 - Distribute fernet keys folder content with a `rsync` command abroad all keystone nodes
 - Ensure keystone Load Balancer is using sticky sessions [example for ha proxy](https://thisinterestsme.com/haproxy-sticky-sessions)
 
