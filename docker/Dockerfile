@@ -32,6 +32,10 @@ RUN \
     yum -y install openstack-utils openstack-keystone python-keystoneclient  && \
     yum -y install python-openstackclient && \
     yum -y install httpd mod_wsgi && \
+    # Install MySQL community
+    wget https://dev.mysql.com/get/mysql57-community-release-el7-9.noarch.rpm && \
+    rpm -ivh mysql57-community-release-el7-9.noarch.rpm && \
+    yum update -y && \
     # https://docs.openstack.org/keystone/queens/install/
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
