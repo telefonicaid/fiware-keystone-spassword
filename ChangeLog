@@ -1,3 +1,4 @@
+Replace MariaDB for MySQL community version
 Remove some reduntant logs (flask, stevedore, oslo_policy) docker container
 
 1.12.0
