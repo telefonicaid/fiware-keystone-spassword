@@ -1,4 +1,10 @@
 # Keystone SPASSWORD extension
+
+[![FIWARE Security](https://nexus.lab.fiware.org/static/badges/chapters/security.svg)](https://www.fiware.org/developers/catalogue/)
+[![License: Apache 2.0](https://img.shields.io/github/license/telefonicaid/fiware-keypass.svg)](https://opensource.org/licenses/Apache-2.0)
+<br/>
+![Status](https://nexus.lab.fiware.org/static/badges/statuses/incubating.svg)
+
 Keystone SPASSWORD is an OpenStack Keystone extension that enables
 some extra security checks over user passwords, as force the usage of strong passwords,
 expiration time for a password, number of bad login attempts before user account became temporarily blocked,
