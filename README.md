@@ -1,4 +1,10 @@
 # Keystone SPASSWORD extension
+
+[![FIWARE Security](https://nexus.lab.fiware.org/static/badges/chapters/security.svg)](https://www.fiware.org/developers/catalogue/)
+[![License: Apache 2.0](https://img.shields.io/github/license/telefonicaid/fiware-keypass.svg)](https://opensource.org/licenses/Apache-2.0)
+<br/>
+![Status](https://nexus.lab.fiware.org/static/badges/statuses/incubating.svg)
+
 Keystone SPASSWORD is an OpenStack Keystone extension that enables
 some extra security checks over user passwords, as force the usage of strong passwords,
 expiration time for a password, number of bad login attempts before user account became temporarily blocked,
@@ -180,7 +186,8 @@ Sumarizing the implications for HA enviroment we can say:
 - Fernet keys should periodically rotated
 - Fernet keys should be the same for all nodes of an HA environment.
 
-To achieve that there are two options:
+To achieve that there are some options:
+- Use a volumen for fernet keys folder content in docker based deployments.
 - Distribute fernet keys folder content with a `rsync` command abroad all keystone nodes
 - Ensure keystone Load Balancer is using sticky sessions [example for ha proxy](https://thisinterestsme.com/haproxy-sticky-sessions)
 
