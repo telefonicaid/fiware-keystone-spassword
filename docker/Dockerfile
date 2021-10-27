@@ -148,4 +148,5 @@ ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 EXPOSE 5001 35357
 
 
-HEALTHCHECK CMD curl --fail -X GET http://localhost:5001/v3
+HEALTHCHECK --interval=60s --start-period=10s \
+            CMD curl --fail -X GET http://localhost:5001/v3
