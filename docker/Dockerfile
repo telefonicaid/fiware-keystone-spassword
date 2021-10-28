@@ -17,6 +17,10 @@ RUN \
     # Install dependencies
     yum update -y && yum install -y curl && \
     yum install -y epel-release && yum update -y epel-release && \
+    # TBD: yum localinstall -y --nogpgcheck qpid-proton-c-0.34.0-2.el7.x86_64.rpm && \
+    yum install -y https://download.copr.fedorainfracloud.org/results/@qpid/qpid/epel-7-x86_64/02783962-qpid-proton/qpid-proton-c-0.34.0-2.el7.x86_64.rpm && \
+    # TBD: yum localinstall -y --nogpgcheck python2-qpid-proton-0.34.0-2.el7.x86_64.rpm && \
+    yum install -y https://download.copr.fedorainfracloud.org/results/@qpid/qpid/epel-7-x86_64/02783962-qpid-proton/python2-qpid-proton-0.34.0-2.el7.x86_64.rpm && \
     # Install MySQL client
     yum -y install mysql git && \
     # Install keystone dependencies
