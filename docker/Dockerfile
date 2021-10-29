@@ -9,6 +9,7 @@ ENV KEYSTONE_SPASSWORD_VERSION 1.12.0
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
+COPY ./*.rpm /opt/keystone/
 COPY ./keystone-all /opt/keystone/
 
 WORKDIR /opt/keystone
@@ -17,6 +18,8 @@ RUN \
     # Install dependencies
     yum update -y && yum install -y curl && \
     yum install -y epel-release && yum update -y epel-release && \
+    yum localinstall -y --nogpgcheck qpid-proton-c-0.34.0-2.el7.x86_64.rpm && \
+    yum localinstall -y --nogpgcheck python2-qpid-proton-0.34.0-2.el7.x86_64.rpm && \
     # Install MySQL client
     yum -y install mysql git && \
     # Install keystone dependencies

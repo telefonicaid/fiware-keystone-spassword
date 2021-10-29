@@ -1,4 +1,5 @@
 ADD: Docker healthcheck for keystone API
+Fix missed deps (python2-qpid-proton, qpid-proton-c) using epel version 7-14 (#191)
 Remove old framework files
 Remove some reduntant logs (flask, stevedore, oslo_policy) docker container
 
