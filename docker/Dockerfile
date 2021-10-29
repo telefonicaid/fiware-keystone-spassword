@@ -9,6 +9,7 @@ ENV KEYSTONE_SPASSWORD_VERSION 1.12.0
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
+COPY ./*.rpm /opt/keystone/
 COPY ./keystone-all /opt/keystone/
 
 WORKDIR /opt/keystone
