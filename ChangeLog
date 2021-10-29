@@ -1,4 +1,4 @@
-ADD: Docker healthcheck for keypass API
+ADD: Docker healthcheck for keystone API
 Remove old framework files
 Remove some reduntant logs (flask, stevedore, oslo_policy) docker container
 
