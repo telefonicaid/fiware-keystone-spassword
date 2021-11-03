@@ -110,8 +110,10 @@ There are some [env vars  for configuration](docs/DOCKER.md)
 How to upgrade to latest (1.10.0) docker release:
 
 Normal procedure is stop container, update version in docker-compose and then up container; then container will be recreated.
+##### Upgrade from 1.4.X
+-> needs be upgrade to 1.5.4 version before and then perform the steps described for that version.
 
-##### Upgrade from 1.4.X, 1.5.X or 1.6.0
+##### Upgrade from 1.5.X or 1.6.0
 -> needs a workaround:
 Before update image in docker-compose the following commands should be executed:
 
