@@ -11,6 +11,16 @@ expiration time for a password, number of bad login attempts before user account
 a recover procedure password, a second factor authentication (2FA)  and so on.
 
 
+## Keystone versions
+- 1.4.X uses keystone Liberty
+- 1.5.X uses keystne Mitaka
+- 1.6.0 uses keystone Newton
+- 1.7.0 uses keystone Pike
+- 1.8.0 uses keystone Queens
+- 1.9.0 uses keystone Rocky
+- 1.10.0 and further uses keystone Stein
+
+
 ## Installing and Configuration
 
 ### RPM installing on RDO Openstack
@@ -114,7 +124,7 @@ But, if starting version is between 1.4.X and 1.6.X then some steps should be do
 
 ##### Upgrade from 1.4.X
 -> needs be upgrade to 1.5.4 version before and then perform the steps described for that version.
-In this step is important to use and SQL schema created by Keystone, not just recover from the scratch a sql dump backup, since and sql dump backup has not all required data to migration 1.4.x to 1.5.x will be successfully executed. More info about this issue is found at #194
+In this step is important to use and SQL schema created by Keystone, not just recover from the scratch a sql dump backup, since and sql dump backup has not all required data to migration 1.4.x to 1.5.x will be successfully executed. More info about this issue is found at https://github.com/telefonicaid/fiware-keystone-spassword/issues/194
 
 
 ##### Upgrade from 1.5.X or 1.6.0
