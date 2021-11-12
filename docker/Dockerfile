@@ -104,6 +104,9 @@ RUN \
     identity domain_specific_drivers_enabled true && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_config_dir /etc/keystone/domains && \
+    # Federation by SAML2 pre-support
+    yum install xmlsec1 && \
+    openstack-config --set /etc/keystone/keystone.conf saml idp_metadata_path /etc/keystone/saml2_idp_metadata.xml && \
     # Patching ...
     ln -s /usr/lib/python2.7/site-packages/keystone/contrib/scim/scim.py  /usr/lib/python2.7/site-packages/keystone/api && \
     ln -s /usr/lib/python2.7/site-packages/keystone/contrib/spassword/spassword.py  /usr/lib/python2.7/site-packages/keystone/api && \
