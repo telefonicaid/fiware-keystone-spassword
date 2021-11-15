@@ -1,4 +1,4 @@
-ADD: end var to add extra users to `pwd_user_blacklist` for docker
+ADD: SPASSWORD_EXTRA_BLACKLIST env var to add extra users to `pwd_user_blacklist` for docker
 ADD: Docker healthcheck for keystone API
 Fix missed deps (python2-qpid-proton, qpid-proton-c) using epel version 7-14 (#191)
 Remove old framework files
