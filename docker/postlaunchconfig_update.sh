@@ -172,7 +172,7 @@ chmod -R o-rwx /etc/keystone/fernet-keys
 /usr/bin/keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 
 # Create metadata for your keystone IdP
-if [ "${SAML_ENDPOINT}" != "" && "${SAML_CERTFILE}" != "" && "${SAML_KEYFILE}" != "" ]; then
+if [ "${SAML_ENDPOINT}" != "" ] && [ "${SAML_CERTFILE}" != "" ] && [ "${SAML_KEYFILE}" != "" ]; then
     echo "[ postlaunchconfig_update - sml2_idp_metadata ] "
     /usr/bin/keystone-manage saml_idp_metadata > /etc/keystone/saml2_idp_metadata.xml
 fi

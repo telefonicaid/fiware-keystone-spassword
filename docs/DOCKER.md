@@ -20,4 +20,7 @@ The following environment variables are available for keystone-spassword docker
 | REDIS_ENDPOINT              | cache backend_argument      | N/A                     |
 | LOG_LEVEL                   | n/a                         | INFO                    |
 | ROTATE_FERNET_KEYS          | n/a                         | True                    |
+| SAML_ENDPOINT               | Keystone Endpoint used to expose SAML API for idp and sso options  | N/A            |
+| SAML_CERTFILE               | File location for SSL signing certificate (certfile)    | N/A            |
+| SAML_KEYFILE                | File location for SSL signing key (keyfile)             | N/A            |
 

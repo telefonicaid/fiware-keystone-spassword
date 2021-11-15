@@ -382,7 +382,7 @@ openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_time_window $SPASSWORD_SNDFA_TIME_WINDOW
 
 # Create metadata for your keystone IdP
-if [ "${SAML_ENDPOINT}" != "" && "${SAML_CERTFILE}" != "" && "${SAML_KEYFILE}" != "" ]; then
+if [ "${SAML_ENDPOINT}" != "" ] && [ "${SAML_CERTFILE}" != "" ] && [ "${SAML_KEYFILE}" != "" ]; then
     /usr/bin/keystone-manage saml_idp_metadata > /etc/keystone/saml2_idp_metadata.xml
 fi
 
