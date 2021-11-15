@@ -383,6 +383,7 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 # Create metadata for your keystone IdP
 if [ "${SAML_ENDPOINT}" != "" ] && [ "${SAML_CERTFILE}" != "" ] && [ "${SAML_KEYFILE}" != "" ]; then
+    openstack-config --set /etc/keystone/keystone.conf saml idp_metadata_path /etc/keystone/saml2_idp_metadata.xml
     /usr/bin/keystone-manage saml_idp_metadata > /etc/keystone/saml2_idp_metadata.xml
 fi
 
