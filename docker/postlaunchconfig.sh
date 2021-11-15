@@ -332,8 +332,13 @@ openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
 
 # Exclude some users from spassword
-openstack-config --set /etc/keystone/keystone.conf \
-                 spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
+if [ "${SPASSWORD_EXTRA_BLACKLIST}" != "" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$SPASSWORD_EXTRA_BLACKLIST
+else
+    openstack-config --set /etc/keystone/keystone.conf \
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
+fi
 
 # Set default spassword config
 openstack-config --set /etc/keystone/keystone.conf \
