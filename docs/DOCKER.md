@@ -6,6 +6,7 @@ The following environment variables are available for keystone-spassword docker
 | SPASSWORD_PWD_MAX_TRIES     | spassword pwd_max_tries     | 5                       |
 | SPASSWORD_PWD_BLOCK_MINUTES | spassword pwd_block_minutes | 30                      |
 | SPASSWORD_PWD_EXP_DAYS      | spassword pwd_exp_days      | 365                     |
+| SPASSWORD_EXTRA_BLACKLIST   | spassword pwd_user_blacklist | n/a                    |
 | SPASSWORD_SMTP_SERVER       | spassword smtp_server       | 0.0.0.0                 |
 | SPASSWORD_SMTP_PORT         | spassword smtp_port         | 587                     |
 | SPASSWORD_SMTP_TLS          | spassword smtp_tls          | True                    |
