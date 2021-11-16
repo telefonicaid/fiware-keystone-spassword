@@ -32,3 +32,11 @@ This env var will be expanden in /etc/keystone keystone.conf
 [saml]
 keyfile=/etc/keystone/ssl/private/signing_key.pem
 ```
+
+And then a Service Providers must be created and registered in IdP Keystone:
+
+```
+$ openstack service provider create anothersp \
+--service-provider-url https://anothersp.org/Shibboleth.sso/SAML2/ECP
+--auth-url https://keystone.idp.org/v3/OS-FEDERATION/identity_providers/keystoneidp/protocols/saml2/auth
+```
