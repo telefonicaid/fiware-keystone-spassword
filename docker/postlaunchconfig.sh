@@ -115,7 +115,7 @@ if [ "${SAML_ENDPOINT}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
                      saml idp_entity_id https://$SAML_ENDPOINT/v3/OS-FEDERATION/saml2/idp
     openstack-config --set /etc/keystone/keystone.conf \
-                     saml idp_sso_endpoint https://$SAML_ENDPOINT/v3/OS-FEDERATION/saml2/idp
+                     saml idp_sso_endpoint https://$SAML_ENDPOINT/v3/OS-FEDERATION/saml2/sso
 fi
 if [ "${SAML_CERTFILE}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
