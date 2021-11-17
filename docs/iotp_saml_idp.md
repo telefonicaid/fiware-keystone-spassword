@@ -33,7 +33,23 @@ This env var will be expanden in /etc/keystone keystone.conf
 keyfile=/etc/keystone/ssl/private/signing_key.pem
 ```
 
-And then a Service Providers must be created and registered in IdP Keystone:
+And then a Service Provider must be created and registered into IdP Keystone.
+To achive that get into container and set following env vars:
+
+```
+export KEYSTONE_HOST="127.0.0.1:5001"
+export OS_USERNAME=admin
+export OS_PROJECT_NAME=admin
+export OS_USER_DOMAIN_ID=default
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_DOMAIN_ID=default
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_AUTH_URL=http://127.0.0.1:5001/v3
+export OS_IDENTITY_API_VERSION=3
+export OS_PASSWORD='<password>'
+```
+
+and then execute the followign command with proper urls:
 
 ```
 $ openstack service provider create anothersp \
