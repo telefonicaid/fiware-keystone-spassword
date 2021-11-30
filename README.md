@@ -261,12 +261,13 @@ Launch server
 ```sh
 PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 ```
+## Docker env vars
 
+Documented [here](docs/DOCKER.md)
 
-## [LDAP integration](docs/iotp_ldap.md)
+## Integrations
 
-## [Second Factor Authentication](docs/second_factor_auth.md)
+* [LDAP integration](docs/iotp_ldap.md)
+* [Second Factor Authentication](docs/second_factor_auth.md)
+* [Federation as IDP integration](docs/iotp_saml_idp.md)
 
-## [Federation as IDP integration](docs/iotp_saml_idp.md)
-
-## [Docker env vars](docs/DOCKER.md)
