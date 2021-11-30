@@ -26,7 +26,7 @@ certfile=/etc/keystone/ssl/certs/signing_cert.pem
 ```
 
 - SAML_KEYFILE
-This env var will be expanden in /etc/keystone keystone.conf
+This env var will be expanded in /etc/keystone/keystone.conf
 
 ```
 [saml]
