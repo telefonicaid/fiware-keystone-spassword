@@ -267,4 +267,6 @@ PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 
 ## [Second Factor Authentication](docs/second_factor_auth.md)
 
+## [Federation as IDP integration](docs/iotp_saml_idp.md)
+
 ## [Docker env vars](docs/DOCKER.md)
