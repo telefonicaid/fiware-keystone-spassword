@@ -34,7 +34,7 @@ keyfile=/etc/keystone/ssl/private/signing_key.pem
 ```
 
 And then a Service Provider must be created and registered into IdP Keystone.
-To achive that get into container and set following env vars:
+To achive that, get into container and set following env vars:
 
 ```
 export KEYSTONE_HOST="127.0.0.1:5001"
