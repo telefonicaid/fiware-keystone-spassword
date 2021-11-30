@@ -18,7 +18,7 @@ idp_sso_endpoint=https://$SAML_ENDPOINT/v3/OS-FEDERATION/saml2/sso
 ```
 
 - SAML_CERTFILE
-This env var will be expanden in /etc/keystone keystone.conf
+This env var will be expanded in /etc/keystone/keystone.conf
 
 ```
 [saml]
