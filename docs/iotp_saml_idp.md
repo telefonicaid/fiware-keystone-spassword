@@ -49,7 +49,7 @@ export OS_IDENTITY_API_VERSION=3
 export OS_PASSWORD='<password>'
 ```
 
-and then execute the followign command with proper urls:
+and then execute the following command with proper urls:
 
 ```
 $ openstack service provider create anothersp \
