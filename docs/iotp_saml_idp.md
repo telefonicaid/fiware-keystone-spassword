@@ -9,7 +9,7 @@ Based on [Keystone as an Identity Provider](https://docs.openstack.org/keystone/
 These new DOCKER options should be used:
 
 - SAML_ENDPOINT
-This env var will be expanden in /etc/keystone keystone.conf
+This env var will be expanded in /etc/keystone/keystone.conf
 
 ```
 [saml]
