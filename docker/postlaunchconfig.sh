@@ -392,12 +392,7 @@ if [ "${SAML_ENDPOINT}" != "" ] && [ "${SAML_CERTFILE}" != "" ] && [ "${SAML_KEY
     /usr/bin/keystone-manage saml_idp_metadata > /etc/keystone/saml2_idp_metadata.xml
 fi
 
-echo "[ postlaunchconfig ] - keystone_all_pid: " + $keystone_all_pid
-echo "[ postlaunchconfig ] - keystone_admin_pid: " + $keystone_admin_pid
+echo "[ postlaunchconfig ] - keystone_all_pid: $keystone_all_pid"
+echo "[ postlaunchconfig ] - keystone_admin_pid: $keystone_admin_pid"
 kill -9 $keystone_all_pid
 kill -9 $keystone_admin_pid
-
-
-echo "[ postlaunchconfig - Start UWSGI process ] "
-/usr/bin/keystone-all &
-sleep 5
