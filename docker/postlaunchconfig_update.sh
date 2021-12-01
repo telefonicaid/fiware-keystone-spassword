@@ -117,7 +117,13 @@ fi
 export KEYSTONE_HOST="127.0.0.1:5001"
 
 echo "[ postlaunchconfig_update - Start UWSGI process ] "
-/usr/bin/keystone-all &
+#/usr/bin/keystone-all &
+/usr/bin/keystone-wsgi-public --port 5001 &
+sleep 2
+keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
+/usr/bin/keystone-wsgi-admin --port 35357 &
+sleep 2
+keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
 sleep 5
 
 
@@ -238,3 +244,7 @@ openstack-config --set /etc/keystone/keystone.conf \
 echo "[ postlaunchconfig_update - db_sync --migrate ] "
 /usr/bin/keystone-manage db_sync --migrate
 
+echo "[ postlaunchconfig ] - keystone_all_pid: " + $keystone_all_pid
+echo "[ postlaunchconfig ] - keystone_admin_pid: " + $keystone_admin_pid
+kill -9 $keystone_all_pid
+kill -9 $keystone_admin_pid
