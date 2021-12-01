@@ -117,7 +117,6 @@ fi
 export KEYSTONE_HOST="127.0.0.1:5001"
 
 echo "[ postlaunchconfig_update - Start UWSGI process ] "
-#/usr/bin/keystone-all &
 /usr/bin/keystone-wsgi-public --port 5001 &
 sleep 2
 keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
