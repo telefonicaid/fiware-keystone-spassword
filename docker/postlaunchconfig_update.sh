@@ -244,7 +244,7 @@ openstack-config --set /etc/keystone/keystone.conf \
 echo "[ postlaunchconfig_update - db_sync --migrate ] "
 /usr/bin/keystone-manage db_sync --migrate
 
-echo "[ postlaunchconfig ] - keystone_all_pid: " + $keystone_all_pid
-echo "[ postlaunchconfig ] - keystone_admin_pid: " + $keystone_admin_pid
+echo "[ postlaunchconfig_update ] - keystone_all_pid: $keystone_all_pid"
+echo "[ postlaunchconfig_update ] - keystone_admin_pid: $keystone_admin_pid"
 kill -9 $keystone_all_pid
 kill -9 $keystone_admin_pid
