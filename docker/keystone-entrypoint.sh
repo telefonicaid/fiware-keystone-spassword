@@ -43,5 +43,7 @@ echo "[ keystone-entrypoint - keystone-all ] "
 crond &
 touch /var/log/keystone/keystone.log
 chmod 666 /var/log/keystone/keystone.log
+echo "[keystone-entrypoint spassword config]"
+tail -17 /etc/keystone/keystone.conf
 /usr/bin/keystone-all &
 tail -f /var/log/keystone/keystone.log
