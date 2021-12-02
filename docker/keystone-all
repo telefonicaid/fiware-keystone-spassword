@@ -1,3 +1,4 @@
 #!/bin/bash
 echo "[ keystone-all ] "
-while ! tcping -t 1 localhost 5001; do echo "[ keystone-all ] restart "; /usr/sbin/httpd -k restart; sleep 10; done
+sleep 5
+while ! tcping -t 1 localhost 5001 ; do echo "[ keystone-all ] forcing restart "; /usr/sbin/httpd -k restart; sleep 10; done
