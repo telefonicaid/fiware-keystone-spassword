@@ -1,3 +1,5 @@
+1.13.0
+
 ADD: force keystone restart at startup after set configuration (#199)
 ADD: log spassword config at startup
 ADD: preconfig docker and new vars and doc to configure keystone as SAML IdP
