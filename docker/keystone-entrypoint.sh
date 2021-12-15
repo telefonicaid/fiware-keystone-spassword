@@ -39,9 +39,12 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     fi
 fi
 
-echo "[ keystone-entrypoint - keystone-all ] "
+echo "[ keystone-entrypoint - crond ] "
 crond &
 touch /var/log/keystone/keystone.log
 chmod 666 /var/log/keystone/keystone.log
+echo "[keystone-entrypoint spassword config]"
+tail -17 /etc/keystone/keystone.conf
+echo "[ keystone-entrypoint - keystone-all ] "
 /usr/bin/keystone-all &
 tail -f /var/log/keystone/keystone.log

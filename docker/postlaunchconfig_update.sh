@@ -98,11 +98,31 @@ if [ "${ROTATE_FERNET_KEYS}" == "True" ]; then
     echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate
 fi
 
+if [ "${SAML_ENDPOINT}" != "" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+                     saml idp_entity_id https://$SAML_ENDPOINT/v3/OS-FEDERATION/saml2/idp
+    openstack-config --set /etc/keystone/keystone.conf \
+                     saml idp_sso_endpoint https://$SAML_ENDPOINT/v3/OS-FEDERATION/saml2/sso
+fi
+if [ "${SAML_CERTFILE}" != "" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+                     saml certfile $SAML_CERTFILE
+fi
+if [ "${SAML_KEYFILE}" != "" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+                     saml keyfile $SAML_KEYFILE
+fi
+
 
 export KEYSTONE_HOST="127.0.0.1:5001"
 
 echo "[ postlaunchconfig_update - Start UWSGI process ] "
-/usr/bin/keystone-all &
+/usr/bin/keystone-wsgi-public --port 5001 &
+sleep 2
+keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
+/usr/bin/keystone-wsgi-admin --port 35357 &
+sleep 2
+keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
 sleep 5
 
 
@@ -156,6 +176,13 @@ chown -R keystone:keystone /etc/keystone/fernet-keys
 chmod -R o-rwx /etc/keystone/fernet-keys
 /usr/bin/keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 
+# Create metadata for your keystone IdP
+if [ "${SAML_ENDPOINT}" != "" ] && [ "${SAML_CERTFILE}" != "" ] && [ "${SAML_KEYFILE}" != "" ]; then
+    echo "[ postlaunchconfig_update - sml2_idp_metadata ] "
+    openstack-config --set /etc/keystone/keystone.conf saml idp_metadata_path /etc/keystone/saml2_idp_metadata.xml
+    /usr/bin/keystone-manage saml_idp_metadata > /etc/keystone/saml2_idp_metadata.xml
+fi
+
 # Set another ADMIN TOKEN
 openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
@@ -172,8 +199,13 @@ echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
 echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
 # Exclude some users from spassword
-openstack-config --set /etc/keystone/keystone.conf \
-                 spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
+if [ "${SPASSWORD_EXTRA_BLACKLIST}" != "" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$SPASSWORD_EXTRA_BLACKLIST
+else
+    openstack-config --set /etc/keystone/keystone.conf \
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
+fi
 
 
 # Set default spassword config
@@ -211,3 +243,7 @@ openstack-config --set /etc/keystone/keystone.conf \
 echo "[ postlaunchconfig_update - db_sync --migrate ] "
 /usr/bin/keystone-manage db_sync --migrate
 
+echo "[ postlaunchconfig_update ] - keystone_all_pid: $keystone_all_pid"
+echo "[ postlaunchconfig_update ] - keystone_admin_pid: $keystone_admin_pid"
+kill -9 $keystone_all_pid
+kill -9 $keystone_admin_pid

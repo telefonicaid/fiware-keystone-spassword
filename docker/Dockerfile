@@ -5,10 +5,11 @@ MAINTAINER IoT team
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 ENV KEYSTONE_SCIM_VERSION 1.5.0
-ENV KEYSTONE_SPASSWORD_VERSION 1.12.0
+ENV KEYSTONE_SPASSWORD_VERSION 1.13.0
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
+COPY ./*.rpm /opt/keystone/
 COPY ./keystone-all /opt/keystone/
 
 WORKDIR /opt/keystone
@@ -17,6 +18,8 @@ RUN \
     # Install dependencies
     yum update -y && yum install -y curl && \
     yum install -y epel-release && yum update -y epel-release && \
+    yum localinstall -y --nogpgcheck qpid-proton-c-0.34.0-2.el7.x86_64.rpm && \
+    yum localinstall -y --nogpgcheck python2-qpid-proton-0.34.0-2.el7.x86_64.rpm && \
     # Install MySQL client
     yum -y install mysql git && \
     # Install keystone dependencies
@@ -105,6 +108,8 @@ RUN \
     identity domain_specific_drivers_enabled true && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_config_dir /etc/keystone/domains && \
+    # Federation by SAML2 pre-support
+    yum install -y xmlsec1 && \
     # Patching ...
     ln -s /usr/lib/python2.7/site-packages/keystone/contrib/scim/scim.py  /usr/lib/python2.7/site-packages/keystone/api && \
     ln -s /usr/lib/python2.7/site-packages/keystone/contrib/spassword/spassword.py  /usr/lib/python2.7/site-packages/keystone/api && \
@@ -150,3 +155,7 @@ ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
 
 EXPOSE 5001 35357
+
+
+HEALTHCHECK --interval=60s --timeout=5s --start-period=30s \
+            CMD curl --fail -X GET http://localhost:5001/v3 || exit 1
