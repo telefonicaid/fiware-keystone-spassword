@@ -136,6 +136,10 @@ echo "[ postlaunchconfig - fernet_setup ] "
 chown -R keystone:keystone /etc/keystone/fernet-keys
 chmod -R o-rwx /etc/keystone/fernet-keys
 /usr/bin/keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+openstack-config --set /etc/keystone/keystone.conf \
+                 fernet_receipts max_active_keys 6
+openstack-config --set /etc/keystone/keystone.conf \
+                 fernet_tokens max_active_keys 6
 
 echo "[ postlaunchconfig - bootstrap ] "
 /usr/bin/keystone-manage bootstrap \
