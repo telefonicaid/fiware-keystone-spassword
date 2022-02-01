@@ -149,7 +149,7 @@ delete from migrate_version where repository_id='keystone_spassword';
 ```
 Then stop container and update image in docker-compose and up again container; then container will be recreated.
 
-Recover keystone.spassword table using backup.
+After check that keystone works properly then you can optionally recover keystone.spassword table using previous spassword backup table.
 ```
 mysql -u root -p keystone < table_spassword.sql
 ```
