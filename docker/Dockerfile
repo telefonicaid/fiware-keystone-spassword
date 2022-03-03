@@ -24,7 +24,7 @@ RUN \
     yum -y install mysql git && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
-    yum -y install python cronie && \
+    yum -y install python python3 cronie && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-stein/rdo-release-stein-3.noarch.rpm' > rdo-release-stein-3.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-stein-3.noarch.rpm && \
     curl -s -L --insecure https://raw.githubusercontent.com/openstack/keystone/stable/stein/etc/policy.v3cloudsample.json > /opt/keystone/policy.v3cloudsample.json && \
