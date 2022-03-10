@@ -180,14 +180,17 @@ openstack role delete reader
 echo "[ postlaunchconfig - create users ] "
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email iotagent@no.com iotagent
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com nagios
+openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email cep@no.com cep
 echo "[ postlaunchconfig - assign roles to users ] "
 openstack role add --user nagios --project admin admin
 
 echo "[ postlaunchconfig - list users ] "
 IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
 NAGIOS_ID=`openstack user list | grep "nagios" | awk '{print $2}'`
+CEP_ID=`openstack user list | grep "cep" | awk '{print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
+echo "CEP_ID: $CEP_ID"
 [[ "${NAGIOS_ID}" == null ]] && exit 0
 [[ "${NAGIOS_ID}" == "" ]] && exit 0
 
@@ -350,10 +353,10 @@ openstack-config --set /etc/keystone/keystone.conf \
 # Exclude some users from spassword
 if [ "${SPASSWORD_EXTRA_BLACKLIST}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$SPASSWORD_EXTRA_BLACKLIST
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$CEP_ID,$SPASSWORD_EXTRA_BLACKLIST
 else
     openstack-config --set /etc/keystone/keystone.conf \
-                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$CEP_ID
 fi
 
 # Set default spassword config
