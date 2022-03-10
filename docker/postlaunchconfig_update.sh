@@ -163,7 +163,7 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .["identity:update_role"]="rule:admin_required"
      | .["identity:delete_role"]="rule:admin_required"
      | .["identity:list_domains"]="rule:cloud_admin or rule:cloud_service"
-     | .cloud_admin="rule:admin_required and domain_id:and u.domain_id="default""
+     | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
 
