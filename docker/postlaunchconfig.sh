@@ -356,7 +356,7 @@ if [ "${SPASSWORD_EXTRA_BLACKLIST}" != "" ]; then
                      spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$CEP_ID,$SPASSWORD_EXTRA_BLACKLIST
 else
     openstack-config --set /etc/keystone/keystone.conf \
-                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$CEP_ID,
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$CEP_ID
 fi
 
 # Set default spassword config
