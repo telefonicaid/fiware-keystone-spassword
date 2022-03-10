@@ -163,7 +163,7 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .["identity:update_role"]="rule:admin_required"
      | .["identity:delete_role"]="rule:admin_required"
      | .["identity:list_domains"]="rule:cloud_admin or rule:cloud_service"
-     | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
+     | .cloud_admin="rule:admin_required and domain_id:and u.domain_id="default""
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
 
@@ -189,11 +189,11 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 
 
-IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent"' | awk '{if ($4=="iotagent") print $2}'`
-NAGIOS_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="nagios";' | awk '{if ($4=="nagios") print $2}'`
-CEP_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cep";' | awk '{if ($4=="cep") print $2}'`
+IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent" and u.domain_id="default";' | awk '{if ($4=="iotagent") print $2}'`
+NAGIOS_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="nagios" and u.domain_id="default";' | awk '{if ($4=="nagios") print $2}'`
+CEP_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cep" and u.domain_id="default";' | awk '{if ($4=="cep") print $2}'`
 ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin"' | awk '{if ($4=="cloud_admin") print $2}'`
-ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="pep"' | awk '{if ($4=="pep") print $2}'`
+ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="pep";' | awk '{if ($4=="pep") print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
 echo "CEP_ID: $CEP_ID"
