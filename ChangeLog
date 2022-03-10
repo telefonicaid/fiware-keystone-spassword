@@ -1,3 +1,6 @@
+ADD: provision a new user `cep` in defaul domain 
+ADD: ensure blacklist users are in expected domain
+
 1.13.0
 
 ADD: force keystone restart at startup after set configuration (#199)
