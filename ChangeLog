@@ -1,5 +1,6 @@
 ADD: provision a new user `cep` in defaul domain 
 ADD: ensure blacklist users are in expected domain
+Fix: do not remove database when its supposed not exists (#212)
 
 1.13.0
 
