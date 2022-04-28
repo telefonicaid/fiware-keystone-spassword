@@ -29,6 +29,12 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     # Check if postlaunchconfig was executed
     chkconfig openstack-keystone --level 3
     if [ "$?" == "1" ]; then
+        # Check if credentials are OK
+        mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'show databases'
+        if [ "$?" == "1" ]; then
+            echo "[ keystone-entrypoint - error in mysql credentials ] Keystone docker will be not configured"
+            exit 1
+        fi
         # Check if previos DB data exists
         mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone'
         if [ "$?" == "1" ]; then
