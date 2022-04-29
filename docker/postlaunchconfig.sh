@@ -57,7 +57,10 @@ GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
     IDENTIFIED BY 'keystone';
 EOF
-
+    if [ "$?" == "1" ]; then
+        echo "[ postlaunchconfig - error creating  database ] Keystone docker will be not configured"
+        exit 1
+    fi
 fi
 
 if [ "$TOKEN_EXPIRATION_TIME_ARG" == "-token_expiration_time" ]; then
