@@ -3,7 +3,7 @@ Fix: check if DB is up even if is behind a load balancer
 1.14.0
 
 ADD: check if mysql credentials are OK before use it by docker statup scripts
-ADD: provision a new user `cep` in defaul domain
+ADD: provision a new user `cep` in default domain
 ADD: ensure blacklist users are in expected domain
 Fix: do not remove database when its supposed not exists (#212)
 
