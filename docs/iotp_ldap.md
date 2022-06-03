@@ -1,11 +1,13 @@
 # Integrate LDAP into IoTP Keystone
 
 
-* [Describe Solution](#describe-solution)
-* [Requirements](#requirements)
-* [Install & Configure a LDAP](#install-ldap)
-* [Populate a LDAP](#populate-ldap)
-* [Configure Keystone for use a LDAP](#configure-keystone)
+- [Describe Solution](#describe-solution)
+- [Requirements](#requirements)
+- [Install and Configure a LDAP](#install-ldap)
+  - [Configure LDAP](#configure-ldap)
+  - [Populate LDAP](#populate-ldap)
+  - [Adapt existing LDAP](#adapt-existing-ldap)
+- [Configure Keystone for use a LDAP](#configure-keystone)
 
 
 ## Describe Solution
@@ -26,17 +28,14 @@ User authentication will be done throght LDAP directory.
 
 This solution about integrate LDAP with Keystone expects:
 - Users are in LDAP for authentication: name, description, email, password.
-- The following groups are defined in LDAP:
-  - ServiceCustomerGroup: role ServiceCustomer in service.
-  - SubServiceCustomerGroup: role SubServiceCustomer in all posible subservices
-  - SubServiceAdminGroup: role SubServiceAdmin in all posible subservices
-  - AdminGroup: roles admin in service and SubServiceAdmin in all posible subservices
+- Users in LDAP could belong to LDAP groups.
+- Both LDAP Users and LDAP Groups could be asigned to IoT Platform roles, as described in [user role assigment API](https://orchestrator2.docs.apiary.io/#reference/orchestrator/user-role-assigment) and [group role assignment API](https://orchestrator2.docs.apiary.io/#reference/orchestrator/group-role-assigment) and [IoT Platform roles](https://thinking-cities.readthedocs.io/en/master/topics/user_permissions/index.html)
+- Optionally IoTPlatform, through Orchestrator (since version 1.5.0 or upper), could create a predefined groups when create a new Service which are:
+  - ServiceCustomerGroup: with role ServiceCustomer assigned in service.
+  - SubServiceCustomerGroup: with role SubServiceCustomer assigned in all posible subservices
+  - SubServiceAdminGroup: with role SubServiceAdmin assigned in all posible subservices
+  - AdminGroup: with roles admin in service and SubServiceAdmin assigned in all posible subservices
   
-  These groups have been provisioned automatically in each Service by IoTP Orchestrator since version 1.5.0 or upper. If Service was created with a previous version of Orchestrator make sure that needed Groups are created before.
-  
-  Provided role asignments for that groups can be modified easily using [orchestrator API](https://orchestrator2.docs.apiary.io/#reference/orchestrator/group-role-assigment) like in this [example](./change_role_asignment_group.sh).
-- Users in LDAP belongs to the defined LDAP Groups.
-
 
 ## Requirements
 
@@ -48,7 +47,7 @@ This solution about integrate LDAP with Keystone expects:
   - External LDAP: [OpenLDAP](http://www.openldap.org) 2.4.40 or upper.
 
 
-## Install and configure an LDAP (not exists previous LDAP)
+## Install and configure a LDAP (not exists previous LDAP)
 
 This procedure describe how to install from the scratch and configure a new LDAP instance in order to be used as external LDAP for keystone authentication.
 
@@ -157,7 +156,12 @@ The following steps are the same that above but for the case of LDAP is in a doc
 ```
 
 
-## Adapt existing LDAP (creating needed groups)
+### Adapt existing LDAP (creating groups)
+
+In order of discover existing users and groups in already configured LDAP you should try to run a command like
+```
+ldapsearch -x -h localhost -w <ldap_admin_password> -D "cn=admin,dc=openstack,dc=org" -b "dc=openstack,dc=org" "(objectclass=*)"
+```
 
 In case you have a previous LDAP with users already provisioned, you need to group them into the following groups in order to match with IoTPlatform access control policies (described in [fiware-iot-stack.readthedocs.io](https://fiware-iot-stack.readthedocs.io/en/latest/topics/user_permissions/index.html#users-and-permissions)
 

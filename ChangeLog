@@ -1,5 +1,27 @@
 Update entrypoint to create a symlink from the logfile to stdout, and remove tail execution to stream logfile.
 
+1.14.1
+Fix: check if DB is up even if is behind a load balancer
+
+1.14.0
+
+ADD: check if mysql credentials are OK before use it by docker statup scripts
+ADD: provision a new user `cep` in default domain
+ADD: ensure blacklist users are in expected domain
+Fix: do not remove database when its supposed not exists (#212)
+
+1.13.0
+
+ADD: force keystone restart at startup after set configuration (#199)
+ADD: log spassword config at startup
+ADD: preconfig docker and new vars and doc to configure keystone as SAML IdP
+ADD: SPASSWORD_EXTRA_BLACKLIST env var to add extra users to `pwd_user_blacklist` for docker
+ADD: Docker healthcheck for keystone API
+Fix missed deps (python2-qpid-proton, qpid-proton-c) using epel version 7-14 (#191)
+Remove old framework files
+Remove some reduntant logs (flask, stevedore, oslo_policy) docker container
+>>>>>>> master
+
 1.12.0
 
 Add env var to enable/disable fernet token rotation (#163)

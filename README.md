@@ -1,8 +1,24 @@
 # Keystone SPASSWORD extension
+
+[![FIWARE Security](https://nexus.lab.fiware.org/static/badges/chapters/security.svg)](https://www.fiware.org/developers/catalogue/)
+[![License: Apache 2.0](https://img.shields.io/github/license/telefonicaid/fiware-keypass.svg)](https://opensource.org/licenses/Apache-2.0)
+<br/>
+![Status](https://nexus.lab.fiware.org/static/badges/statuses/incubating.svg)
+
 Keystone SPASSWORD is an OpenStack Keystone extension that enables
 some extra security checks over user passwords, as force the usage of strong passwords,
 expiration time for a password, number of bad login attempts before user account became temporarily blocked,
 a recover procedure password, a second factor authentication (2FA)  and so on.
+
+
+## Keystone versions
+- 1.4.X uses keystone Liberty
+- 1.5.X uses keystne Mitaka
+- 1.6.0 uses keystone Newton
+- 1.7.0 uses keystone Pike
+- 1.8.0 uses keystone Queens
+- 1.9.0 uses keystone Rocky
+- 1.10.0 and further uses keystone Stein
 
 
 ## Installing and Configuration
@@ -101,11 +117,22 @@ https://hub.docker.com/repository/docker/telefonicaiot/fiware-keystone-spassword
 There are some [env vars  for configuration](docs/DOCKER.md)
 
 #### Upgrade from a older version:
-How to upgrade to latest (1.10.0) docker release:
+How to upgrade to latest (1.13.0) docker release:
 
 Normal procedure is stop container, update version in docker-compose and then up container; then container will be recreated.
+But, if starting version is between 1.4.X and 1.6.X then some steps should be done to achieve that.
+Anyway, ensure you have a proper backup of mysql keystone database:
+```
+mysqldump -u root -p keystone  > keystone_backup.sql
+```
+And check in each step of migration that keystone works properly (i.e. is able to authenticate)
 
-##### Upgrade from 1.4.X, 1.5.X or 1.6.0
+##### Upgrade from 1.4.X
+-> needs be upgrade to 1.5.4 version before and then perform the steps described for that version.
+In this step is important to use and SQL schema created by Keystone, not just recover from the scratch a sql dump backup, since and sql dump backup has not all required data to migration 1.4.x to 1.5.x will be successfully executed. More info about this issue is found at https://github.com/telefonicaid/fiware-keystone-spassword/issues/194
+
+
+##### Upgrade from 1.5.X or 1.6.0
 -> needs a workaround:
 Before update image in docker-compose the following commands should be executed:
 
@@ -122,7 +149,7 @@ delete from migrate_version where repository_id='keystone_spassword';
 ```
 Then stop container and update image in docker-compose and up again container; then container will be recreated.
 
-Recover keystone.spassword table using backup.
+After check that keystone works properly then you can optionally recover keystone.spassword table using previous spassword backup table.
 ```
 mysql -u root -p keystone < table_spassword.sql
 ```
@@ -180,7 +207,8 @@ Sumarizing the implications for HA enviroment we can say:
 - Fernet keys should periodically rotated
 - Fernet keys should be the same for all nodes of an HA environment.
 
-To achieve that there are two options:
+To achieve that there are some options:
+- Use a volumen for fernet keys folder content in docker based deployments.
 - Distribute fernet keys folder content with a `rsync` command abroad all keystone nodes
 - Ensure keystone Load Balancer is using sticky sessions [example for ha proxy](https://thisinterestsme.com/haproxy-sticky-sessions)
 
@@ -238,10 +266,13 @@ Launch server
 ```sh
 PYTHONPATH=.:$PYTHONPATH keystone-all --config-dir etc
 ```
+## Docker env vars
 
+Documented [here](docs/DOCKER.md)
 
-## [LDAP integration](docs/iotp_ldap.md)
+## Integrations
 
-## [Second Factor Authentication](docs/second_factor_auth.md)
+* [LDAP integration](docs/iotp_ldap.md)
+* [Second Factor Authentication](docs/second_factor_auth.md)
+* [Federation as IDP integration](docs/iotp_saml_idp.md)
 
-## [Docker env vars](docs/DOCKER.md)
