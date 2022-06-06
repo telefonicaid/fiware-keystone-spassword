@@ -106,6 +106,9 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     wsgi debug_middleware True
 fi
 
+openstack-config --set /etc/keystone/keystone.conf \
+DEFAULT use_stderr True
+
 if [ "${ROTATE_FERNET_KEYS}" == "True" ]; then
     # Cron task to rotate fernet tokens once a day
     echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate

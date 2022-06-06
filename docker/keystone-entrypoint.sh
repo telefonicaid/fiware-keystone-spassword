@@ -46,14 +46,11 @@ fi
 
 echo "[ keystone-entrypoint - crond ] "
 crond &
-touch /var/log/keystone/keystone.log
-ln -snf /dev/stdout /var/log/keystone/keystone.log
-chmod 666 /var/log/keystone/keystone.log
 echo "[keystone-entrypoint spassword config]"
 tail -17 /etc/keystone/keystone.conf
 echo "[ keystone-entrypoint - keystone-all ] "
 /usr/bin/keystone-all &
-tail -f /var/log/keystone/keystone.log
 
+sleep infinity
 
 
