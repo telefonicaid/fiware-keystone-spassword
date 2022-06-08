@@ -1,3 +1,7 @@
+Log to access, error and keystone logs to stderr of docker to avoid log to file
+
+1.14.1
+
 Fix: check if DB is up even if is behind a load balancer
 
 1.14.0

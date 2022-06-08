@@ -5,7 +5,7 @@ MAINTAINER IoT team
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 ENV KEYSTONE_SCIM_VERSION 1.5.0
-ENV KEYSTONE_SPASSWORD_VERSION 1.14.0
+ENV KEYSTONE_SPASSWORD_VERSION 1.14.1
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
@@ -139,6 +139,11 @@ RUN \
     patch -f -p0 < /opt/keystone/api_auth.patch && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python2.7/site-packages/keystone -name "*.pyo" -delete && \
+    sed -ri \
+              -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
+              -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
+              /etc/httpd/conf.d/wsgi-keystone.conf && \
+    rm /etc/keystone/logging.conf && \
     # Cleaning unused files...
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
@@ -149,9 +154,7 @@ RUN \
 # Define the entry point
 ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
-
 EXPOSE 5001 35357
-
 
 HEALTHCHECK --interval=60s --timeout=5s --start-period=30s \
             CMD curl --fail -X GET http://localhost:5001/v3 || exit 1
