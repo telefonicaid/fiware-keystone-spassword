@@ -1,4 +1,4 @@
-Update entrypoint to create a symlink from the logfile to stdout, and remove tail execution to stream logfile.
+Log to access, error and keystone logs to stderr of docker to avoid log to file
 
 1.14.1
 Fix: check if DB is up even if is behind a load balancer
