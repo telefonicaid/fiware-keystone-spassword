@@ -1,4 +1,4 @@
-Log to access, error and keystone logs to stderr of docker to avoid log to file
+Log to access, error and keystone logs to stderr of docker to avoid log to file (#148)
 
 1.14.1
 
