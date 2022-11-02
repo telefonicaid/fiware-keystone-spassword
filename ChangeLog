@@ -1,3 +1,5 @@
+Return previous login attempts in extra field after a success login attempt
+
 1.15.0
 
 Use 1.6.0 version of SCIM in docker image

@@ -340,6 +340,7 @@ class Identity(Identity, SendMail):
                     LOG.debug('wrong password provided at login %s' % spassword['user_name'])
                     spassword_ref['login_attempts'] += 1
                 else:
+                    previous_login_attempts = spassword_ref['login_attempts']
                     spassword_ref['login_attempts'] = 0
                     expiration_date = spassword_ref['creation_time'] + \
                         datetime.timedelta(days=CONF.spassword.pwd_exp_days)
@@ -347,7 +348,8 @@ class Identity(Identity, SendMail):
                         "password_creation_time": timeutils.isotime(spassword['creation_time']),
                         "password_expiration_time": timeutils.isotime(expiration_date),
                         "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist,
-                        "last_login_attempt_time": spassword['last_login_attempt_time']
+                        "last_login_attempt_time": spassword['last_login_attempt_time'],
+                        "previous_login_attempts": previous_login_attempts
                     }
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
@@ -426,7 +428,8 @@ class Identity(Identity, SendMail):
                         "password_expiration_time": timeutils.isotime(expiration_date),
                         "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist,
                         "sndfa" : False,
-                        "sndfa_email" : False
+                        "sndfa_email" : False,
+                        "previous_login_attempts": 0
                     }
                 spassword_ref = SPasswordModel.from_dict(data_user)
 
