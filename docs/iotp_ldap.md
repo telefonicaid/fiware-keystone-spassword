@@ -94,7 +94,7 @@ You can also easily deploy a openldap container:
           --env LDAP_ORGANISATION="openstack" \
           --env LDAP_DOMAIN="openstack.org" \
           --env LDAP_ADMIN_PASSWORD="<ldap_admin_password>" \
-          --detach -p 389:389 osixia/openldap:1.1.7
+          --detach -p 389:389 osixia/openldap:1.5.0
 ```
 
 ### Populate LDAP
