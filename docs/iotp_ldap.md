@@ -40,7 +40,7 @@ This solution about integrate LDAP with Keystone expects:
 ## Requirements
 
 ### Software Requirements:
-  - [OpenStack Keystone](http://docs.openstack.org/developer/keystone) version Liberty.
+  - [OpenStack Keystone](http://docs.openstack.org/developer/keystone) version Liberty or upper.
   - [Keystone SPASSWORD plugin](https://github.com/telefonicaid/fiware-keystone-spassword) plugin 1.2.0 or upper.
   - [Keystone SCIM plugin](https://github.com/telefonicaid/fiware-keystone-scim) plugin version 1.1.7 or upper.
   - [IoTP Orchestrator](https://github.com/telefonicaid/orchestrator) version 1.5.0 or upper.
@@ -94,7 +94,7 @@ You can also easily deploy a openldap container:
           --env LDAP_ORGANISATION="openstack" \
           --env LDAP_DOMAIN="openstack.org" \
           --env LDAP_ADMIN_PASSWORD="<ldap_admin_password>" \
-          --detach -p 389:389 osixia/openldap:1.1.7
+          --detach -p 389:389 osixia/openldap:1.5.0
 ```
 
 ### Populate LDAP

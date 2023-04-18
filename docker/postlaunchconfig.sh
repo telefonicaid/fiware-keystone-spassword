@@ -49,10 +49,7 @@ fi
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
                      database connection mysql+pymysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
-    # Ensure previous keystone database does not exist
-    mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
-DROP DATABASE keystone;
-EOF
+    # It is supposed that keystone database does not exist, it was checked by previous script
     mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
 CREATE DATABASE keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
@@ -60,7 +57,10 @@ GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
     IDENTIFIED BY 'keystone';
 EOF
-
+    if [ "$?" == "1" ]; then
+        echo "[ postlaunchconfig - error creating  database ] Keystone docker will be not configured"
+        exit 1
+    fi
 fi
 
 if [ "$TOKEN_EXPIRATION_TIME_ARG" == "-token_expiration_time" ]; then
@@ -105,6 +105,9 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
     wsgi debug_middleware True
 fi
+
+openstack-config --set /etc/keystone/keystone.conf \
+DEFAULT use_stderr True
 
 if [ "${ROTATE_FERNET_KEYS}" == "True" ]; then
     # Cron task to rotate fernet tokens once a day
@@ -180,14 +183,17 @@ openstack role delete reader
 echo "[ postlaunchconfig - create users ] "
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email iotagent@no.com iotagent
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com nagios
+openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email cep@no.com cep
 echo "[ postlaunchconfig - assign roles to users ] "
 openstack role add --user nagios --project admin admin
 
 echo "[ postlaunchconfig - list users ] "
 IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
 NAGIOS_ID=`openstack user list | grep "nagios" | awk '{print $2}'`
+CEP_ID=`openstack user list | grep "cep" | awk '{print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
+echo "CEP_ID: $CEP_ID"
 [[ "${NAGIOS_ID}" == null ]] && exit 0
 [[ "${NAGIOS_ID}" == "" ]] && exit 0
 
@@ -350,10 +356,10 @@ openstack-config --set /etc/keystone/keystone.conf \
 # Exclude some users from spassword
 if [ "${SPASSWORD_EXTRA_BLACKLIST}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$SPASSWORD_EXTRA_BLACKLIST
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$CEP_ID,$SPASSWORD_EXTRA_BLACKLIST
 else
     openstack-config --set /etc/keystone/keystone.conf \
-                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$CEP_ID
 fi
 
 # Set default spassword config

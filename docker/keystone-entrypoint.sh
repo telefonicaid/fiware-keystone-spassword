@@ -23,12 +23,17 @@ TOKEN_EXPIRATION_TIME_VALUE=${8}
 [[ "${TOKEN_EXPIRATION_TIME_VALUE}" == "" ]] && TOKEN_EXPIRATION_TIME_VALUE=10800  # 3 x 3600 seconds
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
-    # Wait until DB is up
-    #while ! nc -z $DB_HOST_VALUE $DB_HOST_PORT ; do sleep 10; done
-    while ! tcping -t 1 $DB_HOST_NAME $DB_HOST_PORT; do sleep 10; done
+    # Wait until DB is up, even if DB is behind a load balancer
+    while ! mysqladmin ping -s --connect-timeout=3 -h $DB_HOST_NAME -P $DB_HOST_PORT; do sleep 10; done
     # Check if postlaunchconfig was executed
     chkconfig openstack-keystone --level 3
     if [ "$?" == "1" ]; then
+        # Check if credentials are OK
+        mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'show databases'
+        if [ "$?" == "1" ]; then
+            echo "[ keystone-entrypoint - error in mysql credentials ] Keystone docker will be not configured"
+            exit 1
+        fi
         # Check if previos DB data exists
         mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone'
         if [ "$?" == "1" ]; then
@@ -41,10 +46,15 @@ fi
 
 echo "[ keystone-entrypoint - crond ] "
 crond &
-touch /var/log/keystone/keystone.log
-chmod 666 /var/log/keystone/keystone.log
 echo "[keystone-entrypoint spassword config]"
 tail -17 /etc/keystone/keystone.conf
+touch /var/log/keystone/keystone.log
+chmod 777 /var/log/keystone/
+chmod 777 /var/log/keystone/keystone.log
+ln -snf /dev/stdout /var/log/keystone/keystone.log
 echo "[ keystone-entrypoint - keystone-all ] "
 /usr/bin/keystone-all &
-tail -f /var/log/keystone/keystone.log
+
+sleep infinity
+
+

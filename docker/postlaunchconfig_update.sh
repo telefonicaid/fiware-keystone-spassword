@@ -93,6 +93,9 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     wsgi debug_middleware True
 fi
 
+openstack-config --set /etc/keystone/keystone.conf \
+DEFAULT use_stderr True
+
 if [ "${ROTATE_FERNET_KEYS}" == "True" ]; then
     # Cron task to rotate fernet tokens once a day
     echo "0 1 * * * root /usr/bin/keystone-manage fernet_rotate --keystone-user keystone --keystone-group keystone" >/etc/cron.d/fernetrotate
@@ -189,22 +192,24 @@ openstack-config --set /etc/keystone/keystone.conf \
 
 
 
-IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent"' | awk '{if ($4=="iotagent") print $2}'`
-NAGIOS_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="nagios";' | awk '{if ($4=="nagios") print $2}'`
-ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin"' | awk '{if ($4=="cloud_admin") print $2}'`
-ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="pep"' | awk '{if ($4=="pep") print $2}'`
+IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent" and u.domain_id="default";' | awk '{if ($4=="iotagent") print $2}'`
+NAGIOS_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="nagios" and u.domain_id="default";' | awk '{if ($4=="nagios") print $2}'`
+CEP_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cep" and u.domain_id="default";' | awk '{if ($4=="cep") print $2}'`
+ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin" and u.domain_id="'${ID_ADMIN_DOMAIN}'";' | awk '{if ($4=="cloud_admin") print $2}'`
+ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="pep" and u.domain_id="'${ID_ADMIN_DOMAIN}'";' | awk '{if ($4=="pep") print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
+echo "CEP_ID: $CEP_ID"
 echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
 echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
 # Exclude some users from spassword
 if [ "${SPASSWORD_EXTRA_BLACKLIST}" != "" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$SPASSWORD_EXTRA_BLACKLIST
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$CEP_ID,$SPASSWORD_EXTRA_BLACKLIST
 else
     openstack-config --set /etc/keystone/keystone.conf \
-                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID
+                     spassword pwd_user_blacklist $ID_CLOUD_ADMIN,$ID_CLOUD_SERVICE,$IOTAGENT_ID,$NAGIOS_ID,$CEP_ID
 fi
 
 

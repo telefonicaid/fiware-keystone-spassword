@@ -1,3 +1,23 @@
+1.16.0
+
+Return previous login attempts in extra field after a success login attempt
+
+1.15.0
+
+Use 1.6.0 version of SCIM in docker image
+Log to access, error and keystone logs to stderr of docker to avoid log to file (#148)
+
+1.14.1
+
+Fix: check if DB is up even if is behind a load balancer
+
+1.14.0
+
+ADD: check if mysql credentials are OK before use it by docker statup scripts
+ADD: provision a new user `cep` in default domain
+ADD: ensure blacklist users are in expected domain
+Fix: do not remove database when its supposed not exists (#212)
+
 1.13.0
 
 ADD: force keystone restart at startup after set configuration (#199)
