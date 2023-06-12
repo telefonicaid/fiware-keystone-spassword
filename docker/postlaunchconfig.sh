@@ -324,7 +324,7 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .["identity:get_domain"]=""
      | .admin_and_user_filter="role:admin and \"%\":%(user.id)%"
      | .admin_and_project_filter="role:admin and \"%\":%(scope.project.id)%"
-     | .["identity:list_role_assignments"]="rule:cloud_admin or rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter"
+     | .["identity:list_role_assignments"]="rule:cloud_admin or rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter or rule:admin_and_matching_target_group_domain_id"
      | .["identity:list_projects"]="rule:cloud_admin or rule:admin_and_matching_domain_id or rule:cloud_service"
      | .["identity:get_project_roles"]=""
      | .["identity:get_user"]="rule:cloud_admin or rule:admin_and_matching_target_user_domain_id or rule:owner"
