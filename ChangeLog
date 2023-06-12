@@ -1,3 +1,5 @@
+Add permissions to allow get all role_assignments of a group in all subservices in one request by any admin domain user
+
 1.16.0
 
 Return previous login attempts in extra field after a success login attempt
