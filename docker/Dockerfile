@@ -98,6 +98,9 @@ RUN \
     source ./${pack_spassword} --with-python27 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # LDAP pre-support
+    yum -y install openldap-clients && \
+    mkdir -p /etc/ldap && \
+    ln -s /etc/openldap/ldap.conf /etc/ldap/ldap.conf && \
     mkdir -p /etc/keystone/domains && \
     chown keystone.keystone /etc/keystone/domains && \
     openstack-config --set /etc/keystone/keystone.conf \
