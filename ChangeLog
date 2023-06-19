@@ -1,3 +1,5 @@
+1.17.0
+
 Add permissions to allow get all role_assignments of a group in all subservices in one request by any admin domain user
 Add openldap-clients dependency and link from /etc/ldap/ldap.conf to etc/ldap/openldap.conf
 
