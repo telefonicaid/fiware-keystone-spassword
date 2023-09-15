@@ -2,6 +2,7 @@
 
 [![FIWARE Security](https://nexus.lab.fiware.org/static/badges/chapters/security.svg)](https://www.fiware.org/developers/catalogue/)
 [![License: Apache 2.0](https://img.shields.io/github/license/telefonicaid/fiware-keypass.svg)](https://opensource.org/licenses/Apache-2.0)
+<br>
 [![Quay badge](https://img.shields.io/badge/quay.io-fiware%2Fkeystone--spassword-grey?logo=red%20hat&labelColor=EE0000)](https://quay.io/repository/fiware/keystone-spassword)
 [![Docker badge](https://img.shields.io/badge/docker-telefonicaiot%2Ffiware--keystone--spassword-blue?logo=docker)](https://hub.docker.com/r/telefonicaiot/fiware-keystone-spassword)
 <br/>
