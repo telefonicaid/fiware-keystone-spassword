@@ -278,4 +278,5 @@ Documented [here](docs/DOCKER.md)
 * [LDAP integration](docs/iotp_ldap.md)
 * [Second Factor Authentication](docs/second_factor_auth.md)
 * [Federation as IDP integration](docs/iotp_saml_idp.md)
+* [Trust Token Flow](docs/trust_token.md)
 
