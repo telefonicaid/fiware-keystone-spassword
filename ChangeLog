@@ -1,3 +1,5 @@
+Fix: modify docker provision script for compatibility with mysql 8.0 (#232)
+
 1.17.0
 
 Add permissions to allow get all role_assignments of a group in all subservices in one request by any admin domain user
