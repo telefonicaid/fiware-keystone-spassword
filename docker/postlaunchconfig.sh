@@ -58,8 +58,20 @@ GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
     IDENTIFIED BY 'keystone';
 EOF
     if [ "$?" == "1" ]; then
-        echo "[ postlaunchconfig - error creating  database ] Keystone docker will be not configured"
-        exit 1
+        # Retry because of Mysql 8.0 compatibility
+        # Mysql 8.0 drops support for GRANT ALL ... IDENTIFIED BY.
+        # See https://stackoverflow.com/questions/13357760/mysql-create-user-if-not-exists
+        mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
+CREATE DATABASE keystone;
+CREATE USER IF NOT EXISTS 'keystone'@'localhost' IDENTIFIED BY 'keystone';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost';
+CREATE USER IF NOT EXISTS 'keystone'@'%' IDENTIFIED BY 'keystone';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%';
+EOF
+        if [ "$?" == "1" ]; then
+            echo "[ postlaunchconfig - error creating  database ] Keystone docker will be not configured"
+            exit 1
+        fi
     fi
 fi
 
