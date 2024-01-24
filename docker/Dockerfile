@@ -10,6 +10,7 @@ ENV KEYSTONE_SPASSWORD_VERSION 1.17.0
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
 COPY ./*.rpm /opt/keystone/
+COPY ./*.json /opt/keystone/
 COPY ./keystone-all /opt/keystone/
 
 WORKDIR /opt/keystone
@@ -27,7 +28,6 @@ RUN \
     yum -y install python cronie && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-stein/rdo-release-stein-3.noarch.rpm' > rdo-release-stein-3.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-stein-3.noarch.rpm && \
-    curl -s -L --insecure https://raw.githubusercontent.com/openstack/keystone/stable/stein/etc/policy.v3cloudsample.json > /opt/keystone/policy.v3cloudsample.json && \
     # Set Centos mirror to ensure openstack version
     sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
