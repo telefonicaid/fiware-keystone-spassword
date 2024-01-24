@@ -1,4 +1,4 @@
-Fix: policy.json file from stein for docker build
+Fix: policy.json file from stein for docker (#234)
 Fix: modify docker provision script for compatibility with mysql 8.0 (#232)
 
 1.17.0
