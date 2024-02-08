@@ -141,7 +141,7 @@ class RestOperations(object):
             except Exception as e:
                 print(e)
 
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             data = None
             res = e
             res.code = 500
