@@ -7,7 +7,7 @@ ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 #ENV KEYSTONE_SCIM_VERSION 1.6.0
 ENV KEYSTONE_SCIM_VERSION python36
 #ENV KEYSTONE_SPASSWORD_VERSION 1.17.0
-ENV KEYSTONE_SPASSWORD_VERSION python36
+ENV KEYSTONE_SPASSWORD_VERSION python36h
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
@@ -57,7 +57,9 @@ RUN \
     chmod 755 /usr/bin/openstack-config && \
     yum -y install unzip tcping jq python3-redis && \
     echo "INFO: install cracklib...\n" && \
-    yum -y install cracklib && \
+    yum -y install cracklib gcc python3-devel && \
+    yum localinstall -y --nogpgcheck cracklib-devel-2.9.6-15.el8.x86_64.rpm && \
+    pip3 install cracklib && \
     #yum -y install cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
@@ -85,8 +87,8 @@ RUN \
     # Keystone postconfig file
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
-    mkdir -p /usr/lib/python2.7/site-packages/keystone/contrib && \
-    touch /usr/lib/python2.7/site-packages/keystone/contrib/__init__.py && \    
+    mkdir -p /usr/lib/python3.6/site-packages/keystone/contrib && \
+    touch /usr/lib/python3.6/site-packages/keystone/contrib/__init__.py && \    
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
