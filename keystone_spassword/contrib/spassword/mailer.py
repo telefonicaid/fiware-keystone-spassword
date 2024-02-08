@@ -19,8 +19,8 @@
 # under the License.
 
 import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from keystone import exception
 try: from oslo_log import log
