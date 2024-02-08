@@ -8,7 +8,7 @@ Distribution: noarch
 Vendor: Telefonica I+D
 Group: Applications/System
 Packager: Telefonica I+D
-Requires: openstack-keystone keystone-scim cracklib #cracklib-python
+Requires: openstack-keystone keystone-scim cracklib
 autoprov: no
 autoreq: no
 Prefix: /opt
