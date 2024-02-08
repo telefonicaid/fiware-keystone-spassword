@@ -139,7 +139,8 @@ class RestOperations(object):
             except ValueError:
                 res.msg = data
             except Exception as e:
-                print e
+                print(e)
+
         except urllib2.URLError, e:
             data = None
             res = e
