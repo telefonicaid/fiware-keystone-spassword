@@ -5,7 +5,7 @@ MAINTAINER IoT team
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 #ENV KEYSTONE_SCIM_VERSION 1.6.0
-ENV KEYSTONE_SCIM_VERSION python36
+ENV KEYSTONE_SCIM_VERSION python36b
 #ENV KEYSTONE_SPASSWORD_VERSION 1.17.0
 ENV KEYSTONE_SPASSWORD_VERSION python36h
 
@@ -24,15 +24,11 @@ RUN \
     yum update -y && yum install -y curl && \
     # rpm -qa && \
     yum install -y epel-release && yum update -y epel-release && \
-    #yum localinstall -y --nogpgcheck qpid-proton-c-0.34.0-2.el7.x86_64.rpm && \
-    #yum localinstall -y --nogpgcheck python2-qpid-proton-0.34.0-2.el7.x86_64.rpm && \
     # Install MySQL client
     yum -y install mysql git && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python3 cronie && \
-    # curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/openstack-stein/rdo-release-stein-3.noarch.rpm' > rdo-release-stein-3.noarch.rpm && \
-    # yum localinstall -y --nogpgcheck rdo-release-stein-3.noarch.rpm && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-train/rdo-release-train-4.el8.noarch.rpm' > rdo-release-train-4.el8.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-train-4.el8.noarch.rpm && \
     # Set Centos mirror to ensure openstack version
@@ -44,7 +40,7 @@ RUN \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/messaging.repo && \
     yum update -y && \
     # Install keystone dependencies
-    yum -y install crudini openstack-keystone python3-keystoneclient && \
+    yum -y install crudini openstack-keystone python3-keystoneclient python3-openstackclient && \
     yum -y install httpd python3-mod_wsgi && \
     # https://docs.openstack.org/keystone/queens/install/
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
@@ -60,7 +56,6 @@ RUN \
     yum -y install cracklib gcc python3-devel && \
     yum localinstall -y --nogpgcheck cracklib-devel-2.9.6-15.el8.x86_64.rpm && \
     pip3 install cracklib && \
-    #yum -y install cracklib-python && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001  && \
@@ -125,6 +120,10 @@ RUN \
     identity domain_specific_drivers_enabled true && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_config_dir /etc/keystone/domains && \
+    # CORS
+    openstack-config --set /etc/keystone/keystone.conf \
+    #cors allowed_origin https://localhost && \
+    cors allowed_origin * && \
     # Federation by SAML2 pre-support
     yum install -y xmlsec1 && \
     # Patching ...
@@ -160,12 +159,13 @@ RUN \
     patch -f -p0 < /opt/keystone/api_auth.patch && \
     find /usr/lib/python3.6/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python3.6/site-packages/keystone -name "*.pyo" -delete && \
-    sed -ri \
-              -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
-              -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
-              /etc/httpd/conf.d/wsgi-keystone.conf && \
+    # sed -ri \
+    #           -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
+    #           -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
+    #           /etc/httpd/conf.d/wsgi-keystone.conf && \
     rm /etc/keystone/logging.conf && \
     # Cleaning unused files...
+    yum -y remove gcc python3-devel && \
     rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
     rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
