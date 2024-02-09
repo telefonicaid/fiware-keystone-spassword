@@ -29,8 +29,8 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python3 cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-train/rdo-release-train-4.el8.noarch.rpm' > rdo-release-train-4.el8.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-train-4.el8.noarch.rpm && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-ussuri/rdo-release-ussuri-4.el8.noarch.rpm' > rdo-release-ussuri-4.el8.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-ussuri-4.el8.noarch.rpm && \
     # Set Centos mirror to ensure openstack version
     #sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/rdo-release.repo && \
