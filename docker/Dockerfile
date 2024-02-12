@@ -38,6 +38,17 @@ RUN \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/messaging.repo && \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/messaging.repo && \
+    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/messaging.repo && \
+    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/advanced-virtualization.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/advanced-virtualization.repo && \
+    sed -i 's|advancedvirt-common|advanced-virtualization|g' /etc/yum.repos.d/advanced-virtualization.repo && \
+    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/advanced-virtualization.repo && \
+    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/nfv-openvswitch.repo && \
+    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
+    # sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/messaging.repo && \
+    # sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/advanced-virtualization.repo && \
+    # sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
     yum update -y && \
     # Install keystone dependencies
     yum -y install crudini openstack-keystone python3-keystoneclient python3-openstackclient && \
