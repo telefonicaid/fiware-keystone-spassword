@@ -29,8 +29,8 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python3 cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/archived/openstack-wallaby/rdo-release-wallaby-2.el8.noarch.rpm' > rdo-release-wallaby-2.el8.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-wallaby-2.el8.noarch.rpm && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/archived/openstack-xena/rdo-release-xena-2.el8.noarch.rpm' > rdo-release-xena-2.el8.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-xena-2.el8.noarch.rpm && \
     # Set Centos mirror to ensure openstack version
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://buildlogs.centos.org|g' /etc/yum.repos.d/rdo-release.repo && \
@@ -49,10 +49,10 @@ RUN \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/nfv-openvswitch.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
     sed -i 's/$stream/8.4.2105/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/ceph-nautilus.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/ceph-nautilus.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-nautilus.repo && \
-    sed -i 's/$stream/8.4.2105/g' /etc/yum.repos.d/ceph-nautilus.repo && \
+    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/ceph-pacific.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/ceph-pacific.repo && \
+    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-pacific.repo && \
+    sed -i 's/$stream/8.4.2105/g' /etc/yum.repos.d/ceph-pacific.repo && \
     yum update -y && \
     # Install keystone dependencies
     yum -y install crudini openstack-keystone python3-keystoneclient python3-openstackclient && \
