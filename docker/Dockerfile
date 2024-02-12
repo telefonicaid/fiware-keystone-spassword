@@ -29,14 +29,13 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python3 cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-victoria/rdo-release-victoria-4.el8.noarch.rpm' > rdo-release-victoria-4.el8.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-victoria-4.el8.noarch.rpm && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/archived/openstack-wallaby/rdo-release-wallaby-2.el8.noarch.rpm' > rdo-release-wallaby-2.el8.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-wallaby-2.el8.noarch.rpm && \
     # Set Centos mirror to ensure openstack version
-    #sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/rdo-release.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/rdo-release.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://buildlogs.centos.org|g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
-    sed -i 's/$stream/8.4.2105/g' /etc/yum.repos.d/rdo-release.repo && \
+    sed -i 's/$stream/8-stream/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/messaging.repo && \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/messaging.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/messaging.repo && \
@@ -54,9 +53,6 @@ RUN \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/ceph-nautilus.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-nautilus.repo && \
     sed -i 's/$stream/8.4.2105/g' /etc/yum.repos.d/ceph-nautilus.repo && \
-    # sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/messaging.repo && \
-    # sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/advanced-virtualization.repo && \
-    # sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
     yum update -y && \
     # Install keystone dependencies
     yum -y install crudini openstack-keystone python3-keystoneclient python3-openstackclient && \
