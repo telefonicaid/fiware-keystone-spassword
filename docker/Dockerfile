@@ -29,8 +29,8 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils && \
     yum -y install python3 cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-ussuri/rdo-release-ussuri-4.el8.noarch.rpm' > rdo-release-ussuri-4.el8.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-ussuri-4.el8.noarch.rpm && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/EOL/openstack-victoria/rdo-release-victoria-4.el8.noarch.rpm' > rdo-release-victoria-4.el8.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-victoria-4.el8.noarch.rpm && \
     # Set Centos mirror to ensure openstack version
     #sed -i 's/http:\/\/mirror.centos.org/https:\/\/buildlogs.centos.org/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/rdo-release.repo && \
@@ -50,6 +50,10 @@ RUN \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/nfv-openvswitch.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
     sed -i 's/$stream/8.4.2105/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
+    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/ceph-nautilus.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/ceph-nautilus.repo && \
+    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-nautilus.repo && \
+    sed -i 's/$stream/8.4.2105/g' /etc/yum.repos.d/ceph-nautilus.repo && \
     # sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/messaging.repo && \
     # sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/advanced-virtualization.repo && \
     # sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
