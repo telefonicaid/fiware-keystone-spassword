@@ -159,10 +159,10 @@ RUN \
     patch -f -p0 < /opt/keystone/api_auth.patch && \
     find /usr/lib/python3.6/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python3.6/site-packages/keystone -name "*.pyo" -delete && \
-    # sed -ri \
-    #           -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
-    #           -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
-    #           /etc/httpd/conf.d/wsgi-keystone.conf && \
+    sed -ri \
+              -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
+              -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
+              /etc/httpd/conf.d/wsgi-keystone.conf && \
     rm /etc/keystone/logging.conf && \
     # Cleaning unused files...
     yum -y remove gcc python3-devel && \

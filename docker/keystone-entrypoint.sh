@@ -51,9 +51,11 @@ tail -17 /etc/keystone/keystone.conf
 touch /var/log/keystone/keystone.log
 chmod 777 /var/log/keystone/
 chmod 777 /var/log/keystone/keystone.log
-#ln -snf /dev/stdout /var/log/keystone/keystone.log
 echo "[ keystone-entrypoint - keystone-all ] "
 /usr/bin/keystone-all &
+sleep 5
+rm -f /var/log/keystone/keystone.log
+ln -snf /dev/stdout /var/log/keystone/keystone.log
 
 sleep infinity
 
