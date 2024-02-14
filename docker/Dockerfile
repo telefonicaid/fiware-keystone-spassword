@@ -63,8 +63,7 @@ RUN \
     chmod 755 /usr/bin/keystone-all && \
     cp /opt/keystone/openstack-config.sh /usr/bin/openstack-config && \
     chmod 755 /usr/bin/openstack-config && \
-    yum -y install unzip  jq python3-redis && \
-    #yum -y install tcping && \
+    yum -y install unzip nmap-ncat jq python3-redis && \
     echo "INFO: install cracklib...\n" && \
     yum -y install cracklib gcc python3-devel && \
     yum localinstall -y --nogpgcheck cracklib-devel-2.9.6-27.el9.x86_64.rpm && \
