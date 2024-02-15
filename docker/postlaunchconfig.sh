@@ -265,38 +265,42 @@ ID_ADMIN_DOMAIN=`openstack domain list | grep "admin_domain" | awk '{print $2}'`
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 
-ID_CLOUD_SERVICE=$(\
-curl http://${KEYSTONE_HOST}/v3/users             \
-         -s                                       \
-         -H "X-Auth-Token: $ADMIN_TOKEN"          \
-         -H "Content-Type: application/json"      \
-         -d '
-  {
-      "user": {
-          "description": "Cloud service",
-          "domain_id": "'$ID_ADMIN_DOMAIN'",
-          "enabled": true,
-          "name": "pep",
-          "password": "'$KEYSTONE_ADMIN_PASSWORD'"
-      }
-  }' | jq .user.id | tr -d '"' )
+# ID_CLOUD_SERVICE=$(\
+# curl http://${KEYSTONE_HOST}/v3/users             \
+#          -s                                       \
+#          -H "X-Auth-Token: $ADMIN_TOKEN"          \
+#          -H "Content-Type: application/json"      \
+#          -d '
+#   {
+#       "user": {
+#           "description": "Cloud service",
+#           "domain_id": "'$ID_ADMIN_DOMAIN'",
+#           "enabled": true,
+#           "name": "pep",
+#           "password": "'$KEYSTONE_ADMIN_PASSWORD'"
+#       }
+#   }' | jq .user.id | tr -d '"' )
+openstack user create --domain $ID_ADMIN_DOMAIN --password $KEYSTONE_ADMIN_PASSWORD pep
+ID_CLOUD_SERVICE=`openstack user list | grep "pep" | awk '{print $2}'`
 echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
-ID_CLOUD_ADMIN=$(\
-curl http://${KEYSTONE_HOST}/v3/users              \
-         -s                                        \
-         -H "X-Auth-Token: $ADMIN_TOKEN"           \
-         -H "Content-Type: application/json"       \
-         -d '
-  {
-      "user": {
-          "description": "Cloud administrator",
-          "domain_id": "'$ID_ADMIN_DOMAIN'",
-          "enabled": true,
-          "name": "cloud_admin",
-          "password": "'$KEYSTONE_ADMIN_PASSWORD'"
-      }
-  }' | jq .user.id | tr -d '"' )
+# ID_CLOUD_ADMIN=$(\
+# curl http://${KEYSTONE_HOST}/v3/users              \
+#          -s                                        \
+#          -H "X-Auth-Token: $ADMIN_TOKEN"           \
+#          -H "Content-Type: application/json"       \
+#          -d '
+#   {
+#       "user": {
+#           "description": "Cloud administrator",
+#           "domain_id": "'$ID_ADMIN_DOMAIN'",
+#           "enabled": true,
+#           "name": "cloud_admin",
+#           "password": "'$KEYSTONE_ADMIN_PASSWORD'"
+#       }
+#   }' | jq .user.id | tr -d '"' )
+openstack user create --domain $ID_ADMIN_DOMAIN --password $KEYSTONE_ADMIN_PASSWORD cloud_admin
+ID_CLOUD_SERVICE=`openstack user list | grep "cloud_admin" | awk '{print $2}'`
 echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
 
 ADMIN_ROLE_ID=$(\
