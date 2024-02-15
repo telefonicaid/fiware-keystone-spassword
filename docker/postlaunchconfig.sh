@@ -259,7 +259,7 @@ echo "ADMIN_TOKEN: $ADMIN_TOKEN"
 #       "description": "admin_domain desc"
 #       }
 #   }' | jq .domain.id | tr -d '"' )
-echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
+#echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 openstack domain create admin_domain
 ID_ADMIN_DOMAIN=`openstack domain list | grep "admin_domain" | awk '{print $2}'`
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
