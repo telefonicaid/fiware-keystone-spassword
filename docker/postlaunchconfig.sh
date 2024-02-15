@@ -318,8 +318,8 @@ echo "ADMIN_ROLE_ID: $ADMIN_ROLE_ID"
 #      -H "Accept: application/json"      \
 #      -H "Content-Type: application/json"\
 #      -d '{ }'
-openstack role add --user cloud_admin --domain admin_domain admin
-openstack role add --user cloud_admin --project admin_domain admin
+MSG=`openstack role add --user cloud_admin --domain admin_domain admin`
+echo "MSG: $MSG"
 
 
 SERVICE_ROLE_ID=$(\
@@ -336,8 +336,8 @@ echo "SERVICE_ROLE_ID: $SERVICE_ROLE_ID"
 #       -H "Accept: application/json"      \
 #       -H "Content-Type: application/json"\
 #       -d '{ }'
-openstack role add --user pep --domain admin_domain service
-openstack role add --user pep --project admin_domain service
+MSG=`openstack role add --user pep --domain admin_domain service`
+echo "MSG: $MSG"
 
 cat /opt/keystone/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
