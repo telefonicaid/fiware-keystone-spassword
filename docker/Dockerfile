@@ -5,7 +5,7 @@ MAINTAINER IoT team
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 #ENV KEYSTONE_SCIM_VERSION 1.6.0
-ENV KEYSTONE_SCIM_VERSION python39b
+ENV KEYSTONE_SCIM_VERSION python39c
 #ENV KEYSTONE_SPASSWORD_VERSION 1.17.0
 ENV KEYSTONE_SPASSWORD_VERSION python39b
 
@@ -169,12 +169,21 @@ RUN \
     patch -f -p0 < /opt/keystone/projects.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/api/_shared && \
     patch -f -p0 < /opt/keystone/api_auth.patch && \
+<<<<<<< HEAD
     find /usr/lib/python3.9/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python3.9/site-packages/keystone -name "*.pyo" -delete && \
     # sed -ri \
     #           -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
     #           -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
     #           /etc/httpd/conf.d/wsgi-keystone.conf && \
+=======
+    find /usr/lib/python3.6/site-packages/keystone -name "*.pyc" -delete && \
+    find /usr/lib/python3.6/site-packages/keystone -name "*.pyo" -delete && \
+    sed -ri \
+              -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
+              -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
+              /etc/httpd/conf.d/wsgi-keystone.conf && \
+>>>>>>> task/upgrade_xena
     rm /etc/keystone/logging.conf && \
     # Cleaning unused files...
     yum -y remove gcc python3-devel && \

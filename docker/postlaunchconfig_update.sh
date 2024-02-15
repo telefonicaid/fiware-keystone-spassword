@@ -170,6 +170,11 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
 
+# Convert oslo-policy from json to yaml
+oslopolicy-convert-json-to-yaml --namespace keystone \
+  --policy-file /etc/keystone/policy.json \
+  --output-file /etc/keystone/policy.yaml
+
 echo "[ postlaunchconfig_update - db_sync ] "
 /usr/bin/keystone-manage db_sync
 

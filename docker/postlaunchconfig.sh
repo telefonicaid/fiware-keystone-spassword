@@ -116,8 +116,8 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT debug True
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT insecure_debug True
-    openstack-config --set /etc/keystone/keystone.conf \
-    wsgi debug_middleware True
+    # openstack-config --set /etc/keystone/keystone.conf \
+    # wsgi debug_middleware True
 fi
 
 openstack-config --set /etc/keystone/keystone.conf \
@@ -362,6 +362,12 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
+
+# Convert oslo-policy from json to yaml
+oslopolicy-convert-json-to-yaml --namespace keystone \
+  --policy-file /etc/keystone/policy.json \
+  --output-file /etc/keystone/policy.yaml
+
 
 # Set another ADMIN TOKEN
 openstack-config --set /etc/keystone/keystone.conf \
