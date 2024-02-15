@@ -246,20 +246,21 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
 echo "ADMIN_TOKEN: $ADMIN_TOKEN"
 [[ "${ADMIN_TOKEN}" == "" ]] && exit 0
 
-ID_ADMIN_DOMAIN=$(\
-curl http://${KEYSTONE_HOST}/v3/domains          \
-         -s                                      \
-         -H "X-Auth-Token: $ADMIN_TOKEN"         \
-         -H "Content-Type: application/json"     \
-         -d '
-  {
-      "domain": {
-      "enabled": true,
-      "name": "admin_domain",
-      "description": "admin_domain desc"
-      }
-  }' | jq .domain.id | tr -d '"' )
+# ID_ADMIN_DOMAIN=$(\
+# curl http://${KEYSTONE_HOST}/v3/domains          \
+#          -s                                      \
+#          -H "X-Auth-Token: $ADMIN_TOKEN"         \
+#          -H "Content-Type: application/json"     \
+#          -d '
+#   {
+#       "domain": {
+#       "enabled": true,
+#       "name": "admin_domain",
+#       "description": "admin_domain desc"
+#       }
+#   }' | jq .domain.id | tr -d '"' )
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
+openstack domain create admin_domain
 ID_ADMIN_DOMAIN=`openstack domain list | grep "admin_domain" | awk '{print $2}'`
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
