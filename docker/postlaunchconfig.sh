@@ -246,62 +246,17 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
 echo "ADMIN_TOKEN: $ADMIN_TOKEN"
 [[ "${ADMIN_TOKEN}" == "" ]] && exit 0
 
-# ID_ADMIN_DOMAIN=$(\
-# curl http://${KEYSTONE_HOST}/v3/domains          \
-#          -s                                      \
-#          -H "X-Auth-Token: $ADMIN_TOKEN"         \
-#          -H "Content-Type: application/json"     \
-#          -d '
-#   {
-#       "domain": {
-#       "enabled": true,
-#       "name": "admin_domain",
-#       "description": "admin_domain desc"
-#       }
-#   }' | jq .domain.id | tr -d '"' )
-#echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 openstack domain create admin_domain
 ID_ADMIN_DOMAIN=`openstack domain list | grep "admin_domain" | awk '{print $2}'`
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 
-# ID_CLOUD_SERVICE=$(\
-# curl http://${KEYSTONE_HOST}/v3/users             \
-#          -s                                       \
-#          -H "X-Auth-Token: $ADMIN_TOKEN"          \
-#          -H "Content-Type: application/json"      \
-#          -d '
-#   {
-#       "user": {
-#           "description": "Cloud service",
-#           "domain_id": "'$ID_ADMIN_DOMAIN'",
-#           "enabled": true,
-#           "name": "pep",
-#           "password": "'$KEYSTONE_ADMIN_PASSWORD'"
-#       }
-#   }' | jq .user.id | tr -d '"' )
-openstack user create --domain $ID_ADMIN_DOMAIN --password $KEYSTONE_ADMIN_PASSWORD pep
-ID_CLOUD_SERVICE=`openstack user list | grep "pep" | awk '{print $2}'`
+openstack user create --domain admin_domain --password $KEYSTONE_ADMIN_PASSWORD pep
+ID_CLOUD_SERVICE=`openstack user list --domain admin_domain | grep "pep" | awk '{print $2}'`
 echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
-# ID_CLOUD_ADMIN=$(\
-# curl http://${KEYSTONE_HOST}/v3/users              \
-#          -s                                        \
-#          -H "X-Auth-Token: $ADMIN_TOKEN"           \
-#          -H "Content-Type: application/json"       \
-#          -d '
-#   {
-#       "user": {
-#           "description": "Cloud administrator",
-#           "domain_id": "'$ID_ADMIN_DOMAIN'",
-#           "enabled": true,
-#           "name": "cloud_admin",
-#           "password": "'$KEYSTONE_ADMIN_PASSWORD'"
-#       }
-#   }' | jq .user.id | tr -d '"' )
-openstack user create --domain $ID_ADMIN_DOMAIN --password $KEYSTONE_ADMIN_PASSWORD cloud_admin
-openstack user list | grep "cloud_admin"
-ID_CLOUD_ADMIN=`openstack user list | grep "cloud_admin" | awk '{print $2}'`
+openstack user create --domain admin_domain --password $KEYSTONE_ADMIN_PASSWORD cloud_admin
+ID_CLOUD_ADMIN=`openstack user list --domain admin_domain | grep "cloud_admin" | awk '{print $2}'`
 echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
 
 ADMIN_ROLE_ID=$(\
@@ -311,15 +266,13 @@ curl "http://${KEYSTONE_HOST}/v3/roles?name=admin"  \
         | jq .roles[0].id | tr -d '"' )
 echo "ADMIN_ROLE_ID: $ADMIN_ROLE_ID"
 
-# curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_ADMIN}/roles/${ADMIN_ROLE_ID} \
-#      -s                                 \
-#      -i                                 \
-#      -H "X-Auth-Token: $ADMIN_TOKEN"    \
-#      -H "Accept: application/json"      \
-#      -H "Content-Type: application/json"\
-#      -d '{ }'
-MSG=`openstack role add --user cloud_admin --domain admin_domain admin`
-echo "MSG: $MSG"
+curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_ADMIN}/roles/${ADMIN_ROLE_ID} \
+     -s                                 \
+     -i                                 \
+     -H "X-Auth-Token: $ADMIN_TOKEN"    \
+     -H "Accept: application/json"      \
+     -H "Content-Type: application/json"\
+     -d '{ }'
 
 
 SERVICE_ROLE_ID=$(\
@@ -329,15 +282,13 @@ curl "http://${KEYSTONE_HOST}/v3/roles?name=service" \
         | jq .roles[0].id | tr -d '"' )
 echo "SERVICE_ROLE_ID: $SERVICE_ROLE_ID"
 
-# curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_SERVICE}/roles/${SERVICE_ROLE_ID} \
-#       -s                                 \
-#       -i                                 \
-#       -H "X-Auth-Token: $ADMIN_TOKEN"    \
-#       -H "Accept: application/json"      \
-#       -H "Content-Type: application/json"\
-#       -d '{ }'
-MSG=`openstack role add --user pep --domain admin_domain service`
-echo "MSG: $MSG"
+curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_SERVICE}/roles/${SERVICE_ROLE_ID} \
+      -s                                 \
+      -i                                 \
+      -H "X-Auth-Token: $ADMIN_TOKEN"    \
+      -H "Accept: application/json"      \
+      -H "Content-Type: application/json"\
+      -d '{ }'
 
 cat /opt/keystone/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
