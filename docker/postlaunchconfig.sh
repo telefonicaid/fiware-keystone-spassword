@@ -330,6 +330,8 @@ oslopolicy-convert-json-to-yaml --namespace keystone \
   --policy-file /etc/keystone/policy.json \
   --output-file /etc/keystone/policy.yaml
 
+sed -i 's/role:admin and "%":%(user.id)%/role:admin and \"%\":%(user.id)%/g' /etc/keystone/policy.yaml
+sed -i 's/role:admin and "%":%(scope.project.id)%"/role:admin and \"%\":%(scope.project.id)%/g' /etc/keystone/policy.yaml
 
 # Set another ADMIN TOKEN
 openstack-config --set /etc/keystone/keystone.conf \
