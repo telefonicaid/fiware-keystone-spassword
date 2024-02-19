@@ -175,8 +175,7 @@ oslopolicy-convert-json-to-yaml --namespace keystone \
   --policy-file /etc/keystone/policy.json \
   --output-file /etc/keystone/policy.yaml
 
-sed -i 's/role:admin and "%":%(user.id)%/role:admin and \"%\":%(user.id)%/g' /etc/keystone/policy.yaml
-sed -i 's/role:admin and "%":%(scope.project.id)%"/role:admin and \"%\":%(scope.project.id)%/g' /etc/keystone/policy.yaml
+sed -i 's/\"%\"/\\"%\\"/g' /etc/keystone/policy.yaml
 
 echo "[ postlaunchconfig_update - db_sync ] "
 /usr/bin/keystone-manage db_sync
