@@ -29,7 +29,7 @@ RUN \
     # Install MySQL client
     yum -y install mysql git && \
     # Install keystone dependencies
-    yum -y install rpm-build tar findutils procps-ng && \
+    yum -y install rpm-build tar findutils procps-ng chkconfig && \
     yum -y install python3 cronie && \
     curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/archived/openstack-yoga/rdo-release-yoga-2.el9s.noarch.rpm' > rdo-release-yoga-2.el9s.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-yoga-2.el9s.noarch.rpm && \
