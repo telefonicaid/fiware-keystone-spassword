@@ -7,12 +7,14 @@ ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 #ENV KEYSTONE_SCIM_VERSION 1.6.0
 ENV KEYSTONE_SCIM_VERSION python39c
 #ENV KEYSTONE_SPASSWORD_VERSION 1.17.0
-ENV KEYSTONE_SPASSWORD_VERSION python39c
+ENV KEYSTONE_SPASSWORD_VERSION python39d
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
 COPY ./*.rpm /opt/keystone/
 COPY ./*.json /opt/keystone/
+COPY ./*.py /opt/keystone/
+COPY ./*.cfg /opt/keystone/
 COPY ./keystone-all /opt/keystone/
 
 WORKDIR /opt/keystone
@@ -95,7 +97,13 @@ RUN \
     chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
     ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
     mkdir -p /usr/lib/python3.9/site-packages/keystone/contrib && \
-    touch /usr/lib/python3.9/site-packages/keystone/contrib/__init__.py && \    
+    touch /usr/lib/python3.9/site-packages/keystone/contrib/__init__.py && \
+    mkdir -p /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo && \
+    touch /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo/__init__.py && \
+    mkdir -p /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo/versions && \
+    touch /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo/versions/__init__.py && \
+    cp /opt/keystone/manage.py /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo && \
+    cp /opt/keystone/migrate.cfg /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
