@@ -98,13 +98,6 @@ RUN \
     ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
     mkdir -p /usr/lib/python3.9/site-packages/keystone/contrib && \
     touch /usr/lib/python3.9/site-packages/keystone/contrib/__init__.py && \
-    mkdir -p /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo && \
-    touch /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo/__init__.py && \
-    mkdir -p /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo/versions && \
-    touch /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo/versions/__init__.py && \
-    cp /opt/keystone/manage.py /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo && \
-    cp /opt/keystone/migrate.cfg /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/migrate_repo && \
-    # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
     repo_scim="fiware-keystone-scim" && \
