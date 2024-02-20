@@ -98,7 +98,7 @@ RUN \
     ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
     mkdir -p /usr/lib/python3.9/site-packages/keystone/contrib && \
     touch /usr/lib/python3.9/site-packages/keystone/contrib/__init__.py && \
-    cp /opt/keystone/27e647c0fad4_initial_version.py  /usr/lib/python3.9/site-packages/keystone/common/sql/migrations/versions
+    cp /opt/keystone/27e647c0fad4_initial_version.py  /usr/lib/python3.9/site-packages/keystone/common/sql/migrations/versions && \
     # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
