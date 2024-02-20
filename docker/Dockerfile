@@ -7,7 +7,7 @@ ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 #ENV KEYSTONE_SCIM_VERSION 1.6.0
 ENV KEYSTONE_SCIM_VERSION python39c
 #ENV KEYSTONE_SPASSWORD_VERSION 1.17.0
-ENV KEYSTONE_SPASSWORD_VERSION python39d
+ENV KEYSTONE_SPASSWORD_VERSION python39e
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
@@ -98,6 +98,8 @@ RUN \
     ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
     mkdir -p /usr/lib/python3.9/site-packages/keystone/contrib && \
     touch /usr/lib/python3.9/site-packages/keystone/contrib/__init__.py && \
+    cp /opt/keystone/27e647c0fad4_initial_version.py  /usr/lib/python3.9/site-packages/keystone/common/sql/migrations/versions
+    # Install Keystone-SCIM
     tag=$KEYSTONE_SCIM_VERSION && \
     user="telefonicaid" && \
     repo_scim="fiware-keystone-scim" && \
