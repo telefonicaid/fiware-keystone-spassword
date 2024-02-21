@@ -33,8 +33,8 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils procps-ng chkconfig && \
     yum -y install python3 cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/archived/openstack-yoga/rdo-release-yoga-2.el9s.noarch.rpm' > rdo-release-yoga-2.el9s.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-yoga-2.el9s.noarch.rpm && \
+    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/archived/openstack-zed/rdo-release-zed-2.el9s.noarch.rpm' > rdo-release-zed-2.el9s.noarch.rpm && \
+    yum localinstall -y --nogpgcheck rdo-release-zed-2.el9s.noarch.rpm && \
     # Set Centos mirror to ensure openstack version
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/rdo-release.repo && \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://buildlogs.centos.org|g' /etc/yum.repos.d/rdo-release.repo && \
@@ -49,9 +49,9 @@ RUN \
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/nfv-openvswitch.repo && \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/ceph-pacific.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/ceph-pacific.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-pacific.repo && \
+    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/ceph-quincy.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/ceph-quincy.repo && \
+    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-quincy.repo && \
     yum update -y && \
     # Install keystone dependencies
     yum -y install crudini openstack-keystone python3-keystoneclient python3-openstackclient && \
