@@ -4,8 +4,7 @@ MAINTAINER IoT team
 
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
-#ENV KEYSTONE_SCIM_VERSION 1.6.0
-ENV KEYSTONE_SCIM_VERSION python39c
+ENV KEYSTONE_SCIM_VERSION 1.7.0
 #ENV KEYSTONE_SPASSWORD_VERSION 1.17.0
 ENV KEYSTONE_SPASSWORD_VERSION python39b
 
@@ -57,7 +56,6 @@ RUN \
     # Install keystone dependencies
     yum -y install crudini openstack-keystone python3-keystoneclient python3-openstackclient && \
     yum -y install httpd python3-mod_wsgi && \
-    # https://docs.openstack.org/keystone/queens/install/
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
     ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
@@ -109,7 +107,6 @@ RUN \
     rm -fR $dir && mkdir -p $dir && \
     curl -s --insecure -L "${url_scim}" | tar zxvf - -C ${dir} && \
     cd ${dir}/${repo_scim}-${tag} && \
-    #source ./${pack_scim} --with-python27 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
     source ./${pack_scim} --with-python36 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # Install Keystone-SPASSWORD
@@ -137,7 +134,6 @@ RUN \
     identity domain_config_dir /etc/keystone/domains && \
     # CORS
     openstack-config --set /etc/keystone/keystone.conf \
-    #cors allowed_origin https://localhost && \
     cors allowed_origin * && \
     # Federation by SAML2 pre-support
     yum install -y xmlsec1 && \
@@ -181,7 +177,7 @@ RUN \
     rm /etc/keystone/logging.conf && \
     # Cleaning unused files...
     yum -y remove gcc python3-devel && \
-    rpm -e --nodeps redhat-logos || true && yum -y erase libss && \
+    yum -y erase libss && \
     yum clean all && rm -rf /var/lib/yum/yumdb && \
     rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
     rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm
