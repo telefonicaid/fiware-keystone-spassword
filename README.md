@@ -21,7 +21,8 @@ a recover procedure password, a second factor authentication (2FA)  and so on.
 - 1.7.0 uses keystone Pike
 - 1.8.0 uses keystone Queens
 - 1.9.0 uses keystone Rocky
-- 1.10.0 and further uses keystone Stein
+- 1.10.0 to 1.17.0 uses keystone Stein
+- 1.18.0 uses keystone Xena
 
 
 ## Installing and Configuration
@@ -158,7 +159,10 @@ mysql -u root -p keystone < table_spassword.sql
 ```
 Restart again keystone container
 
-##### Upgrade from 1.7.0,  1.8.0, 1.9.0
+##### Upgrade from 1.7.0 or upper to 1.17.0
+-> no workaround needed
+
+##### Upgrade from 1.17.0 to 1.18.0
 -> no workaround needed
 
 
