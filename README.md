@@ -121,7 +121,8 @@ https://hub.docker.com/repository/docker/telefonicaiot/fiware-keystone-spassword
 There are some [env vars  for configuration](docs/DOCKER.md)
 
 #### Upgrade from a older version:
-How to upgrade to latest (1.13.0) docker release:
+How to upgrade to latest (1.18.0) docker release:
+Before upgrade to 1.18.0 verison you should upgrade first to 1.17.0 version. Depending on the starting version some steps should be performed before.
 
 Normal procedure is stop container, update version in docker-compose and then up container; then container will be recreated.
 But, if starting version is between 1.4.X and 1.6.X then some steps should be done to achieve that.
@@ -130,6 +131,13 @@ Anyway, ensure you have a proper backup of mysql keystone database:
 mysqldump -u root -p keystone  > keystone_backup.sql
 ```
 And check in each step of migration that keystone works properly (i.e. is able to authenticate)
+
+Another way to create a copy of keystone database could be:
+```
+create database new_keystone" | mysql -u root -p
+mysqldump -u root --password=<pwd> keystone | mysql -u root -p new_keystone
+```
+
 
 ##### Upgrade from 1.4.X
 -> needs be upgrade to 1.5.4 version before and then perform the steps described for that version.
