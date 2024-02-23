@@ -1,4 +1,6 @@
-FROM quay.io/centos/centos:stream9
+ARG  IMAGE_TAG=12.4-slim
+FROM debian:${IMAGE_TAG}
+
 
 MAINTAINER IoT team
 
@@ -19,48 +21,44 @@ COPY ./keystone-all /opt/keystone/
 WORKDIR /opt/keystone
 
 RUN \
-    yum update -y && \
-    #yum install -y curl && \
-    dnf install curl -y --allowerasing && \
-    # rpm -qa && \
-    yum install -y epel-release && yum update -y epel-release && \
+    # Install security updates
+    apt-get -y update && \
+    apt-get -y upgrade && \
     # Install MySQL client
-    yum -y install mysql git && \
+    apt-get -y install \
+      mariadb-client \
+      git \
+      sed \
+      tar \
+      procps \
+      python3-dev \
+      python3-pip \
+      netcat-traditional \
+      cron \
+      rpm \
+      findutils && \
     # Install keystone dependencies
-    yum -y install rpm-build tar findutils procps-ng chkconfig && \
-    yum -y install python3 cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/archived/openstack-antelope/rdo-release-antelope-2.el9s.noarch.rpm' > rdo-release-antelope-2.el9s.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-antelope-2.el9s.noarch.rpm && \
-    # Set Centos mirror to ensure openstack version
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/rdo-release.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://buildlogs.centos.org|g' /etc/yum.repos.d/rdo-release.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/messaging.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/messaging.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/messaging.repo && \
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/nfv-openvswitch.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/ceph-quincy.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/ceph-quincy.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-quincy.repo && \
-    yum update -y && \
+    apt-get -y install \
+       crudini \
+       keystone \
+       python3-keystoneclient \
+    python3-openstackclient && \
     # Install keystone dependencies
-    yum -y install crudini openstack-keystone python3-keystoneclient python3-openstackclient && \
-    yum -y install httpd python3-mod_wsgi && \
-    sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
+    apt-get -y install \
+       apache2 \
+       libapache2-mod-wsgi-py3 && \
+    sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/apache2/apache2.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
-    ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
-    systemctl enable httpd.service && \
+    ln -s /usr/share/keystone/wsgi-keystone.conf /etc/apache2/conf-enabled/ && \
+    systemctl enable apache2.service && \
     cp /opt/keystone/keystone-all /usr/bin && \
     chmod 755 /usr/bin/keystone-all && \
     cp /opt/keystone/openstack-config.sh /usr/bin/openstack-config && \
     chmod 755 /usr/bin/openstack-config && \
-    yum -y install unzip nmap-ncat jq python3-redis && \
+    apt-get -y install unzip jq python3-redis && \
     echo "INFO: install cracklib...\n" && \
-    yum -y install cracklib gcc python3-devel && \
-    yum localinstall -y --nogpgcheck cracklib-devel-2.9.6-27.el9.x86_64.rpm && \
-    pip3 install cracklib && \
+    apt-get -y install python3-cracklib && \
+    #pip3 install cracklib && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001  && \
@@ -115,7 +113,7 @@ RUN \
     source ./${pack_spassword} --with-python39 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
     find . -name "*.rpm" -exec rpm -Uvh {} \; && \
     # LDAP pre-support
-    yum -y install openldap-clients && \
+    apt-get -y install openldap-clients && \
     mkdir -p /etc/ldap && \
     ln -s /etc/openldap/ldap.conf /etc/ldap/ldap.conf && \
     mkdir -p /etc/keystone/domains && \
@@ -125,7 +123,7 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_config_dir /etc/keystone/domains && \
     # Federation by SAML2 pre-support
-    yum install -y xmlsec1 && \
+    apt-get install -y xmlsec1 && \
     # Patching ...
     ln -s /usr/lib/python3.9/site-packages/keystone/contrib/scim/scim.py  /usr/lib/python3.9/site-packages/keystone/api && \
     ln -s /usr/lib/python3.9/site-packages/keystone/contrib/spassword/spassword.py  /usr/lib/python3.9/site-packages/keystone/api && \
@@ -164,13 +162,12 @@ RUN \
     sed -ri \
               -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
               -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
-              /etc/httpd/conf.d/wsgi-keystone.conf && \
+              /etc/apache2/conf-enabled/wsgi-keystone.conf && \
     rm /etc/keystone/logging.conf && \
     # Cleaning unused files...
-    yum -y remove gcc python3-devel && \
-    yum -y erase libss && \
-    yum clean all && rm -rf /var/lib/yum/yumdb && \
-    rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
+    apt-get remove -y python3-devel && \
+    apt-get -y autoremove --purge && \
+    find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
     rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm
 
 
