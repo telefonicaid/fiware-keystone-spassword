@@ -124,9 +124,6 @@ RUN \
     identity domain_specific_drivers_enabled true && \
     openstack-config --set /etc/keystone/keystone.conf \
     identity domain_config_dir /etc/keystone/domains && \
-    # CORS
-    openstack-config --set /etc/keystone/keystone.conf \
-    cors allowed_origin * && \
     # Federation by SAML2 pre-support
     yum install -y xmlsec1 && \
     # Patching ...
