@@ -116,8 +116,6 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT debug True
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT insecure_debug True
-    # openstack-config --set /etc/keystone/keystone.conf \
-    # wsgi debug_middleware True
 fi
 
 openstack-config --set /etc/keystone/keystone.conf \
