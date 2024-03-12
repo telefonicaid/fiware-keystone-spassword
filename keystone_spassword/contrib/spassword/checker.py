@@ -39,7 +39,7 @@ class CheckPassword(object):
         try:
             if CONF.spassword.enabled:
                 cracklib.VeryFascistCheck(new_password)
-        except ValueError, msg:
+        except ValueError as msg:
             LOG.debug('The password is too weak %s, ' % msg)
             raise exception.ValidationError(
                 message="SPASSWORD: %s" % msg)

@@ -19,8 +19,8 @@
 # under the License.
 
 import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from keystone import exception
 try: from oslo_log import log
@@ -80,7 +80,7 @@ class SendMail(object):
 
         try:
             server.sendmail(CONF.spassword.smtp_from, dest, msg)
-        except Exception, ex:  # try to avoid catching Exception unless you have too
+        except Exception as ex:  # try to avoid catching Exception unless you have too
             LOG.error('SMTP sendmail error %s' % ex)
             return False
         finally:

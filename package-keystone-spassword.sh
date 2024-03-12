@@ -10,6 +10,8 @@ source $BASE/get_version_string.sh
 string=$(get_rpm_version_string)
 VERSION_VALUE=${string% *}
 RELEASE_VALUE=${string#* }
+PYTHON27_VALUE=0
+PYTHON36_VALUE=0
 
 args=("$@")
 ELEMENTS=${#args[@]}
@@ -18,6 +20,9 @@ for (( i=0;i<$ELEMENTS;i++)); do
     arg=${args[${i}]}
     if [ "$arg" == "--with-python27" ]; then
         PYTHON27_VALUE=1
+    fi
+    if [ "$arg" == "--with-python36" ]; then
+        PYTHON36_VALUE=1
     fi
     if [ "$arg" == "--with-version" ]; then
         VERSION_VALUE=${args[${i}+1]}
@@ -35,4 +40,5 @@ rpmbuild -bb keystone-spassword.spec \
   --define "_root $BASE"\
   --define "_version $VERSION_VALUE"\
   --define "_release $RELEASE_VALUE"\
-  --define "with_python27 $PYTHON27_VALUE"
+  --define "with_python27 $PYTHON27_VALUE"\
+  --define "with_python36 $PYTHON36_VALUE"

@@ -89,8 +89,6 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT debug True
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT insecure_debug True
-    openstack-config --set /etc/keystone/keystone.conf \
-    wsgi debug_middleware True
 fi
 
 openstack-config --set /etc/keystone/keystone.conf \
@@ -143,8 +141,8 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .["identity:scim_delete_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_service_provider_configs"]=""
      | .["identity:get_domain"]=""
-     | .admin_and_user_filter="role:admin and \"%\":%(user.id)%"
-     | .admin_and_project_filter="role:admin and \"%\":%(scope.project.id)%"
+     | .admin_and_user_filter="role:admin and \"%\":%(user.id)s"
+     | .admin_and_project_filter="role:admin and \"%\":%(scope.project.id)s"
      | .["identity:list_role_assignments"]="rule:cloud_admin or rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter or rule:admin_and_matching_target_group_domain_id"
      | .["identity:list_projects"]="rule:cloud_admin or rule:admin_and_matching_domain_id or rule:cloud_service"
      | .["identity:get_project_roles"]=""
@@ -169,6 +167,13 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
+
+# Convert oslo-policy from json to yaml
+oslopolicy-convert-json-to-yaml --namespace keystone \
+  --policy-file /etc/keystone/policy.json \
+  --output-file /etc/keystone/policy.yaml
+
+sed -i 's/\"%\"/\\"%\\"/g' /etc/keystone/policy.yaml
 
 echo "[ postlaunchconfig_update - db_sync ] "
 /usr/bin/keystone-manage db_sync

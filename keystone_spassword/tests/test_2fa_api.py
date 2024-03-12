@@ -117,7 +117,7 @@ class RestOperations(object):
 
         try:
             res = urllib2.urlopen(request)
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
             res = e
             data = res.read()
             try:
@@ -138,9 +138,10 @@ class RestOperations(object):
 
             except ValueError:
                 res.msg = data
-            except Exception, e:
-                print e
-        except urllib2.URLError, e:
+            except Exception as e:
+                print(e)
+
+        except urllib2.URLError as e:
             data = None
             res = e
             res.code = 500

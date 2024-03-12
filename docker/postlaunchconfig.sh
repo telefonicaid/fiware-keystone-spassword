@@ -116,8 +116,6 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT debug True
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT insecure_debug True
-    openstack-config --set /etc/keystone/keystone.conf \
-    wsgi debug_middleware True
 fi
 
 openstack-config --set /etc/keystone/keystone.conf \
@@ -246,56 +244,17 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
 echo "ADMIN_TOKEN: $ADMIN_TOKEN"
 [[ "${ADMIN_TOKEN}" == "" ]] && exit 0
 
-ID_ADMIN_DOMAIN=$(\
-curl http://${KEYSTONE_HOST}/v3/domains          \
-         -s                                      \
-         -H "X-Auth-Token: $ADMIN_TOKEN"         \
-         -H "Content-Type: application/json"     \
-         -d '
-  {
-      "domain": {
-      "enabled": true,
-      "name": "admin_domain",
-      "description": "admin_domain desc"
-      }
-  }' | jq .domain.id | tr -d '"' )
-echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
+openstack domain create admin_domain
 ID_ADMIN_DOMAIN=`openstack domain list | grep "admin_domain" | awk '{print $2}'`
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 
-ID_CLOUD_SERVICE=$(\
-curl http://${KEYSTONE_HOST}/v3/users             \
-         -s                                       \
-         -H "X-Auth-Token: $ADMIN_TOKEN"          \
-         -H "Content-Type: application/json"      \
-         -d '
-  {
-      "user": {
-          "description": "Cloud service",
-          "domain_id": "'$ID_ADMIN_DOMAIN'",
-          "enabled": true,
-          "name": "pep",
-          "password": "'$KEYSTONE_ADMIN_PASSWORD'"
-      }
-  }' | jq .user.id | tr -d '"' )
+openstack user create --domain admin_domain --password $KEYSTONE_ADMIN_PASSWORD pep
+ID_CLOUD_SERVICE=`openstack user list --domain admin_domain | grep "pep" | awk '{print $2}'`
 echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
-ID_CLOUD_ADMIN=$(\
-curl http://${KEYSTONE_HOST}/v3/users              \
-         -s                                        \
-         -H "X-Auth-Token: $ADMIN_TOKEN"           \
-         -H "Content-Type: application/json"       \
-         -d '
-  {
-      "user": {
-          "description": "Cloud administrator",
-          "domain_id": "'$ID_ADMIN_DOMAIN'",
-          "enabled": true,
-          "name": "cloud_admin",
-          "password": "'$KEYSTONE_ADMIN_PASSWORD'"
-      }
-  }' | jq .user.id | tr -d '"' )
+openstack user create --domain admin_domain --password $KEYSTONE_ADMIN_PASSWORD cloud_admin
+ID_CLOUD_ADMIN=`openstack user list --domain admin_domain | grep "cloud_admin" | awk '{print $2}'`
 echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
 
 ADMIN_ROLE_ID=$(\
@@ -312,6 +271,7 @@ curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLO
      -H "Accept: application/json"      \
      -H "Content-Type: application/json"\
      -d '{ }'
+
 
 SERVICE_ROLE_ID=$(\
 curl "http://${KEYSTONE_HOST}/v3/roles?name=service" \
@@ -336,8 +296,8 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .["identity:scim_delete_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
      | .["identity:scim_get_service_provider_configs"]=""
      | .["identity:get_domain"]=""
-     | .admin_and_user_filter="role:admin and \"%\":%(user.id)%"
-     | .admin_and_project_filter="role:admin and \"%\":%(scope.project.id)%"
+     | .admin_and_user_filter="role:admin and \"%\":%(user.id)s"
+     | .admin_and_project_filter="role:admin and \"%\":%(scope.project.id)s"
      | .["identity:list_role_assignments"]="rule:cloud_admin or rule:admin_on_domain_filter or rule:cloud_service or rule:admin_and_user_filter or rule:admin_and_project_filter or rule:admin_and_matching_target_group_domain_id"
      | .["identity:list_projects"]="rule:cloud_admin or rule:admin_and_matching_domain_id or rule:cloud_service"
      | .["identity:get_project_roles"]=""
@@ -362,6 +322,13 @@ cat /opt/keystone/policy.v3cloudsample.json \
      | .cloud_admin="rule:admin_required and domain_id:'${ID_ADMIN_DOMAIN}'"
      | .cloud_service="rule:service_role and domain_id:'${ID_ADMIN_DOMAIN}'"' \
   | tee /etc/keystone/policy.json
+
+# Convert oslo-policy from json to yaml
+oslopolicy-convert-json-to-yaml --namespace keystone \
+  --policy-file /etc/keystone/policy.json \
+  --output-file /etc/keystone/policy.yaml
+
+sed -i 's/\"%\"/\\"%\\"/g' /etc/keystone/policy.yaml
 
 # Set another ADMIN TOKEN
 openstack-config --set /etc/keystone/keystone.conf \
