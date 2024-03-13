@@ -345,8 +345,8 @@ class Identity(Identity, SendMail):
                     expiration_date = spassword_ref['creation_time'] + \
                         datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                     res['extras'] = {
-                        "password_creation_time": timeutils.isotime(spassword['creation_time']),
-                        "password_expiration_time": timeutils.isotime(expiration_date),
+                        "password_creation_time": datetime.datetime.isoformat(spassword['creation_time']),
+                        "password_expiration_time": datetime.datetime.isoformat(expiration_date),
                         "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist,
                         "last_login_attempt_time": spassword['last_login_attempt_time'],
                         "previous_login_attempts": previous_login_attempts
@@ -424,8 +424,8 @@ class Identity(Identity, SendMail):
                     expiration_date = data_user['creation_time'] + \
                         datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                     res['extras'] = {
-                        "password_creation_time": timeutils.isotime(data_user['creation_time']),
-                        "password_expiration_time": timeutils.isotime(expiration_date),
+                        "password_creation_time": datetime.datetime.isoformat(data_user['creation_time']),
+                        "password_expiration_time": datetime.datetime.isoformat(expiration_date),
                         "pwd_user_in_blacklist": user_id in CONF.spassword.pwd_user_blacklist,
                         "sndfa" : False,
                         "sndfa_email" : False,

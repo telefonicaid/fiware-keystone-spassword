@@ -12,6 +12,7 @@ VERSION_VALUE=${string% *}
 RELEASE_VALUE=${string#* }
 PYTHON27_VALUE=0
 PYTHON36_VALUE=0
+PYTHON39_VALUE=0
 
 args=("$@")
 ELEMENTS=${#args[@]}
@@ -23,6 +24,9 @@ for (( i=0;i<$ELEMENTS;i++)); do
     fi
     if [ "$arg" == "--with-python36" ]; then
         PYTHON36_VALUE=1
+    fi
+    if [ "$arg" == "--with-python39" ]; then
+        PYTHON39_VALUE=1
     fi
     if [ "$arg" == "--with-version" ]; then
         VERSION_VALUE=${args[${i}+1]}
@@ -41,4 +45,5 @@ rpmbuild -bb keystone-spassword.spec \
   --define "_version $VERSION_VALUE"\
   --define "_release $RELEASE_VALUE"\
   --define "with_python27 $PYTHON27_VALUE"\
-  --define "with_python36 $PYTHON36_VALUE"
+  --define "with_python36 $PYTHON36_VALUE"\
+  --define "with_python39 $PYTHON39_VALUE"
