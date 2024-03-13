@@ -1,10 +1,10 @@
 1.18.0
 
+Fix: policy.json file from stein for docker (#234)
+Fix: modify docker provision script for compatibility with mysql 8.0 (#232)
 Upgrade to use Keystone Xena
 Upgrade docker to centos 8.4
 Upgrade to support python 3.6
-Fix: policy.json file from stein for docker (#234)
-Fix: modify docker provision script for compatibility with mysql 8.0 (#232)
 
 1.17.0
 
