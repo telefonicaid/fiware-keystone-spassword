@@ -1,3 +1,9 @@
+1.19.0
+
+Upgrade to use Keystone Antelope
+Upgrade docker to centos 9 Stream
+Upgrade to support python 3.9
+
 1.18.0
 
 Fix: policy.json file from stein for docker (#234)

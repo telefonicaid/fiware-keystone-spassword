@@ -23,6 +23,7 @@ a recover procedure password, a second factor authentication (2FA)  and so on.
 - 1.9.0 uses keystone Rocky
 - 1.10.0 to 1.17.0 uses keystone Stein
 - 1.18.0 uses keystone Xena
+- 1.19.0 uses keystone antelope
 
 
 ## Installing and Configuration
@@ -172,6 +173,12 @@ Restart again keystone container
 
 ##### Upgrade from 1.17.0 to 1.18.0
 -> no workaround needed
+
+##### Upgrade from 1.17.0 to 1.18.0
+-> no workaround needed
+
+##### Upgrade from 1.18.0 to 1.19.0
+To upgrade to 1.19.0 version make sure upgrade firts to 1.18.0 version before.
 
 
 ## Usage
