@@ -1,8 +1,16 @@
+1.19.1
+
+Fix: migration spassword script (related with keystone sqlalchemy support) to allow bootstrap from empty database (#240, #243)
+
 1.19.0
 
 Upgrade to use Keystone Antelope
 Upgrade docker to centos 9 Stream
 Upgrade to support python 3.9
+
+1.18.1
+
+Fix: migration spassword script (related with keystone sqlalchemy support) to allow bootstrap from empty database (#240)
 
 1.18.0
 
