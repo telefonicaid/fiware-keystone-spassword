@@ -12,38 +12,35 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from alembic import op
 import sqlalchemy as sql
 
+# revision identifiers, used by Alembic.
+revision = '1'
+down_revision = None
+depends_on = None
 
-def upgrade(migrate_engine):
-    # Upgrade operations go here. Don't create your own engine; bind
-    # migrate_engine to your metadata
-    meta = sql.MetaData()
-    meta.bind = migrate_engine
-
-    # catalog
-
-    service_table = sql.Table(
+def upgrade():
+    bind = op.get_bind()
+    
+    op.create_table(
         'spassword',
-        meta,
         sql.Column('user_id', sql.String(64), primary_key=True),
         sql.Column('user_name', sql.String(255)),
         sql.Column('domain_id', sql.String(64)),
         sql.Column('creation_time', sql.DateTime()),
         sql.Column('login_attempts', sql.Integer),
         sql.Column('last_login_attempt_time', sql.DateTime()),
-        # bad_attempts
         sql.Column('extra', sql.Text()),
-        )
-    service_table.create(migrate_engine, checkfirst=True)
+        sql.Column('sndfa', sql.Boolean(), default=False),
+        sql.Column('sndfa_last', sql.DateTime(), default=None),
+        sql.Column('sndfa_code', sql.String(32), default=None),
+        sql.Column('sndfa_time_code', sql.DateTime(), default=None),
+        sql.Column('sndfa_email', sql.Boolean(), default=False),
+        sql.Column('sndfa_email_code', sql.String(32), default=None),
+        mysql_engine='InnoDB',
+        mysql_charset='utf8',
+    )
 
 
-def downgrade(migrate_engine):
-    # Operations to reverse the above upgrade go here.
-    meta = sql.MetaData()
-    meta.bind = migrate_engine
 
-    tables = ['spassword']
-    for t in tables:
-        table = sql.Table(t, meta, autoload=True)
-        table.drop(migrate_engine, checkfirst=True)
