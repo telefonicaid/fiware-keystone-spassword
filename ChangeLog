@@ -1,3 +1,9 @@
+1.18.1
+
+Fix: migration spassword script (related with keystone sqlalchemy support) to allow bootstrap from empty database (#240)
+
+1.18.0
+
 Fix: policy.json file from stein for docker (#234)
 Fix: modify docker provision script for compatibility with mysql 8.0 (#232)
 

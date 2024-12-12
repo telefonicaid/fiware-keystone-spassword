@@ -13,7 +13,8 @@
 # under the License.
 
 import sqlalchemy as sql
-
+from oslo_log import log
+LOG = log.getLogger(__name__)
 
 def upgrade(migrate_engine):
     # Upgrade operations go here. Don't create your own engine; bind
@@ -35,8 +36,11 @@ def upgrade(migrate_engine):
         # bad_attempts
         sql.Column('extra', sql.Text()),
         )
-    service_table.create(migrate_engine, checkfirst=True)
-
+    try:
+        service_table.create()
+    except Exception:
+        LOG.exception('Exception while creating table: %r', service_table)
+        raise
 
 def downgrade(migrate_engine):
     # Operations to reverse the above upgrade go here.
