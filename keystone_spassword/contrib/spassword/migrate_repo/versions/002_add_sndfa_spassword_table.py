@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_db.sqlalchemy import utils
 import sqlalchemy as sql
 
 
@@ -21,7 +20,7 @@ def upgrade(migrate_engine):
     # migrate_engine to your metadata
     meta = sql.MetaData()
     meta.bind = migrate_engine
-    spassword_table = utils.get_table(migrate_engine, 'spassword')
+    spassword_table = sql.Table('spassword', meta, autoload=True)
     sndfa = sql.Column('sndfa', sql.Boolean(), default=False)
     sndfa_last = sql.Column('sndfa_last', sql.DateTime(), default=None)
     sndfa_code = sql.Column('sndfa_code', sql.String(32), default=None)
@@ -39,7 +38,7 @@ def upgrade(migrate_engine):
 def downgrade(migrate_engine):
     meta = sql.MetaData()
     meta.bind = migrate_engine
-    spassword_table = utils.get_table(migrate_engine, 'spassword')
+    spassword_table = sql.Table('spassword', meta, autoload=True)
     idp_table.drop_column('sndfa')
     idp_table.drop_column('sndfa_last')
     idp_table.drop_column('sndfa_code')
