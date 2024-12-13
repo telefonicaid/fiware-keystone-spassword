@@ -45,7 +45,7 @@ RUN \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-quincy.repo && \
     yum update -y && \
     # Install keystone dependencies
-    yum -y install crudini openstack-keystone-23.0.1-1.el9s.noarch python3-keystoneclient-5.1.0-4.el9.noarch python3-keystone-23.0.1-1.el9s.noarch python3-openstackclient && \
+    yum -y install crudini openstack-keystone python3-keystoneclient python3-keystone python3-openstackclient && \
     yum -y install httpd python3-mod_wsgi && \
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
