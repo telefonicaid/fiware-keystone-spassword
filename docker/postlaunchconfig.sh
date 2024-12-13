@@ -193,7 +193,7 @@ export OS_IDENTITY_API_VERSION=3
 
 echo "[ postlaunchconfig - create roles  ] "
 #openstack role create admin
-openstack role add --user "admin" --project "admin" "admin"
+openstack role add --user admin --project admin admin
 openstack role create service
 echo "[ postlaunchconfig - delete roles  ] "
 #openstack role delete _member_
