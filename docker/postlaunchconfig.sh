@@ -28,6 +28,9 @@ if [ "$MYSQL_PASSWORD_ARG" == "-mysql_pwd" ]; then
     MYSQL_ROOT_PASSWORD="$MYSQL_PASSWORD_VALUE"
 fi
 
+if [ "${KEYSTONE_PEP_PASSWORD}" == "" ]; then
+   KEYSTONE_PEP_PASSWORD=$KEYSTONE_ADMIN_PASSWORD
+fi
 
 [[ "${SPASSWORD_ENABLED}" == "" ]] && export SPASSWORD_ENABLED=True
 [[ "${SPASSWORD_PWD_MAX_TRIES}" == "" ]] && export SPASSWORD_PWD_MAX_TRIES=5
@@ -255,7 +258,7 @@ ID_ADMIN_DOMAIN=`openstack domain list | grep "admin_domain" | awk '{print $2}'`
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 
-openstack user create --domain admin_domain --password $KEYSTONE_ADMIN_PASSWORD pep
+openstack user create --domain admin_domain --password $KEYSTONE_PEP_PASSWORD pep
 ID_CLOUD_SERVICE=`openstack user list --domain admin_domain | grep "pep" | awk '{print $2}'`
 echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
