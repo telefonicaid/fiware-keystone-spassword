@@ -13,6 +13,7 @@
 # under the License.
 
 from alembic import op
+from sqlalchemy.engine.reflection import Inspector
 import sqlalchemy as sql
 
 # revision identifiers, used by Alembic.
@@ -22,25 +23,30 @@ depends_on = None
 
 def upgrade():
     bind = op.get_bind()
-    
-    op.create_table(
-        'spassword',
-        sql.Column('user_id', sql.String(64), primary_key=True),
-        sql.Column('user_name', sql.String(255)),
-        sql.Column('domain_id', sql.String(64)),
-        sql.Column('creation_time', sql.DateTime()),
-        sql.Column('login_attempts', sql.Integer),
-        sql.Column('last_login_attempt_time', sql.DateTime()),
-        sql.Column('extra', sql.Text()),
-        sql.Column('sndfa', sql.Boolean(), default=False),
-        sql.Column('sndfa_last', sql.DateTime(), default=None),
-        sql.Column('sndfa_code', sql.String(32), default=None),
-        sql.Column('sndfa_time_code', sql.DateTime(), default=None),
-        sql.Column('sndfa_email', sql.Boolean(), default=False),
-        sql.Column('sndfa_email_code', sql.String(32), default=None),
-        mysql_engine='InnoDB',
-        mysql_charset='utf8',
-    )
+
+    inspector = Inspector.from_engine(bind)
+    tables = inspector.get_table_names()
+
+    if 'spassword' not in tables:
+        op.create_table(
+            'spassword',
+            sql.Column('user_id', sql.String(64), primary_key=True),
+            sql.Column('user_name', sql.String(255)),
+            sql.Column('domain_id', sql.String(64)),
+            sql.Column('creation_time', sql.DateTime()),
+            sql.Column('login_attempts', sql.Integer),
+            sql.Column('last_login_attempt_time', sql.DateTime()),
+            sql.Column('extra', sql.Text()),
+            sql.Column('sndfa', sql.Boolean(), default=False),
+            sql.Column('sndfa_last', sql.DateTime(), default=None),
+            sql.Column('sndfa_code', sql.String(32), default=None),
+            sql.Column('sndfa_time_code', sql.DateTime(), default=None),
+            sql.Column('sndfa_email', sql.Boolean(), default=False),
+            sql.Column('sndfa_email_code', sql.String(32), default=None),
+            # if_not_exists=True, # For alembic 1.13.3+
+            mysql_engine='InnoDB',
+            mysql_charset='utf8',
+        )
 
 
 
