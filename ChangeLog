@@ -1,3 +1,6 @@
+1.19.1
+
+Fix: migration spassword script (related with keystone sqlalchemy support) to allow bootstrap from empty database (#240, #243)
 ADD: allow to define pep password using  KEYSTONE_PEP_PASSWORD env var (#247)
 
 1.19.0
@@ -5,6 +8,10 @@ ADD: allow to define pep password using  KEYSTONE_PEP_PASSWORD env var (#247)
 Upgrade to use Keystone Antelope
 Upgrade docker to centos 9 Stream
 Upgrade to support python 3.9
+
+1.18.1
+
+Fix: migration spassword script (related with keystone sqlalchemy support) to allow bootstrap from empty database (#240)
 
 1.18.0
 

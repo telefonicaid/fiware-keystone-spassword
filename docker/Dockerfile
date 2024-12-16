@@ -5,7 +5,7 @@ MAINTAINER IoT team
 ENV DB_HOST localhost
 ENV KEYSTONE_ADMIN_PASSWORD 4pass1w0rd
 ENV KEYSTONE_SCIM_VERSION 1.8.0
-ENV KEYSTONE_SPASSWORD_VERSION 1.19.0
+ENV KEYSTONE_SPASSWORD_VERSION 1.19.1
 
 COPY ./*.sh /opt/keystone/
 COPY ./*.patch /opt/keystone/
@@ -45,7 +45,7 @@ RUN \
     sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-quincy.repo && \
     yum update -y && \
     # Install keystone dependencies
-    yum -y install crudini openstack-keystone python3-keystoneclient python3-openstackclient && \
+    yum -y install crudini openstack-keystone-23.0.1-1.el9s.noarch python3-keystoneclient-5.1.0-4.el9.noarch python3-keystone-23.0.1-1.el9s.noarch python3-openstackclient && \
     yum -y install httpd python3-mod_wsgi && \
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
@@ -156,8 +156,6 @@ RUN \
     patch -f -p0 < /opt/keystone/projects.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/api/_shared && \
     patch -f -p0 < /opt/keystone/api_auth.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/common/sql/legacy_migrations/expand_repo/versions && \
-    patch -f -p0 < /opt/keystone/expand_initial_migration.patch && \
     find /usr/lib/python3.9/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python3.9/site-packages/keystone -name "*.pyo" -delete && \
     sed -ri \
