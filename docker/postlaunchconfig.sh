@@ -28,6 +28,9 @@ if [ "$MYSQL_PASSWORD_ARG" == "-mysql_pwd" ]; then
     MYSQL_ROOT_PASSWORD="$MYSQL_PASSWORD_VALUE"
 fi
 
+if [ "${KEYSTONE_PEP_PASSWORD}" == "" ]; then
+   KEYSTONE_PEP_PASSWORD=$KEYSTONE_ADMIN_PASSWORD
+fi
 
 [[ "${SPASSWORD_ENABLED}" == "" ]] && export SPASSWORD_ENABLED=True
 [[ "${SPASSWORD_PWD_MAX_TRIES}" == "" ]] && export SPASSWORD_PWD_MAX_TRIES=5
@@ -118,6 +121,10 @@ if [ "${LOG_LEVEL}" == "DEBUG" ]; then
     DEFAULT insecure_debug True
 fi
 
+# Set temporal default logLevel
+openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT default_log_levels amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=ERROR,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,oslo.policy=ERROR,oslo_policy=ERROR,dogpile.core.dogpile=INFO,keystone.server.flask.application=FATAL && \
+
 openstack-config --set /etc/keystone/keystone.conf \
 DEFAULT use_stderr True
 
@@ -160,6 +167,9 @@ echo "[ postlaunchconfig - bootstrap ] "
   --bootstrap-internal-url http://127.0.0.1:35357 \
   --bootstrap-region-id RegionOne
 
+
+
+
 echo "[ postlaunchconfig - Start UWSGI process ] "
 /usr/bin/keystone-wsgi-public --port 5001 &
 sleep 2
@@ -185,11 +195,11 @@ export OS_AUTH_URL=http://127.0.0.1:5001/v3
 export OS_IDENTITY_API_VERSION=3
 
 echo "[ postlaunchconfig - create roles  ] "
-# openstack role create admin
-openstack role add  --user admin --project admin admin
+#openstack role create admin
+openstack role add --user admin --project admin admin
 openstack role create service
 echo "[ postlaunchconfig - delete roles  ] "
-openstack role delete _member_
+#openstack role delete _member_
 openstack role delete member
 openstack role delete reader
 echo "[ postlaunchconfig - create users ] "
@@ -198,7 +208,6 @@ openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com 
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email cep@no.com cep
 echo "[ postlaunchconfig - assign roles to users ] "
 openstack role add --user nagios --project admin admin
-
 echo "[ postlaunchconfig - list users ] "
 IOTAGENT_ID=`openstack user list | grep "iotagent" | awk '{print $2}'`
 NAGIOS_ID=`openstack user list | grep "nagios" | awk '{print $2}'`
@@ -249,7 +258,7 @@ ID_ADMIN_DOMAIN=`openstack domain list | grep "admin_domain" | awk '{print $2}'`
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 
-openstack user create --domain admin_domain --password $KEYSTONE_ADMIN_PASSWORD pep
+openstack user create --domain admin_domain --password $KEYSTONE_PEP_PASSWORD pep
 ID_CLOUD_SERVICE=`openstack user list --domain admin_domain | grep "pep" | awk '{print $2}'`
 echo "ID_CLOUD_SERVICE: $ID_CLOUD_SERVICE"
 
@@ -329,6 +338,11 @@ oslopolicy-convert-json-to-yaml --namespace keystone \
   --output-file /etc/keystone/policy.yaml
 
 sed -i 's/\"%\"/\\"%\\"/g' /etc/keystone/policy.yaml
+
+# Restore default logLevel
+openstack-config --set /etc/keystone/keystone.conf \
+    DEFAULT default_log_levels amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=ERROR,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,oslo.policy=ERROR,oslo_policy=ERROR,dogpile.core.dogpile=INFO,keystone.server.flask.application=ERROR && \
+
 
 # Set another ADMIN TOKEN
 openstack-config --set /etc/keystone/keystone.conf \

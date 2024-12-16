@@ -14,7 +14,7 @@ expiration time for a password, number of bad login attempts before user account
 a recover procedure password, a second factor authentication (2FA)  and so on.
 
 
-## Keystone versions
+## Keystone based versions
 - 1.4.X uses keystone Liberty
 - 1.5.X uses keystne Mitaka
 - 1.6.0 uses keystone Newton
@@ -22,8 +22,8 @@ a recover procedure password, a second factor authentication (2FA)  and so on.
 - 1.8.0 uses keystone Queens
 - 1.9.0 uses keystone Rocky
 - 1.10.0 to 1.17.0 uses keystone Stein
-- 1.18.0 uses keystone Xena
-- 1.19.0 uses keystone antelope
+- 1.18.x uses keystone Xena
+- 1.19.x uses keystone Antelope
 
 
 ## Installing and Configuration
@@ -174,11 +174,9 @@ Restart again keystone container
 ##### Upgrade from 1.17.0 to 1.18.0
 -> no workaround needed
 
-##### Upgrade from 1.17.0 to 1.18.0
--> no workaround needed
-
 ##### Upgrade from 1.18.0 to 1.19.0
-To upgrade to 1.19.0 version make sure upgrade firts to 1.18.0 version before.
+-> no workaround needed
+To upgrade to 1.19.0 version make sure upgrade first to 1.18.x version before.
 
 
 ## Usage
