@@ -1,6 +1,7 @@
 1.19.1
 
 Fix: migration spassword script (related with keystone sqlalchemy support) to allow bootstrap from empty database (#240, #243)
+ADD: allow to define pep password using  KEYSTONE_PEP_PASSWORD env var (#247)
 
 1.19.0
 
