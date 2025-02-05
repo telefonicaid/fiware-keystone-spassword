@@ -207,7 +207,8 @@ class SPasswordRecoverResource(SPasswordResource):
         """Perform user password recover procedure."""
         self._check_spassword_configured()
         ENFORCER.enforce_call(
-            action='identity:update_user',
+            #action='identity:update_user',
+            action='identity:get_user',
             build_target=_build_user_target_enforcement
         )
         user_info = PROVIDERS.identity_api.get_user(user_id)
@@ -220,6 +221,10 @@ class SPasswordRecoverResource(SPasswordResource):
         new_password = uuid.uuid4().hex[:8]
 
         # Set new user password
+        # ENFORCER.enforce_call(
+        #     action='identity:update_user',
+        #     build_target=_build_user_target_enforcement
+        # )
         try:
             update_dict = { 'password': new_password }
             PROVIDERS.identity_api.update_user(user_id, user_ref=update_dict)
@@ -396,6 +401,33 @@ class SPasswordUserProjectRolesResource(SPasswordUserResource):
         resp.headers['Content-Type'] = 'application/json'
         return resp        
 
+class SPasswordModifyBlackResource(SPasswordResource):
+
+    def post(self, user_id):
+        return self._modify_black(user_id)
+
+    def _modify_black(self, user_id):
+        """Perform user sndfa modification """
+        self._check_spassword_configured()
+        enable = self.request_body_json.get('enable', False)
+        ENFORCER.enforce_call(
+            action='identity:update_user',
+            build_target=_build_user_target_enforcement
+        )
+        user_info = PROVIDERS.identity_api.get_user(user_id)
+        LOG.debug('modify sndfa for user %s %s' % (user_info['id'],
+                                                    user_info['name']))
+
+        if (type(enable) == type(True)):
+            res = PROVIDERS.spassword_api.user_modify_black(user_id,
+                                                            enable)
+            response = { "modified" : res }
+            resp = flask.make_response(jsonutils.dumps(response), http_client.OK)
+            resp.headers['Content-Type'] = 'application/json'
+            return resp
+        else:
+            raise exception.ValidationError(message='invalid body format')
+
 
 class SPasswordAPI(ks_flask.APIBase):
     _name = 'spassword'
@@ -458,6 +490,13 @@ class SPasswordAPI(ks_flask.APIBase):
             url='/users/<string:user_id>/project_roles',
             resource_kwargs={},
             rel='get_project_roles',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        ),
+        ks_flask.construct_resource_map(
+            resource=SPasswordModifyBlackResource,
+            url='/users/<string:user_id>/black',
+            resource_kwargs={},
+            rel='black',
             path_vars={'user_id': json_home.Parameters.USER_ID}
         )
     ]
