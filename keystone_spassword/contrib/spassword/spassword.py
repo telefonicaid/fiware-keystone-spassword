@@ -403,11 +403,14 @@ class SPasswordUserProjectRolesResource(SPasswordUserResource):
 
 class SPasswordModifyBlackResource(SPasswordResource):
 
+    def get(self, user_id):
+        return self._get_black(user_id)
+
     def post(self, user_id):
         return self._modify_black(user_id)
 
     def _modify_black(self, user_id):
-        """Perform user sndfa modification """
+        """Perform user black list membership modification """
         self._check_spassword_configured()
         enable = self.request_body_json.get('enable', False)
         ENFORCER.enforce_call(
@@ -415,7 +418,7 @@ class SPasswordModifyBlackResource(SPasswordResource):
             build_target=_build_user_target_enforcement
         )
         user_info = PROVIDERS.identity_api.get_user(user_id)
-        LOG.debug('modify sndfa for user %s %s' % (user_info['id'],
+        LOG.debug('modify black list membership for user %s %s' % (user_info['id'],
                                                     user_info['name']))
 
         if (type(enable) == type(True)):
@@ -428,6 +431,19 @@ class SPasswordModifyBlackResource(SPasswordResource):
         else:
             raise exception.ValidationError(message='invalid body format')
 
+    def _get_black(self, user_id):
+        """Perform get black """
+        ENFORCER.enforce_call(
+            action='identity:get_user',
+            build_target=_build_user_target_enforcement
+        )
+        user_info = PROVIDERS.identity_api.get_user(user_id)
+        LOG.debug('get black invoked for user %s %s' % (user_info['id'],
+                                                        user_info['name']))
+        res = PROVIDERS.spassword_api.user_get_black(user_id)
+        response = { "black" : res }
+        resp = flask.make_response(jsonutils.dumps(response), http_client.OK)
+        return resp
 
 class SPasswordAPI(ks_flask.APIBase):
     _name = 'spassword'

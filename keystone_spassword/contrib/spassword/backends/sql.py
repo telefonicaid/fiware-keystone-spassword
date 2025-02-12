@@ -206,6 +206,25 @@ class SPassword(Driver):
             LOG.warn('user %s still has not spassword data' % user_id)
         return False
 
+    def get_black(self, user_id):
+        spassword_ref, session = get_spassword_session(user_id)
+        user_extra = {}
+        if spassword_ref:
+            LOG.warn('get_black spassword_ref: %s' % spassword_ref)
+            spassword = spassword_ref.to_dict()
+            LOG.warn('get_black spassword: %s' % spassword)
+            if 'extra' in spassword:
+                user_extra = spassword['extra']
+                if 'black' in user_extra:
+                    return eval(user_extra['black'])
+                else:
+                    False
+            else:
+                return False
+        else:
+            LOG.warn('user %s still has not spassword data' % user_id)
+        return False
+
     def modify_black(self, user_id, enable):
         spassword_ref, session = get_spassword_session(user_id)
         if spassword_ref:
