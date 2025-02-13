@@ -207,8 +207,7 @@ class SPasswordRecoverResource(SPasswordResource):
         """Perform user password recover procedure."""
         self._check_spassword_configured()
         ENFORCER.enforce_call(
-            #action='identity:update_user',
-            action='identity:get_user',
+            action='identity:update_user',
             build_target=_build_user_target_enforcement
         )
         user_info = PROVIDERS.identity_api.get_user(user_id)
@@ -220,11 +219,6 @@ class SPasswordRecoverResource(SPasswordResource):
         # Create a new password randonly
         new_password = uuid.uuid4().hex[:8]
 
-        # Set new user password
-        # ENFORCER.enforce_call(
-        #     action='identity:update_user',
-        #     build_target=_build_user_target_enforcement
-        # )
         try:
             update_dict = { 'password': new_password }
             PROVIDERS.identity_api.update_user(user_id, user_ref=update_dict)
