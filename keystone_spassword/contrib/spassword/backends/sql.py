@@ -223,6 +223,17 @@ class SPassword(Driver):
             LOG.warn('user %s still has not spassword data' % user_id)
         return False
 
+    def get_pwd_expiration(self, user_id):
+        spassword_ref, session = get_spassword_session(user_id)
+        if spassword_ref:
+            spassword = spassword_ref.to_dict()
+            expiration_date = spassword['creation_time'] + \
+                datetime.timedelta(days=CONF.spassword.pwd_exp_days)
+            return expiration_date
+        else:
+            LOG.warn('user %s still has not spassword data' % user_id)
+        return 0
+
     def modify_black(self, user_id, enable):
         spassword_ref, session = get_spassword_session(user_id)
         if spassword_ref:

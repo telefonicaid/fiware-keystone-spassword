@@ -434,8 +434,10 @@ class SPasswordModifyBlackResource(SPasswordResource):
         user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('get black invoked for user %s %s' % (user_info['id'],
                                                         user_info['name']))
-        res = PROVIDERS.spassword_api.user_get_black(user_id)
-        response = { "black" : res }
+        black = PROVIDERS.spassword_api.user_get_black(user_id)
+        pwd_expiration = PROVIDERS.spassword_api.user_get_pwd_expiration(user_id)
+        response = { "black" : black,
+                     "pwd_expiration_time": pwd_expiration}
         resp = flask.make_response(jsonutils.dumps(response), http_client.OK)
         return resp
 
