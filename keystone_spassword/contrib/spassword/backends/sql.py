@@ -210,9 +210,7 @@ class SPassword(Driver):
         spassword_ref, session = get_spassword_session(user_id)
         user_extra = {}
         if spassword_ref:
-            LOG.warn('get_black spassword_ref: %s' % spassword_ref)
             spassword = spassword_ref.to_dict()
-            LOG.warn('get_black spassword: %s' % spassword)
             if 'extra' in spassword:
                 user_extra = spassword['extra']
                 if 'black' in user_extra:
@@ -324,9 +322,7 @@ class Identity(Identity, SendMail):
             spassword_ref, session = get_spassword_session(user_ref['id'])
             user_extra = {}
             if spassword_ref:
-                LOG.warn('spassword_ref: %s' % spassword_ref)
                 spassword = spassword_ref.to_dict()
-                LOG.warn('spassword: %s' % spassword)
                 if 'extra' in spassword:
                     user_extra = spassword['extra']
             if (not (spassword_ref == None)) and \
@@ -354,9 +350,7 @@ class Identity(Identity, SendMail):
            not (user_id in CONF.spassword.pwd_user_blacklist):
             spassword_ref, session = get_spassword_session(user_id)
             if spassword_ref:
-                LOG.warn('spassword_ref: %s' % spassword_ref)
                 spassword = spassword_ref.to_dict()
-                LOG.warn('spassword: %s' % spassword)
                 if spassword['login_attempts'] > CONF.spassword.pwd_max_tries:
                     # Check last block attempt
                     if (spassword['last_login_attempt_time'] > \

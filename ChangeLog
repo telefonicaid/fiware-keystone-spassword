@@ -1,3 +1,5 @@
+ADD: allow to add and remove just one user to expiration password black list (#251)
+
 1.19.1
 
 Fix: migration spassword script (related with keystone sqlalchemy support) to allow bootstrap from empty database (#240, #243)
