@@ -395,9 +395,6 @@ class Identity(Identity, SendMail):
                     }
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
-                # Check black list user membership
-                if 'black' in spassword:
-                    res['extras']['black'] = spassword['black'] == 'True'
                 # Check if sndfa_email in user
                 if res and CONF.spassword.sndfa and 'sndfa_email' in spassword:
                     # Put sndfa and sndfa_email info
