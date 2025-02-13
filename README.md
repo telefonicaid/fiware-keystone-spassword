@@ -209,6 +209,20 @@ This call uses a x-auth-token associated to <user_id> user.
 ]
 ```
 
+
+- Get user password expiration black list membership.
+
+  **GET '/v3/users/<user_id>/black'**
+
+  This call needs a x-auth-token associated to <user_id> user. Returns a json about if user is in black list membership `{"black": true}` or not `{"black": true}`.
+
+- Modify configuration for password expiration black list membership for a user, allowing enable or disable it.
+
+  **POST '/v3/users/<user_id>/black'**
+
+  This call needs a x-auth-token associated to <user_id> user. The payload for this request is either `{"enable":true}` to enable password expiration black list membership or `{"enable":false}` to disable it.
+
+
 ## Building and packaging
 
 In any OS (Linux, OSX) with a sane build environment (basically with `rpmbuild`
