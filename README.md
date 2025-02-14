@@ -216,7 +216,7 @@ This call uses a x-auth-token associated to <user_id> user.
 
   This call needs a x-auth-token associated to <user_id> user. Returns a json about if user is in black list membership `{"black": true}` or not `{"black": true}`. Additionally this json response includes password expiration date for current user (i.e.: `{"pwd_expiration_time": "2035-02-11T09:29:28.000000"}`.
 
-- Modify configuration for password expiration black list membership for a user, allowing enable or disable it.
+- Modify configuration for password expiration black list membership for an user, allowing enable or disable it.
 
   **POST '/v3/users/<user_id>/black'**
 
