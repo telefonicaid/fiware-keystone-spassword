@@ -125,6 +125,18 @@ class SPasswordManager(manager.Manager):
         LOG.info("User %s modify sndfa in driver manager" % user_id)
         return self.driver.modify_sndfa(user_id, enable)
 
+    def user_get_black(self, user_id):
+        LOG.info("User %s get black in driver manager" % user_id)
+        return self.driver.get_black(user_id)
+
+    def user_modify_black(self, user_id, enable):
+        LOG.info("User %s modify black in driver manager" % user_id)
+        return self.driver.modify_black(user_id, enable)
+
+    def user_get_pwd_expiration(self, user_id):
+        LOG.info("User %s get pwd expiration in driver manager" % user_id)
+        return self.driver.get_pwd_expiration(user_id)
+
     def user_ask_check_email_code(self, user_id):
         LOG.info("User %s ask for a check email code in driver manager" % user_id)
         # Ensure sndfa_email exists in user

@@ -56,6 +56,7 @@ class SPasswordModel(sql.ModelBase, sql.ModelDictMixinWithExtras):
     __tablename__ = 'spassword'
     attributes = ['user_id', 'user_name', 'domain_id', 'creation_time',
                   'login_attempts', 'last_login_attempt_time',
+                  'extra',
                   'sndfa', 'sndfa_last', 'sndfa_code', 'sndfa_time_code',
                   'sndfa_email', 'sndfa_email_code'
                   ]
@@ -205,6 +206,46 @@ class SPassword(Driver):
             LOG.warn('user %s still has not spassword data' % user_id)
         return False
 
+    def get_black(self, user_id):
+        spassword_ref, session = get_spassword_session(user_id)
+        user_extra = {}
+        if spassword_ref:
+            spassword = spassword_ref.to_dict()
+            if 'extra' in spassword:
+                user_extra = spassword['extra']
+                if 'black' in user_extra:
+                    return eval(user_extra['black'])
+                else:
+                    False
+            else:
+                return False
+        else:
+            LOG.warn('user %s still has not spassword data' % user_id)
+        return False
+
+    def get_pwd_expiration(self, user_id):
+        spassword_ref, session = get_spassword_session(user_id)
+        if spassword_ref:
+            spassword = spassword_ref.to_dict()
+            expiration_date = spassword['creation_time'] + \
+                datetime.timedelta(days=CONF.spassword.pwd_exp_days)
+            return expiration_date
+        else:
+            LOG.warn('user %s still has not spassword data' % user_id)
+        return 0
+
+    def modify_black(self, user_id, enable):
+        spassword_ref, session = get_spassword_session(user_id)
+        if spassword_ref:
+            spassword = spassword_ref.to_dict()
+            spassword_ref['extra'] = {"black": str(enable) }
+            with session.begin():
+                session.add(spassword_ref)
+                return True
+        else:
+            LOG.warn('user %s still has not spassword data' % user_id)
+        return False
+
     def check_sndfa_code(self, user_id, code):
         spassword_ref, session = get_spassword_session(user_id)
         if spassword_ref:
@@ -290,8 +331,14 @@ class Identity(Identity, SendMail):
         if CONF.spassword.enabled:
             # Check if password has been expired
             spassword_ref, session = get_spassword_session(user_ref['id'])
+            user_extra = {}
+            if spassword_ref:
+                spassword = spassword_ref.to_dict()
+                if 'extra' in spassword:
+                    user_extra = spassword['extra']
             if (not (spassword_ref == None)) and \
-                (not user_ref['id'] in CONF.spassword.pwd_user_blacklist):
+                (not user_ref['id'] in CONF.spassword.pwd_user_blacklist) and \
+                (not ('black' in user_extra and eval(user_extra['black']))):
                 # Check password time
                 expiration_date = datetime.datetime.utcnow() - \
                   datetime.timedelta(days=CONF.spassword.pwd_exp_days)
@@ -353,7 +400,6 @@ class Identity(Identity, SendMail):
                     }
                 # Update login attempt time
                 spassword_ref['last_login_attempt_time'] = current_attempt_time
-
                 # Check if sndfa_email in user
                 if res and CONF.spassword.sndfa and 'sndfa_email' in spassword:
                     # Put sndfa and sndfa_email info
