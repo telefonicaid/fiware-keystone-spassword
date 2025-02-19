@@ -219,6 +219,7 @@ class SPasswordRecoverResource(SPasswordResource):
         # Create a new password randonly
         new_password = uuid.uuid4().hex[:8]
 
+        # Set new user password
         try:
             update_dict = { 'password': new_password }
             PROVIDERS.identity_api.update_user(user_id, user_ref=update_dict)
