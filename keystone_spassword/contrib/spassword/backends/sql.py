@@ -338,7 +338,7 @@ class Identity(Identity, SendMail):
                     user_extra = spassword['extra']
             if (not (spassword_ref == None)) and \
                 (not user_ref['id'] in CONF.spassword.pwd_user_blacklist) and \
-                (not ('black' in user_extra and user_extra['black'])):
+                (not ('black' in user_extra and eval(user_extra['black']))):
                 # Check password time
                 expiration_date = datetime.datetime.utcnow() - \
                   datetime.timedelta(days=CONF.spassword.pwd_exp_days)
