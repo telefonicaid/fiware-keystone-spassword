@@ -1,7 +1,7 @@
 #!/bin/bash
 
 KEYSTONE_ADMIN_PASSWORD=4pass1w0rd
-MYSQL_ROOT_PASSWORD="iotonpremise"
+DB_ROOT_PASSWORD="iotonpremise"
 
 DB_HOST_ARG=${1}
 # DB_HOST_VALUE can be hostname[:port]
@@ -14,8 +14,8 @@ DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
 
-MYSQL_PASSWORD_ARG=${5}
-MYSQL_PASSWORD_VALUE=${6}
+DB_PASSWORD_ARG=${5}
+DB_PASSWORD_VALUE=${6}
 
 TOKEN_EXPIRATION_TIME_ARG=${7}
 TOKEN_EXPIRATION_TIME_VALUE=${8}
@@ -24,8 +24,51 @@ if [ "$DEFAULT_PASSWORD_ARG" == "-default_pwd" ]; then
     KEYSTONE_ADMIN_PASSWORD=$DEFAULT_PASSWORD_VALUE
 fi
 
-if [ "$MYSQL_PASSWORD_ARG" == "-mysql_pwd" ]; then
-    MYSQL_ROOT_PASSWORD="$MYSQL_PASSWORD_VALUE"
+if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
+    DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
+    DB_TYPE="mysql+pymysql"
+    DB_CREATE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_ROOT_PASSWORD <<EOF
+CREATE DATABASE keystone;
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
+    IDENTIFIED BY 'keystone';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
+    IDENTIFIED BY 'keystone';
+EOF"
+    DB_CREATE2="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_ROOT_PASSWORD <<EOF
+CREATE DATABASE IF NOT EXISTS keystone;
+CREATE USER IF NOT EXISTS 'keystone'@'localhost' IDENTIFIED BY 'keystone';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost';
+CREATE USER IF NOT EXISTS 'keystone'@'%' IDENTIFIED BY 'keystone';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%';
+EOF"
+fi
+
+if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
+    DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
+    DB_TYPE="postgresql"
+    DB_CREATE="PGPASSWORD=$DB_ROOT_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U postgres <<EOF
+CREATE DATABASE $DB_NAME;
+CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';
+GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+ALTER DATABASE $DB_NAME OWNER TO $DB_USER;
+EOF"
+    DB_CREATE2="PGPASSWORD=$DB_ROOT_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U postgres <<EOF
+-- Crear la base de datos si no existe
+SELECT 'CREATE DATABASE $DB_NAME' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME')\gexec
+
+-- Crear el usuario si no existe
+DO \$\$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_USER') THEN
+        CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';
+    END IF;
+END
+\$\$;
+
+-- Otorgar privilegios sobre la base de datos
+GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+ALTER DATABASE $DB_NAME OWNER TO $DB_USER;
+EOF"
 fi
 
 if [ "${KEYSTONE_PEP_PASSWORD}" == "" ]; then
@@ -51,28 +94,16 @@ fi
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     database connection mysql+pymysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
+                     database connection $DB_TYPE://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
     # It is supposed that keystone database does not exist, it was checked by previous script
-    mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
-CREATE DATABASE keystone;
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
-    IDENTIFIED BY 'keystone';
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
-    IDENTIFIED BY 'keystone';
-EOF
+    eval $DB_CREATE
     if [ "$?" == "1" ]; then
         # Retry because of Mysql 8.0 compatibility
         # Mysql 8.0 drops support for GRANT ALL ... IDENTIFIED BY.
         # See https://stackoverflow.com/questions/13357760/mysql-create-user-if-not-exists
         # Notice that database keystone might have been created by
         # the previous statement, hence the CREATE DATABASE IF NOT EXISTS
-        mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
-CREATE DATABASE IF NOT EXISTS keystone;
-CREATE USER IF NOT EXISTS 'keystone'@'localhost' IDENTIFIED BY 'keystone';
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost';
-CREATE USER IF NOT EXISTS 'keystone'@'%' IDENTIFIED BY 'keystone';
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%';
-EOF
+        eval $DB_CREATE2
         if [ "$?" == "1" ]; then
             echo "[ postlaunchconfig - error creating  database ] Keystone docker will be not configured"
             exit 1
