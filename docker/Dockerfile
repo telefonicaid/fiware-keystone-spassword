@@ -24,6 +24,8 @@ RUN \
     yum install -y epel-release && yum update -y epel-release && \
     # Install MySQL client
     yum -y install mysql git && \
+    # Install PostgreSQL client
+    yum -y install python3-psycopg2 git && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils procps-ng chkconfig && \
     yum -y install python3 cronie && \
@@ -65,7 +67,8 @@ RUN \
     openstack-config --set /etc/keystone/keystone.conf \
     os_inherit enabled true  && \
     openstack-config --set /etc/keystone/keystone.conf \
-    database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
+    #database connection mysql+pymysql://keystone:keystone@$DB_HOST/keystone && \
+    database connection postgresql://keystone:keystone@$DB_HOST/keystone && \
     # Set log configuration
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT default_log_levels amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=ERROR,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,oslo.policy=ERROR,oslo_policy=ERROR,dogpile.core.dogpile=INFO,keystone.server.flask.application=ERROR && \
