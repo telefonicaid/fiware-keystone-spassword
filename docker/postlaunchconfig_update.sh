@@ -213,7 +213,7 @@ openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
 
 IOTAGENT_ID=$(eval "$DB_IOTAGENT_ID" | awk '{if ($4=="iotagent") print $2}')
-NAGIOS_ID=$(eval "$DB_NAGIOS_ID" | awk '{if ($4=="nagios") print $2}'
+NAGIOS_ID=$(eval "$DB_NAGIOS_ID" | awk '{if ($4=="nagios") print $2}')
 CEP_ID=$(eval "$DB_CEP_ID" | awk '{if ($4=="cep") print $2}' )
 ID_CLOUD_ADMIN=$(eval "$DB_ID_CLOUD_ADMIN" | awk '{if ($4=="cloud_admin") print $2}')
 ID_CLOUD_SERVICE=$(eval "$DB_ID_CLOUD_SERVICE" | awk '{if ($4=="pep") print $2}')
