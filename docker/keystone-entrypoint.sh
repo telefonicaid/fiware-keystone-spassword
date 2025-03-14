@@ -23,14 +23,12 @@ TOKEN_EXPIRATION_TIME_VALUE=${8}
 [[ "${TOKEN_EXPIRATION_TIME_VALUE}" == "" ]] && TOKEN_EXPIRATION_TIME_VALUE=10800  # 3 x 3600 seconds
 
 if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
-    DB_TYPE=mysql
     DB_READY="mysqladmin ping -s --connect-timeout=3 -h $DB_HOST_NAME -P $DB_HOST_PORT"
     DB_LIST="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'show databases'"
     DB_USE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone'"
 fi
 
 if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
-    DB_TYPE=psql
     READY="pg_isready -h $DB_HOST_NAME -p $DB_HOST_PORT -t 3"
     DB_LIST="PGPASSWORD=$DB_PASSWORD_VALUE psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U root -c '\l'"
     DB_USE="PGPASSWORD=$DB_PASSWORD_VALUE psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U root -d keystone -c 'SELECT 1'"

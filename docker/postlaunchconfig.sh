@@ -29,10 +29,8 @@ if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
     DB_TYPE="mysql+pymysql"
     DB_CREATE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_ROOT_PASSWORD <<EOF
 CREATE DATABASE keystone;
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
-    IDENTIFIED BY 'keystone';
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
-    IDENTIFIED BY 'keystone';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' IDENTIFIED BY 'keystone';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'keystone';
 EOF"
     DB_CREATE2="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_ROOT_PASSWORD <<EOF
 CREATE DATABASE IF NOT EXISTS keystone;
@@ -53,10 +51,7 @@ GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 ALTER DATABASE $DB_NAME OWNER TO $DB_USER;
 EOF"
     DB_CREATE2="PGPASSWORD=$DB_ROOT_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U postgres <<EOF
--- Crear la base de datos si no existe
 SELECT 'CREATE DATABASE $DB_NAME' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME')\gexec
-
--- Crear el usuario si no existe
 DO \$\$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_USER') THEN
@@ -64,8 +59,6 @@ BEGIN
     END IF;
 END
 \$\$;
-
--- Otorgar privilegios sobre la base de datos
 GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 ALTER DATABASE $DB_NAME OWNER TO $DB_USER;
 EOF"
@@ -96,14 +89,16 @@ if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
                      database connection $DB_TYPE://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
     # It is supposed that keystone database does not exist, it was checked by previous script
-    eval $DB_CREATE
+    echo "[postlaunchconfig]  $DB_CREATE"
+    eval "$DB_CREATE"
     if [ "$?" == "1" ]; then
         # Retry because of Mysql 8.0 compatibility
         # Mysql 8.0 drops support for GRANT ALL ... IDENTIFIED BY.
         # See https://stackoverflow.com/questions/13357760/mysql-create-user-if-not-exists
         # Notice that database keystone might have been created by
         # the previous statement, hence the CREATE DATABASE IF NOT EXISTS
-        eval $DB_CREATE2
+        echo "[postlaunchconfig]  $DB_CREATE2"
+        eval "$DB_CREATE2"
         if [ "$?" == "1" ]; then
             echo "[ postlaunchconfig - error creating  database ] Keystone docker will be not configured"
             exit 1
