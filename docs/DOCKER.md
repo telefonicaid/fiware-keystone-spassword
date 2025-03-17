@@ -33,4 +33,4 @@ Orchestrator also needs some command line options for start using docker:
 | -dbhost           | Host/IP database                           |
 | -mysql_pwd        | Default database password when MySQL       |
 | -psql_pwd         | Default database password when PostgreSQL  |
-| -default_pwd      | Default password used by special users     |
+| -default_pwd      | Default password used to provision of special users     |
