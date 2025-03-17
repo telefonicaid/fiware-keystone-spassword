@@ -25,6 +25,7 @@ if [ "$DEFAULT_PASSWORD_ARG" == "-default_pwd" ]; then
 fi
 
 if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
+    DB_HOST_PORT=3306
     DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
     DB_TYPE="mysql+pymysql"
     DB_CREATE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_ROOT_PASSWORD <<EOF
@@ -42,8 +43,12 @@ EOF"
 fi
 
 if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
+    DB_HOST_PORT=5432
     DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
-    DB_TYPE="postgresql"
+    DB_TYPE="postgresql+psycopg2"
+    DB_NAME="keystone"
+    DB_USER="keystone"
+    DB_PASSWORD="keystone"
     DB_CREATE="PGPASSWORD=$DB_ROOT_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U postgres <<EOF
 CREATE DATABASE $DB_NAME;
 CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';
