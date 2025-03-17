@@ -25,3 +25,12 @@ The following environment variables are available for keystone-spassword docker
 | SAML_CERTFILE               | File location for SSL signing certificate (certfile)    | N/A            |
 | SAML_KEYFILE                | File location for SSL signing key (keyfile)             | N/A            |
 
+Orchestrator also needs some command line options for start using docker:
+
+
+| Command parameter | Description                                |
+|:------------------|:-------------------------------------------|
+| -dbhost           | Host/IP database                           |
+| -mysql_pwd        | Default database password when MySQL       |
+| -psql_pwd         | Default database password when PostgreSQL  |
+| -default_pwd      | Default password used by special users     |
