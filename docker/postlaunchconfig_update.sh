@@ -159,7 +159,7 @@ fi
 
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
-#ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
+ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 [[ "${ID_ADMIN_DOMAIN}" == "" ]] && exit 0
