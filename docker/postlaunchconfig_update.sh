@@ -25,11 +25,14 @@ if [ "$DEFAULT_PASSWORD_ARG" == "-default_pwd" ]; then
 fi
 
 if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
+    DB_HOST_PORT=3306
     DB_TYPE="mysql+pymysql"
 fi
 if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
+    DB_HOST_PORT=5432
     DB_TYPE="postgresql"
 fi
+DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
 
 [[ "${SPASSWORD_ENABLED}" == "" ]] && export SPASSWORD_ENABLED=True
 [[ "${SPASSWORD_PWD_MAX_TRIES}" == "" ]] && export SPASSWORD_PWD_MAX_TRIES=5
@@ -46,6 +49,12 @@ fi
 [[ "${SPASSWORD_SNDFA_TIME_WINDOW}" == "" ]] && export SPASSWORD_SNDFA_TIME_WINDOW=24
 [[ "${LOG_LEVEL}" == "" ]] && export LOG_LEVEL=WARN
 [[ "${ROTATE_FERNET_KEYS}" == "" ]] && export ROTATE_FERNET_KEYS=True
+
+if [ "$DB_HOST_ARG" == "-dbhost" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+                     database connection $DB_TYPE://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
+
+fi
 
 if [ "$TOKEN_EXPIRATION_TIME_ARG" == "-token_expiration_time" ]; then
     if [ "${TOKEN_EXPIRATION_TIME}" == "" ]; then
@@ -111,37 +120,6 @@ if [ "${SAML_KEYFILE}" != "" ]; then
                      saml keyfile $SAML_KEYFILE
 fi
 
-
-if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
-    DB_HOST_PORT=3306
-    DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
-    DB_ID_ADMIN_DOMAIN="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from project p where p.name=\"admin_domain\";'"
-    ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
-    DB_IOTAGENT_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"iotagent\" and u.domain_id=\"default\";'"
-    DB_NAGIOS_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"nagios\" and u.domain_id=\"default\";' "
-    DB_CEP_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"cep\" and u.domain_id=\"default\";'"
-    DB_ID_CLOUD_ADMIN="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"cloud_admin\" and u.domain_id=\"$ID_ADMIN_DOMAIN\";'"
-    DB_ID_CLOUD_SERVICE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"pep\" and u.domain_id=\"$ID_ADMIN_DOMAIN\";'"
-fi
-
-if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
-    DB_HOST_PORT=5432
-    DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
-    DB_ID_ADMIN_DOMAIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM project WHERE name='admin_domain';\""
-    ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
-    DB_IOTAGENT_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='iotagent' AND domain_id='default';\" "
-    DB_NAGIOS_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='nagios' AND domain_id='default';\" "
-    DB_CEP_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='cep' AND domain_id='default';\" "
-    DB_ID_CLOUD_ADMIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='cloud_admin' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
-    DB_ID_CLOUD_SERVICE="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='pep' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
-fi
-
-if [ "$DB_HOST_ARG" == "-dbhost" ]; then
-    openstack-config --set /etc/keystone/keystone.conf \
-                     database connection $DB_TYPE://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
-
-fi
-
 export KEYSTONE_HOST="127.0.0.1:5001"
 
 echo "[ postlaunchconfig_update - Start UWSGI process ] "
@@ -152,6 +130,31 @@ keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
 sleep 2
 keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
 sleep 5
+
+
+if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
+    DB_ID_ADMIN_DOMAIN="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from project p where p.name=\"admin_domain\";'"
+    ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
+    DB_IOTAGENT_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"iotagent\" and u.domain_id=\"default\";'"
+    DB_NAGIOS_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"nagios\" and u.domain_id=\"default\";' "
+    DB_CEP_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"cep\" and u.domain_id=\"default\";'"
+    DB_ID_CLOUD_ADMIN="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"cloud_admin\" and u.domain_id=\"$ID_ADMIN_DOMAIN\";'"
+    DB_ID_CLOUD_SERVICE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"pep\" and u.domain_id=\"$ID_ADMIN_DOMAIN\";'"
+fi
+
+if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
+    DB_ID_ADMIN_DOMAIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM project WHERE name='admin_domain';\""
+    ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
+    DB_IOTAGENT_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='iotagent' AND domain_id='default';\" "
+    DB_NAGIOS_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='nagios' AND domain_id='default';\" "
+    DB_CEP_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='cep' AND domain_id='default';\" "
+    DB_ID_CLOUD_ADMIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='cloud_admin' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
+    DB_ID_CLOUD_SERVICE="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='pep' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
+fi
+
+
+
+
 
 
 
