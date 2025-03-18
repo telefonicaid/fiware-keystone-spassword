@@ -136,24 +136,36 @@ if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
     DB_ID_ADMIN_DOMAIN="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from project p where p.name=\"admin_domain\";'"
     ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
     DB_IOTAGENT_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"iotagent\" and u.domain_id=\"default\";'"
+    IOTAGENT_ID=$(eval "$DB_IOTAGENT_ID" | awk '{if ($4=="iotagent") print $2}')
     DB_NAGIOS_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"nagios\" and u.domain_id=\"default\";' "
+    NAGIOS_ID=$(eval "$DB_NAGIOS_ID" | awk '{if ($4=="nagios") print $2}')
     DB_CEP_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"cep\" and u.domain_id=\"default\";'"
+    CEP_ID=$(eval "$DB_CEP_ID" | awk '{if ($4=="cep") print $2}' )
     DB_ID_CLOUD_ADMIN="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"cloud_admin\" and u.domain_id=\"$ID_ADMIN_DOMAIN\";'"
+    ID_CLOUD_ADMIN=$(eval "$DB_ID_CLOUD_ADMIN" | awk '{if ($4=="cloud_admin") print $2}')
     DB_ID_CLOUD_SERVICE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"pep\" and u.domain_id=\"$ID_ADMIN_DOMAIN\";'"
+    ID_CLOUD_SERVICE=$(eval "$DB_ID_CLOUD_SERVICE" | awk '{if ($4=="pep") print $2}')
 fi
 
 if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
+    DB_NAME="keystone"
+    DB_USER="keystone"
+    DB_PASSWORD="keystone"
     DB_ID_ADMIN_DOMAIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM project WHERE name='admin_domain';\""
-    ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
-    DB_IOTAGENT_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='iotagent' AND domain_id='default';\" "
-    DB_NAGIOS_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='nagios' AND domain_id='default';\" "
-    DB_CEP_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='cep' AND domain_id='default';\" "
-    DB_ID_CLOUD_ADMIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='cloud_admin' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
-    DB_ID_CLOUD_SERVICE="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='pep' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
+    ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($3=="admin_domain") print $1}')
+    DB_IOTAGENT_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='iotagent' AND domain_id='default';\" "
+    IOTAGENT_ID=$(eval "$DB_IOTAGENT_ID" | awk '{if ($7=="iotagent") print $3}')
+    DB_NAGIOS_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='nagios' AND domain_id='default';\" "
+    NAGIOS_ID=$(eval "$DB_NAGIOS_ID" | awk '{if ($7=="nagios") print $3}')
+    DB_CEP_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='cep' AND domain_id='default';\" "
+    CEP_ID=$(eval "$DB_CEP_ID" | awk '{if ($7=="cep") print $3}' )
+    DB_ID_CLOUD_ADMIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='cloud_admin' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
+    ID_CLOUD_ADMIN=$(eval "$DB_ID_CLOUD_ADMIN" | awk '{if ($7=="cloud_admin") print $3}')
+    DB_ID_CLOUD_SERVICE="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='pep' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
+    ID_CLOUD_SERVICE=$(eval "$DB_ID_CLOUD_SERVICE" | awk '{if ($7=="pep") print $3}')
 fi
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
-ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 [[ "${ID_ADMIN_DOMAIN}" == "" ]] && exit 0
@@ -220,11 +232,6 @@ fi
 openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
 
-IOTAGENT_ID=$(eval "$DB_IOTAGENT_ID" | awk '{if ($4=="iotagent") print $2}')
-NAGIOS_ID=$(eval "$DB_NAGIOS_ID" | awk '{if ($4=="nagios") print $2}')
-CEP_ID=$(eval "$DB_CEP_ID" | awk '{if ($4=="cep") print $2}' )
-ID_CLOUD_ADMIN=$(eval "$DB_ID_CLOUD_ADMIN" | awk '{if ($4=="cloud_admin") print $2}')
-ID_CLOUD_SERVICE=$(eval "$DB_ID_CLOUD_SERVICE" | awk '{if ($4=="pep") print $2}')
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
 echo "CEP_ID: $CEP_ID"

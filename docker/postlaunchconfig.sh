@@ -24,9 +24,10 @@ if [ "$DEFAULT_PASSWORD_ARG" == "-default_pwd" ]; then
     KEYSTONE_ADMIN_PASSWORD=$DEFAULT_PASSWORD_VALUE
 fi
 
+DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
+
 if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
     DB_HOST_PORT=3306
-    DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
     DB_TYPE="mysql+pymysql"
     DB_CREATE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_ROOT_PASSWORD <<EOF
 CREATE DATABASE keystone;
@@ -44,7 +45,6 @@ fi
 
 if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
     DB_HOST_PORT=5432
-    DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
     DB_TYPE="postgresql+psycopg2"
     DB_NAME="keystone"
     DB_USER="keystone"
