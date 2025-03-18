@@ -30,7 +30,7 @@ if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
 fi
 if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
     DB_HOST_PORT=5432
-    DB_TYPE="postgresql"
+    DB_TYPE="postgresql+psycopg2"
 fi
 DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
 
@@ -151,12 +151,6 @@ if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
     DB_ID_CLOUD_ADMIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='cloud_admin' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
     DB_ID_CLOUD_SERVICE="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='pep' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
 fi
-
-
-
-
-
-
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
 ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
