@@ -47,12 +47,6 @@ fi
 [[ "${LOG_LEVEL}" == "" ]] && export LOG_LEVEL=WARN
 [[ "${ROTATE_FERNET_KEYS}" == "" ]] && export ROTATE_FERNET_KEYS=True
 
-if [ "$DB_HOST_ARG" == "-dbhost" ]; then
-    openstack-config --set /etc/keystone/keystone.conf \
-                     database connection $DB_TYPE://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
-
-fi
-
 if [ "$TOKEN_EXPIRATION_TIME_ARG" == "-token_expiration_time" ]; then
     if [ "${TOKEN_EXPIRATION_TIME}" == "" ]; then
         TOKEN_EXPIRATION_TIME=$TOKEN_EXPIRATION_TIME_VALUE
@@ -118,18 +112,6 @@ if [ "${SAML_KEYFILE}" != "" ]; then
 fi
 
 
-export KEYSTONE_HOST="127.0.0.1:5001"
-
-echo "[ postlaunchconfig_update - Start UWSGI process ] "
-/usr/bin/keystone-wsgi-public --port 5001 &
-sleep 2
-keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
-/usr/bin/keystone-wsgi-admin --port 35357 &
-sleep 2
-keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
-sleep 5
-
-
 if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
     DB_HOST_PORT=3306
     DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
@@ -153,6 +135,24 @@ if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
     DB_ID_CLOUD_ADMIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='cloud_admin' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
     DB_ID_CLOUD_SERVICE="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT id FROM local_user WHERE name='pep' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
 fi
+
+if [ "$DB_HOST_ARG" == "-dbhost" ]; then
+    openstack-config --set /etc/keystone/keystone.conf \
+                     database connection $DB_TYPE://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
+
+fi
+
+export KEYSTONE_HOST="127.0.0.1:5001"
+
+echo "[ postlaunchconfig_update - Start UWSGI process ] "
+/usr/bin/keystone-wsgi-public --port 5001 &
+sleep 2
+keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
+/usr/bin/keystone-wsgi-admin --port 35357 &
+sleep 2
+keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
+sleep 5
+
 
 
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
