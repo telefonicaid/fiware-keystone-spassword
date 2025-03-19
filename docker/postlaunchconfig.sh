@@ -15,14 +15,6 @@ DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
 [[ "${DB_USER}" == "" ]] && DB_USER="keystone"
 [[ "${DB_PASSWORD}" == "" ]] && DB_PASSWORD="keystone"
 
-echo "INFO: LOG LEVEL <${LOG_LEVEL}>"
-echo "INFO: DB endpoint <${DB_HOST_VALUE}>"
-echo "INFO: DB_HOST_NAME <${DB_HOST_NAME}>"
-echo "INFO: DB_HOST_PORT <${DB_HOST_PORT}>"
-echo "INFO: DB_NAME <${DB_NAME}>"
-echo "INFO: DB_USER <${DB_USER}>"
-echo "INFO: DB_PASSWORD <${DB_PASSWORD}>"
-
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
 
@@ -77,6 +69,15 @@ GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 ALTER DATABASE $DB_NAME OWNER TO $DB_USER;
 EOF"
 fi
+
+echo "INFO: LOG LEVEL <${LOG_LEVEL}>"
+echo "INFO: DB endpoint <${DB_HOST_VALUE}>"
+echo "INFO: DB_HOST_NAME <${DB_HOST_NAME}>"
+echo "INFO: DB_HOST_PORT <${DB_HOST_PORT}>"
+echo "INFO: DB_NAME <${DB_NAME}>"
+echo "INFO: DB_USER <${DB_USER}>"
+echo "INFO: DB_PASSWORD <${DB_PASSWORD}>"
+
 
 if [ "${KEYSTONE_PEP_PASSWORD}" == "" ]; then
    KEYSTONE_PEP_PASSWORD=$KEYSTONE_ADMIN_PASSWORD
