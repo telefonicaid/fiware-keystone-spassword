@@ -1,21 +1,25 @@
 #!/bin/bash
 
 KEYSTONE_ADMIN_PASSWORD=4pass1w0rd
-MYSQL_ROOT_PASSWORD="iotonpremise"
+DB_ROOT_PASSWORD="iotonpremise"
 
 DB_HOST_ARG=${1}
 # DB_HOST_VALUE can be hostname[:port]
 DB_HOST_VALUE=${2}
 DB_HOST_NAME="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $1}')"
 DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
-# Default MySQL port 3306
+# Default DB port 3306 (default is mysql)
 [[ "${DB_HOST_PORT}" == "" ]] && DB_HOST_PORT=3306
+# Default user and DB
+[[ "${DB_NAME}" == "" ]] && DB_NAME="keystone"
+[[ "${DB_USER}" == "" ]] && DB_USER="keystone"
+[[ "${DB_PASSWORD}" == "" ]] && DB_PASSWORD="keystone"
 
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
 
-MYSQL_PASSWORD_ARG=${5}
-MYSQL_PASSWORD_VALUE=${6}
+DB_PASSWORD_ARG=${5}
+DB_PASSWORD_VALUE=${6}
 
 TOKEN_EXPIRATION_TIME_ARG=${7}
 TOKEN_EXPIRATION_TIME_VALUE=${8}
@@ -24,9 +28,23 @@ if [ "$DEFAULT_PASSWORD_ARG" == "-default_pwd" ]; then
     KEYSTONE_ADMIN_PASSWORD=$DEFAULT_PASSWORD_VALUE
 fi
 
-if [ "$MYSQL_PASSWORD_ARG" == "-mysql_pwd" ]; then
-    MYSQL_ROOT_PASSWORD="$MYSQL_PASSWORD_VALUE"
+if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
+    DB_HOST_PORT=3306
+    DB_TYPE="mysql+pymysql"
 fi
+if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
+    DB_HOST_PORT=5432
+    DB_TYPE="postgresql+psycopg2"
+fi
+DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
+
+echo "INFO: LOG LEVEL <${LOG_LEVEL}>"
+echo "INFO: DB endpoint <${DB_HOST_VALUE}>"
+echo "INFO: DB_HOST_NAME <${DB_HOST_NAME}>"
+echo "INFO: DB_HOST_PORT <${DB_HOST_PORT}>"
+echo "INFO: DB_NAME <${DB_NAME}>"
+echo "INFO: DB_USER <${DB_USER}>"
+echo "INFO: DB_PASSWORD <${DB_PASSWORD}>"
 
 [[ "${SPASSWORD_ENABLED}" == "" ]] && export SPASSWORD_ENABLED=True
 [[ "${SPASSWORD_PWD_MAX_TRIES}" == "" ]] && export SPASSWORD_PWD_MAX_TRIES=5
@@ -46,7 +64,7 @@ fi
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     database connection mysql+pymysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
+                     database connection $DB_TYPE://$DB_USER:$DB_PASSWORD@$DB_HOST_NAME:$DB_HOST_PORT/$DB_NAME;
 
 fi
 
@@ -114,7 +132,6 @@ if [ "${SAML_KEYFILE}" != "" ]; then
                      saml keyfile $SAML_KEYFILE
 fi
 
-
 export KEYSTONE_HOST="127.0.0.1:5001"
 
 echo "[ postlaunchconfig_update - Start UWSGI process ] "
@@ -127,8 +144,40 @@ keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
 sleep 5
 
 
+if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
+    DB_ID_ADMIN_DOMAIN="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from project p where p.name=\"admin_domain\";'"
+    ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($2=="admin_domain") print $1}')
+    DB_IOTAGENT_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"iotagent\" and u.domain_id=\"default\";'"
+    IOTAGENT_ID=$(eval "$DB_IOTAGENT_ID" | awk '{if ($4=="iotagent") print $2}')
+    DB_NAGIOS_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"nagios\" and u.domain_id=\"default\";' "
+    NAGIOS_ID=$(eval "$DB_NAGIOS_ID" | awk '{if ($4=="nagios") print $2}')
+    DB_CEP_ID="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"cep\" and u.domain_id=\"default\";'"
+    CEP_ID=$(eval "$DB_CEP_ID" | awk '{if ($4=="cep") print $2}' )
+    DB_ID_CLOUD_ADMIN="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"cloud_admin\" and u.domain_id=\"$ID_ADMIN_DOMAIN\";'"
+    ID_CLOUD_ADMIN=$(eval "$DB_ID_CLOUD_ADMIN" | awk '{if ($4=="cloud_admin") print $2}')
+    DB_ID_CLOUD_SERVICE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name=\"pep\" and u.domain_id=\"$ID_ADMIN_DOMAIN\";'"
+    ID_CLOUD_SERVICE=$(eval "$DB_ID_CLOUD_SERVICE" | awk '{if ($4=="pep") print $2}')
+fi
+
+if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
+    DB_NAME="keystone"
+    DB_USER="keystone"
+    DB_PASSWORD="keystone"
+    DB_ID_ADMIN_DOMAIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM project WHERE name='admin_domain';\""
+    ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($3=="admin_domain") print $1}')
+    DB_IOTAGENT_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='iotagent' AND domain_id='default';\" "
+    IOTAGENT_ID=$(eval "$DB_IOTAGENT_ID" | awk '{if ($7=="iotagent") print $3}')
+    DB_NAGIOS_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='nagios' AND domain_id='default';\" "
+    NAGIOS_ID=$(eval "$DB_NAGIOS_ID" | awk '{if ($7=="nagios") print $3}')
+    DB_CEP_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='cep' AND domain_id='default';\" "
+    CEP_ID=$(eval "$DB_CEP_ID" | awk '{if ($7=="cep") print $3}' )
+    DB_ID_CLOUD_ADMIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='cloud_admin' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
+    ID_CLOUD_ADMIN=$(eval "$DB_ID_CLOUD_ADMIN" | awk '{if ($7=="cloud_admin") print $3}')
+    DB_ID_CLOUD_SERVICE="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='pep' AND domain_id='${ID_ADMIN_DOMAIN}';\" "
+    ID_CLOUD_SERVICE=$(eval "$DB_ID_CLOUD_SERVICE" | awk '{if ($7=="pep") print $3}')
+fi
+
 # Get Domain Admin Id form domain if Liberty or minor or project if Mitaka or uppper
-ID_ADMIN_DOMAIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from project p where p.name="admin_domain";' | awk '{if ($2=="admin_domain") print $1}'`
 echo "ID_ADMIN_DOMAIN: $ID_ADMIN_DOMAIN"
 [[ "${ID_ADMIN_DOMAIN}" == null ]] && exit 0
 [[ "${ID_ADMIN_DOMAIN}" == "" ]] && exit 0
@@ -195,13 +244,6 @@ fi
 openstack-config --set /etc/keystone/keystone.conf \
                  DEFAULT admin_token $KEYSTONE_ADMIN_PASSWORD
 
-
-
-IOTAGENT_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="iotagent" and u.domain_id="default";' | awk '{if ($4=="iotagent") print $2}'`
-NAGIOS_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="nagios" and u.domain_id="default";' | awk '{if ($4=="nagios") print $2}'`
-CEP_ID=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cep" and u.domain_id="default";' | awk '{if ($4=="cep") print $2}'`
-ID_CLOUD_ADMIN=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="cloud_admin" and u.domain_id="'${ID_ADMIN_DOMAIN}'";' | awk '{if ($4=="cloud_admin") print $2}'`
-ID_CLOUD_SERVICE=`mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone; select * from local_user u where u.name="pep" and u.domain_id="'${ID_ADMIN_DOMAIN}'";' | awk '{if ($4=="pep") print $2}'`
 echo "IOTAGENT_ID: $IOTAGENT_ID"
 echo "NAGIOS_ID: $NAGIOS_ID"
 echo "CEP_ID: $CEP_ID"

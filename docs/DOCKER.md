@@ -24,4 +24,18 @@ The following environment variables are available for keystone-spassword docker
 | SAML_ENDPOINT               | Keystone Endpoint used to expose SAML API for idp and sso options  | N/A            |
 | SAML_CERTFILE               | File location for SSL signing certificate (certfile)    | N/A            |
 | SAML_KEYFILE                | File location for SSL signing key (keyfile)             | N/A            |
+| DB_NAME                     | DB name                                                 | keystone       |
+| DB_USER                     | DB user name                                            | keystone       |
+| DB_PASSWORD                 | DB user password                                        | keystone       |
 
+
+
+Orchestrator also needs some command line options for start using docker:
+
+
+| Command parameter | Description                                |
+|:------------------|:-------------------------------------------|
+| -dbhost           | Host/IP database                           |
+| -mysql_pwd        | Default database password when MySQL       |
+| -psql_pwd         | Default database password when PostgreSQL  |
+| -default_pwd      | Default password used to provision of special users     |

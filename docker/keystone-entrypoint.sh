@@ -13,8 +13,8 @@ DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
 
-MYSQL_PASSWORD_ARG=${5}
-MYSQL_PASSWORD_VALUE=${6}
+DB_PASSWORD_ARG=${5}
+DB_PASSWORD_VALUE=${6}
 
 TOKEN_EXPIRATION_TIME_ARG=${7}
 TOKEN_EXPIRATION_TIME_VALUE=${8}
@@ -22,26 +22,40 @@ TOKEN_EXPIRATION_TIME_VALUE=${8}
 [[ "${TOKEN_EXPIRATION_TIME_ARG}" == "" ]] && TOKEN_EXPIRATION_TIME_ARG="-token_expiration_time"
 [[ "${TOKEN_EXPIRATION_TIME_VALUE}" == "" ]] && TOKEN_EXPIRATION_TIME_VALUE=10800  # 3 x 3600 seconds
 
+if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
+    DB_HOST_PORT=3306
+    DB_READY="mysqladmin ping -s --connect-timeout=3 -h $DB_HOST_NAME -P $DB_HOST_PORT"
+    DB_LIST="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'show databases'"
+    DB_USE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone'"
+fi
+
+if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
+    DB_HOST_PORT=5432
+    DB_READY="pg_isready -h $DB_HOST_NAME -p $DB_HOST_PORT -t 3"
+    DB_LIST="PGPASSWORD=$DB_PASSWORD_VALUE psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U postgres -c '\l'"
+    DB_USE="PGPASSWORD=$DB_PASSWORD_VALUE psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U postgres -d keystone -c 'SELECT 1'"
+fi
+
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     # Wait until DB is up, even if DB is behind a load balancer
-    while ! mysqladmin ping -s --connect-timeout=3 -h $DB_HOST_NAME -P $DB_HOST_PORT; do sleep 10; done
+    while ! eval "$DB_READY"; do sleep 10; done
     # Check if postlaunchconfig was executed
     chkconfig openstack-keystone --level 3
     if [ "$?" == "1" ]; then
         # Check if credentials are OK
-        mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'show databases'
+        eval "$DB_LIST"
         if [ "$?" == "1" ]; then
-            echo "[ keystone-entrypoint - error in mysql credentials ] Keystone docker will be not configured"
+            echo "[ keystone-entrypoint - error in db credentials ] Keystone docker will be not configured"
             exit 1
         fi
         # Check if previos DB data exists
-        mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_PASSWORD_VALUE -e 'use keystone'
-        if [ "$?" == "1" ]; then
+        eval "$DB_USE"
+        if [ "$?" == "0" ]; then
             rm -f /var/log/keystone/keystone.log
-            /opt/keystone/postlaunchconfig.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $MYSQL_PASSWORD_ARG $MYSQL_PASSWORD_VALUE $TOKEN_EXPIRATION_TIME_ARG $TOKEN_EXPIRATION_TIME_VALUE
+            /opt/keystone/postlaunchconfig_update.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $DB_PASSWORD_ARG $DB_PASSWORD_VALUE $TOKEN_EXPIRATION_TIME_ARG $TOKEN_EXPIRATION_TIME_VALUE
         else
             rm -f /var/log/keystone/keystone.log
-            /opt/keystone/postlaunchconfig_update.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $MYSQL_PASSWORD_ARG $MYSQL_PASSWORD_VALUE $TOKEN_EXPIRATION_TIME_ARG $TOKEN_EXPIRATION_TIME_VALUE
+            /opt/keystone/postlaunchconfig.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $DB_PASSWORD_ARG $DB_PASSWORD_VALUE $TOKEN_EXPIRATION_TIME_ARG $TOKEN_EXPIRATION_TIME_VALUE
         fi
     fi
 fi

@@ -24,6 +24,8 @@ RUN \
     yum install -y epel-release && yum update -y epel-release && \
     # Install MySQL client
     yum -y install mysql git && \
+    # Install PostgreSQL client
+    yum -y install postgresql python3-psycopg2 && \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils procps-ng chkconfig && \
     yum -y install python3 cronie && \

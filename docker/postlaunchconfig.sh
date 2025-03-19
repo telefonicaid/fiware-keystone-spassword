@@ -1,21 +1,25 @@
 #!/bin/bash
 
 KEYSTONE_ADMIN_PASSWORD=4pass1w0rd
-MYSQL_ROOT_PASSWORD="iotonpremise"
+DB_ROOT_PASSWORD="iotonpremise"
 
 DB_HOST_ARG=${1}
 # DB_HOST_VALUE can be hostname[:port]
 DB_HOST_VALUE=${2}
 DB_HOST_NAME="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $1}')"
 DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
-# Default MySQL port 3306
+# Default DB port 3306 (default is mysql)
 [[ "${DB_HOST_PORT}" == "" ]] && DB_HOST_PORT=3306
+# Default user and DB
+[[ "${DB_NAME}" == "" ]] && DB_NAME="keystone"
+[[ "${DB_USER}" == "" ]] && DB_USER="keystone"
+[[ "${DB_PASSWORD}" == "" ]] && DB_PASSWORD="keystone"
 
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
 
-MYSQL_PASSWORD_ARG=${5}
-MYSQL_PASSWORD_VALUE=${6}
+DB_PASSWORD_ARG=${5}
+DB_PASSWORD_VALUE=${6}
 
 TOKEN_EXPIRATION_TIME_ARG=${7}
 TOKEN_EXPIRATION_TIME_VALUE=${8}
@@ -24,9 +28,56 @@ if [ "$DEFAULT_PASSWORD_ARG" == "-default_pwd" ]; then
     KEYSTONE_ADMIN_PASSWORD=$DEFAULT_PASSWORD_VALUE
 fi
 
-if [ "$MYSQL_PASSWORD_ARG" == "-mysql_pwd" ]; then
-    MYSQL_ROOT_PASSWORD="$MYSQL_PASSWORD_VALUE"
+DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
+
+if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
+    DB_HOST_PORT=3306
+    DB_TYPE="mysql+pymysql"
+    DB_CREATE="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_ROOT_PASSWORD <<EOF
+CREATE DATABASE $DB_NAME;
+GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
+GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';
+EOF"
+    DB_CREATE2="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_ROOT_PASSWORD <<EOF
+CREATE DATABASE IF NOT EXISTS $DB_NAME;
+CREATE USER IF NOT EXISTS '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
+GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';
+CREATE USER IF NOT EXISTS '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';
+GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%';
+EOF"
 fi
+
+if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
+    DB_HOST_PORT=5432
+    DB_TYPE="postgresql+psycopg2"
+    DB_CREATE="PGPASSWORD=$DB_ROOT_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U postgres <<EOF
+CREATE DATABASE $DB_NAME;
+CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';
+GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+ALTER DATABASE $DB_NAME OWNER TO $DB_USER;
+EOF"
+    DB_CREATE2="PGPASSWORD=$DB_ROOT_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U postgres <<EOF
+SELECT 'CREATE DATABASE $DB_NAME' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME')\gexec
+DO \$\$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_USER') THEN
+        CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';
+    END IF;
+END
+\$\$;
+GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
+ALTER DATABASE $DB_NAME OWNER TO $DB_USER;
+EOF"
+fi
+
+echo "INFO: LOG LEVEL <${LOG_LEVEL}>"
+echo "INFO: DB endpoint <${DB_HOST_VALUE}>"
+echo "INFO: DB_HOST_NAME <${DB_HOST_NAME}>"
+echo "INFO: DB_HOST_PORT <${DB_HOST_PORT}>"
+echo "INFO: DB_NAME <${DB_NAME}>"
+echo "INFO: DB_USER <${DB_USER}>"
+echo "INFO: DB_PASSWORD <${DB_PASSWORD}>"
+
 
 if [ "${KEYSTONE_PEP_PASSWORD}" == "" ]; then
    KEYSTONE_PEP_PASSWORD=$KEYSTONE_ADMIN_PASSWORD
@@ -51,28 +102,18 @@ fi
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     database connection mysql+pymysql://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
+                     database connection $DB_TYPE://$DB_USER:$DB_PASSWORD@$DB_HOST_NAME:$DB_HOST_PORT/$DB_NAME;
     # It is supposed that keystone database does not exist, it was checked by previous script
-    mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
-CREATE DATABASE keystone;
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
-    IDENTIFIED BY 'keystone';
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
-    IDENTIFIED BY 'keystone';
-EOF
+    echo "[postlaunchconfig]  $DB_CREATE"
+    eval "$DB_CREATE"
     if [ "$?" == "1" ]; then
         # Retry because of Mysql 8.0 compatibility
         # Mysql 8.0 drops support for GRANT ALL ... IDENTIFIED BY.
         # See https://stackoverflow.com/questions/13357760/mysql-create-user-if-not-exists
         # Notice that database keystone might have been created by
         # the previous statement, hence the CREATE DATABASE IF NOT EXISTS
-        mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$MYSQL_ROOT_PASSWORD <<EOF
-CREATE DATABASE IF NOT EXISTS keystone;
-CREATE USER IF NOT EXISTS 'keystone'@'localhost' IDENTIFIED BY 'keystone';
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost';
-CREATE USER IF NOT EXISTS 'keystone'@'%' IDENTIFIED BY 'keystone';
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%';
-EOF
+        echo "[postlaunchconfig]  $DB_CREATE2"
+        eval "$DB_CREATE2"
         if [ "$?" == "1" ]; then
             echo "[ postlaunchconfig - error creating  database ] Keystone docker will be not configured"
             exit 1

@@ -1,3 +1,4 @@
+ADD: allow to use PostgreSQL based DB instead of MySQL based DB (#256)
 ADD: Rename IoT Platform to Thinking Cities Platform
 
 1.20.0
