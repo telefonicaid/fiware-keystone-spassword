@@ -33,6 +33,7 @@ from keystone.api.users import UserResource
 from keystone.api.users import UserChangePasswordResource
 from keystone_scim.contrib.scim.scim import ScimUserResource
 from keystone_scim.contrib.scim import converter as conv
+from keystone_spassword.contrib.spassword import Brand
 from keystone_spassword.contrib.spassword.checker import CheckPassword
 from keystone_spassword.contrib.spassword.mailer import SendMail
 try: from oslo_log import log
@@ -244,7 +245,7 @@ class SPasswordRecoverResource(SPasswordResource):
 
     def _send_recovery_password_email(self, user_email, user_password):
         to = user_email
-        subject = 'IoT Platform recovery password'
+        subject = Brand + ' recovery password'
         text = 'Your new password is %s' % user_password
         return self.send_email(to, subject, text)
 
@@ -319,7 +320,7 @@ class SPasswordAskCheckEmailResource(SPasswordResource):
                                                                 user_info['name']))
         code = PROVIDERS.spassword_api.user_ask_check_email_code(user_id)
         to = user_info['email'] # must be a list
-        subject = 'IoT Platform verify email '
+        subject = Brand + ' verify email '
         text = 'The code for verify your email is %s' % code
         if CONF.spassword.sndfa_endpoint.startswith('http'):
             link = '%s/v3/users/%s/checkemail/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)

@@ -1,3 +1,5 @@
+ADD: Rename IoT Platform to Thinking Cities Platform
+
 1.20.0
 
 ADD: allow to add and remove just one user to expiration password black list (#251)
