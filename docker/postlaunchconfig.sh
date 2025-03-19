@@ -1,8 +1,5 @@
 #!/bin/bash
 
-KEYSTONE_ADMIN_PASSWORD=4pass1w0rd
-DB_ROOT_PASSWORD="iotonpremise"
-
 DB_HOST_ARG=${1}
 # DB_HOST_VALUE can be hostname[:port]
 DB_HOST_VALUE=${2}
