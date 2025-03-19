@@ -29,7 +29,7 @@ from keystone import exception
 from keystone.identity.backends.sql import Identity
 try: from keystone.identity.backends.sql import User
 except ImportError: from keystone.identity.backends.sql_model import User
-from keystone_spassword.contrib.spassword import Driver
+from keystone_spassword.contrib.spassword import Driver, Brand
 from keystone_spassword.contrib.spassword.mailer import SendMail
 try: from oslo_log import log
 except ImportError: from keystone.openstack.common import log
@@ -424,7 +424,7 @@ class Identity(Identity, SendMail):
                                 code = uuid.uuid4().hex[:6]
                                 PROVIDERS.spassword_api.set_user_sndfa_code(self.get_user(user_id), code)
                             to = self.get_user(user_id)['email']
-                            subject = 'IoT Platform second factor auth procedure'
+                            subject = Brand + ' second factor auth procedure'
                             text = 'The code for verify your access is %s' % code
                             # Check if http is in endpoint
                             link = ''
