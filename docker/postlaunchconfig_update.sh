@@ -8,8 +8,12 @@ DB_HOST_ARG=${1}
 DB_HOST_VALUE=${2}
 DB_HOST_NAME="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $1}')"
 DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
-# Default MySQL port 3306
+# Default DB port 3306 (default is mysql)
 [[ "${DB_HOST_PORT}" == "" ]] && DB_HOST_PORT=3306
+# Default user and DB
+[[ "${DB_NAME}" == "" ]] && DB_NAME="keystone"
+[[ "${DB_USER}" == "" ]] && DB_USER="keystone"
+[[ "${DB_PASSWORD}" == "" ]] && DB_PASSWORD="keystone"
 
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
@@ -52,7 +56,7 @@ DB_ROOT_PASSWORD="$DB_PASSWORD_VALUE"
 
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     openstack-config --set /etc/keystone/keystone.conf \
-                     database connection $DB_TYPE://keystone:keystone@$DB_HOST_NAME:$DB_HOST_PORT/keystone;
+                     database connection $DB_TYPE://$DB_USER:$DB_PASSWORD@$DB_HOST_NAME:$DB_HOST_PORT/$DB_NAME;
 
 fi
 
