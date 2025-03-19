@@ -59,6 +59,8 @@ PROVIDERS = provider_api.ProviderAPIs
 
 RELEASES = versionutils._RELEASES if hasattr(versionutils, '_RELEASES') else versionutils.deprecated._RELEASES
 
+Brand = 'Thinking Cities Platform'
+
 @notifications.listener  # NOTE(dstanek): only needed if using event_callbacks
 class SPasswordManager(manager.Manager):
     """SPassword Manager.
