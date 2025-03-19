@@ -15,6 +15,14 @@ DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
 [[ "${DB_USER}" == "" ]] && DB_USER="keystone"
 [[ "${DB_PASSWORD}" == "" ]] && DB_PASSWORD="keystone"
 
+echo "INFO: LOG LEVEL <${LOG_LEVEL}>"
+echo "INFO: DB endpoint <${DB_HOST_VALUE}>"
+echo "INFO: DB_HOST_NAME <${DB_HOST_NAME}>"
+echo "INFO: DB_HOST_PORT <${DB_HOST_PORT}>"
+echo "INFO: DB_NAME <${DB_NAME}>"
+echo "INFO: DB_USER <${DB_USER}>"
+echo "INFO: DB_PASSWORD <${DB_PASSWORD}>"
+
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
 
