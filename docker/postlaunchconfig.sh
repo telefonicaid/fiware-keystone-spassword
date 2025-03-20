@@ -10,7 +10,6 @@ DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
 # Default user and DB
 [[ "${DB_NAME}" == "" ]] && DB_NAME="keystone"
 [[ "${DB_USER}" == "" ]] && DB_USER="keystone"
-[[ "${DB_PASSWORD}" == "" ]] && DB_PASSWORD="keystone"
 
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}

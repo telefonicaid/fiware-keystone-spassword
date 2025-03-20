@@ -26,16 +26,16 @@ The following environment variables are available for keystone-spassword docker
 | SAML_KEYFILE                | File location for SSL signing key (keyfile)             | N/A            |
 | DB_NAME                     | DB name                                                 | keystone       |
 | DB_USER                     | DB user name                                            | keystone       |
-| DB_PASSWORD                 | DB user password                                        | keystone       |
+| DB_PASSWORD                 | DB user password                                        | N/A            |
 
 
 
 Orchestrator also needs some command line options for start using docker:
 
 
-| Command parameter | Description                                |
-|:------------------|:-------------------------------------------|
-| -dbhost           | Host/IP database                           |
-| -mysql_pwd        | Default database password when MySQL       |
-| -psql_pwd         | Default database password when PostgreSQL  |
+| Command parameter | Description                                             |
+|:------------------|:--------------------------------------------------------|
+| -dbhost           | Host/IP database                                        |
+| -mysql_pwd        | Default root user database password when MySQL          |
+| -psql_pwd         | Default postgres user database password when PostgreSQL |
 | -default_pwd      | Default password used to provision of special users     |
