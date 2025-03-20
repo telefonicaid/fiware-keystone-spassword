@@ -10,7 +10,6 @@ DB_HOST_PORT="$(echo "${DB_HOST_VALUE}" | awk -F: '{print $2}')"
 # Default user and DB
 [[ "${DB_NAME}" == "" ]] && DB_NAME="keystone"
 [[ "${DB_USER}" == "" ]] && DB_USER="keystone"
-[[ "${DB_PASSWORD}" == "" ]] && DB_PASSWORD="keystone"
 
 DEFAULT_PASSWORD_ARG=${3}
 DEFAULT_PASSWORD_VALUE=${4}
@@ -157,9 +156,6 @@ if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
 fi
 
 if [ "$DB_PASSWORD_ARG" == "-psql_pwd" ]; then
-    DB_NAME="keystone"
-    DB_USER="keystone"
-    DB_PASSWORD="keystone"
     DB_ID_ADMIN_DOMAIN="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM project WHERE name='admin_domain';\""
     ID_ADMIN_DOMAIN=$(eval "$DB_ID_ADMIN_DOMAIN" | awk '{if ($3=="admin_domain") print $1}')
     DB_IOTAGENT_ID="PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST_NAME -p $DB_HOST_PORT -U $DB_USER -d $DB_NAME -t -c \"SELECT * FROM local_user WHERE name='iotagent' AND domain_id='default';\" "

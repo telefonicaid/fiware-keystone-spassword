@@ -26,7 +26,7 @@ The following environment variables are available for keystone-spassword docker
 | SAML_KEYFILE                | File location for SSL signing key (keyfile)             | N/A            |
 | DB_NAME                     | DB name                                                 | keystone       |
 | DB_USER                     | DB user name                                            | keystone       |
-| DB_PASSWORD                 | DB user password                                        | keystone       |
+| DB_PASSWORD                 | DB user password                                        | N/A            |
 
 
 
