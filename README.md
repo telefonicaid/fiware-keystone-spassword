@@ -179,6 +179,31 @@ Restart again keystone container
 To upgrade to 1.19.0 version make sure upgrade first to 1.18.x version before.
 
 
+#### Migrate from MySQL to PosgreSQL
+Keystone spassword since 1.21.0 version could be migrate from MySQL to PosgreSQL.
+The procedure is the following:
+
+1. Create new Keystone database and user in PostgreSQL:
+```sh
+PGPASSWORD=postgresUser psql -h 172.17.0.1 -p 5432 -U postgresPass <<EOF
+CREATE DATABASE keystone;
+CREATE USER keystoneUser WITH PASSWORD 'keystonePass';
+GRANT ALL PRIVILEGES ON DATABASE keystone TO keystoneUser;
+ALTER DATABASE keystone OWNER TO keystoneUser;
+EOF
+```
+
+
+2. Migrate with [pgloader](https://pgloader.io/)
+```sh
+pgloader mysql://keystoneUser:keystonePass@172.17.0.1:3306/keystone postgresql://keystoneUser:keystonePass@172.17.0.1:5432/keystone
+```
+
+3. Restart Keystone Docker container
+```sh
+docker restart keystone
+```
+
 ## Usage
 
 SPASSWORD extension reuses the authentication and authorization mechanisms provided
