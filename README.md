@@ -179,8 +179,8 @@ Restart again keystone container
 To upgrade to 1.19.0 version make sure upgrade first to 1.18.x version before.
 
 
-#### Migrate from MySQL to PosgreSQL
-Keystone spassword since 1.21.0 version could be migrate from MySQL to PosgreSQL.
+#### Migrate from MySQL to PostgreSQL
+Keystone spassword since 1.21.0 version could be migrate from MySQL to PostgreSQL.
 The procedure is the following:
 
 1. Create new Keystone database and user in PostgreSQL:
