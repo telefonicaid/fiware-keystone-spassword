@@ -186,17 +186,17 @@ The procedure is the following:
 1. Create new Keystone database and user in PostgreSQL:
 ```sh
 PGPASSWORD=postgresUser psql -h 172.17.0.1 -p 5432 -U postgresPass <<EOF
-CREATE DATABASE keystone;
+CREATE DATABASE keystoneDb;
 CREATE USER keystoneUser WITH PASSWORD 'keystonePass';
-GRANT ALL PRIVILEGES ON DATABASE keystone TO keystoneUser;
-ALTER DATABASE keystone OWNER TO keystoneUser;
+GRANT ALL PRIVILEGES ON DATABASE keystoneDb TO keystoneUser;
+ALTER DATABASE keystoneDb OWNER TO keystoneUser;
 EOF
 ```
 
 
-2. Migrate with [pgloader](https://pgloader.io/)
+2. Migrate with [pgloader](https://pgloader.io/) which is commonly available in linux distributions like Debian.
 ```sh
-pgloader mysql://keystoneUser:keystonePass@172.17.0.1:3306/keystone postgresql://keystoneUser:keystonePass@172.17.0.1:5432/keystone
+pgloader mysql://keystoneUser:keystonePass@172.17.0.1:3306/keystoneDb postgresql://keystoneUser:keystonePass@172.17.0.1:5432/keystoneDb
 ```
 
 3. Restart Keystone Docker container
