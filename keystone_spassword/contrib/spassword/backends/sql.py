@@ -373,6 +373,7 @@ class Identity(Identity, SendMail):
                 spassword = spassword_ref.to_dict()
                 if spassword['login_attempts'] > CONF.spassword.pwd_max_tries:
                     # Check last block attempt
+                    spassword['last_login_attempt_time'] = normalize_db_date(spassword['last_login_attempt_time'])
                     if (spassword['last_login_attempt_time'] > \
                         datetime.datetime.utcnow() - \
                         datetime.timedelta(minutes=CONF.spassword.pwd_block_minutes)):
