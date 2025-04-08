@@ -393,13 +393,14 @@ class Identity(Identity, SendMail):
             current_attempt_time = datetime.datetime.utcnow()
             if spassword_ref:
                 spassword = spassword_ref.to_dict()
+                spassword['creation_time'] = normalize_db_date(spassword['creation_time'])
                 if not res:
                     LOG.debug('wrong password provided at login %s' % spassword['user_name'])
                     spassword_ref['login_attempts'] += 1
                 else:
                     previous_login_attempts = spassword_ref['login_attempts']
                     spassword_ref['login_attempts'] = 0
-                    expiration_date = spassword_ref['creation_time'] + \
+                    expiration_date = spassword['creation_time'] + \
                         datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                     res['extras'] = {
                         "password_creation_time": datetime.datetime.isoformat(spassword['creation_time']),
