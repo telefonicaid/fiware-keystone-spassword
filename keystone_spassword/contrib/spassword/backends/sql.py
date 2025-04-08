@@ -227,6 +227,8 @@ class SPassword(Driver):
         spassword_ref, session = get_spassword_session(user_id)
         if spassword_ref:
             spassword = spassword_ref.to_dict()
+            if spassword['creation_time'].tzinfo is not None:
+                spassword['creation_time'] = spassword['creation_time'].replace(tzinfo=None)
             expiration_date = spassword['creation_time'] + \
                 datetime.timedelta(days=CONF.spassword.pwd_exp_days)
             return expiration_date
@@ -268,6 +270,8 @@ class SPassword(Driver):
         if spassword_ref:
             spassword = spassword_ref.to_dict()
             if spassword['sndfa'] and spassword['sndfa_email']:
+                if spassword['sndfa_last'] and spassword['sndfa_last'].tzinfo is not None:
+                    spassword['sndfa_last'] = spassword['sndfa_last'].replace(tzinfo=None)
                 if (spassword['sndfa_last'] and
                         spassword['sndfa_last'] < datetime.datetime.utcnow() + \
                         datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
@@ -343,6 +347,9 @@ class Identity(Identity, SendMail):
                 expiration_date = datetime.datetime.utcnow() - \
                   datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                 spassword = spassword_ref.to_dict()
+
+                if spassword['creation_time'].tzinfo is not None:
+                    spassword['creation_time'] = spassword['creation_time'].replace(tzinfo=None)
                 if (spassword['creation_time'] < expiration_date):
                     LOG.warn('password of user %s %s expired ' % (user_ref['id'],
                                                                   user_ref['name']))
@@ -409,6 +416,8 @@ class Identity(Identity, SendMail):
                     # Put sndfa and sndfa_email info
                     res['extras']['sndfa'] = spassword['sndfa']
                     if spassword['sndfa_email']:
+                        if spassword['sndfa_last'] and spassword['sndfa_last'].tzinfo is not None:
+                            spassword['sndfa_last'] = spassword['sndfa_last'].replace(tzinfo=None)
                         if (spassword['sndfa_last'] and
                                 spassword['sndfa_last'] > datetime.datetime.utcnow() - \
                                 datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
@@ -416,6 +425,8 @@ class Identity(Identity, SendMail):
                         else:
                             # Should retry code that was sent email
                             LOG.debug('user %s was not validated with 2fa due to code' % user_id)
+                            if spassword['sndfa_time_code'] and spassword['sndfa_time_code'].tzinfo is not None:
+                                spassword['sndfa_time_code'] = spassword['sndfa_time_code'].replace(tzinfo=None)
                             if (spassword['sndfa_time_code'] and
                                     spassword['sndfa_time_code'] > datetime.datetime.utcnow() - \
                                     datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
