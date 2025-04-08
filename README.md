@@ -181,8 +181,17 @@ To upgrade to 1.19.0 version make sure upgrade first to 1.18.x version before.
 
 #### Migrate from MySQL to PostgreSQL
 Since version 1.21.0, Keystone SPASSWORD allows migration from MySQL to PostgreSQL.
-The procedure is the following:
 
+##### Prerequisites
+Default auth plugin in MySQL 8 is `caching_sha2_password` which is not supported by pgloader tool needed by this procedure. During this procedure MySQL should use `mysql_native_password` plugin. To achieve that set in `[mysqld]` section add:
+
+    default-authentication-plugin=mysql_native_password
+
+Then restart your MySQL server and execute:
+
+    ALTER USER 'youruser'@'localhost' IDENTIFIED WITH mysql_native_password BY 'yourpassword';
+
+##### Procedure
 1. Create new Keystone database and user in PostgreSQL:
 ```sh
 PGPASSWORD=postgresUser psql -h 172.17.0.1 -p 5432 -U postgresPass <<EOF
