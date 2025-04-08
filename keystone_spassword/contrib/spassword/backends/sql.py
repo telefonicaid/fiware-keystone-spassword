@@ -40,6 +40,11 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 PROVIDERS = provider_api.ProviderAPIs
 
+def normalize_db_date(dt): # to naive datetime
+    if dt.tzinfo is not None:
+        return dt.replace(tzinfo=None)
+    return dt
+
 class SPasswordSecurityError(exception.Error):
     def _build_message(self, message, **kwargs):
         return '%(message)s' % {
@@ -227,6 +232,7 @@ class SPassword(Driver):
         spassword_ref, session = get_spassword_session(user_id)
         if spassword_ref:
             spassword = spassword_ref.to_dict()
+            spassword['creation_time'] = normalize_db_date(spassword['creation_time'])
             expiration_date = spassword['creation_time'] + \
                 datetime.timedelta(days=CONF.spassword.pwd_exp_days)
             return expiration_date
@@ -268,6 +274,8 @@ class SPassword(Driver):
         if spassword_ref:
             spassword = spassword_ref.to_dict()
             if spassword['sndfa'] and spassword['sndfa_email']:
+                if spassword['sndfa_last']:
+                    spassword['sndfa_last'] = normalize_db_date(spassword['sndfa_last'])
                 if (spassword['sndfa_last'] and
                         spassword['sndfa_last'] < datetime.datetime.utcnow() + \
                         datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
@@ -343,6 +351,7 @@ class Identity(Identity, SendMail):
                 expiration_date = datetime.datetime.utcnow() - \
                   datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                 spassword = spassword_ref.to_dict()
+                spassword['creation_time'] = normalize_db_date(spassword['creation_time'])
                 if (spassword['creation_time'] < expiration_date):
                     LOG.warn('password of user %s %s expired ' % (user_ref['id'],
                                                                   user_ref['name']))
@@ -364,6 +373,7 @@ class Identity(Identity, SendMail):
                 spassword = spassword_ref.to_dict()
                 if spassword['login_attempts'] > CONF.spassword.pwd_max_tries:
                     # Check last block attempt
+                    spassword['last_login_attempt_time'] = normalize_db_date(spassword['last_login_attempt_time'])
                     if (spassword['last_login_attempt_time'] > \
                         datetime.datetime.utcnow() - \
                         datetime.timedelta(minutes=CONF.spassword.pwd_block_minutes)):
@@ -383,13 +393,14 @@ class Identity(Identity, SendMail):
             current_attempt_time = datetime.datetime.utcnow()
             if spassword_ref:
                 spassword = spassword_ref.to_dict()
+                spassword['creation_time'] = normalize_db_date(spassword['creation_time'])
                 if not res:
                     LOG.debug('wrong password provided at login %s' % spassword['user_name'])
                     spassword_ref['login_attempts'] += 1
                 else:
                     previous_login_attempts = spassword_ref['login_attempts']
                     spassword_ref['login_attempts'] = 0
-                    expiration_date = spassword_ref['creation_time'] + \
+                    expiration_date = spassword['creation_time'] + \
                         datetime.timedelta(days=CONF.spassword.pwd_exp_days)
                     res['extras'] = {
                         "password_creation_time": datetime.datetime.isoformat(spassword['creation_time']),
@@ -409,6 +420,8 @@ class Identity(Identity, SendMail):
                     # Put sndfa and sndfa_email info
                     res['extras']['sndfa'] = spassword['sndfa']
                     if spassword['sndfa_email']:
+                        if spassword['sndfa_last']:
+                            spassword['sndfa_last'] = normalize_db_date(spassword['sndfa_last'])
                         if (spassword['sndfa_last'] and
                                 spassword['sndfa_last'] > datetime.datetime.utcnow() - \
                                 datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
@@ -416,6 +429,8 @@ class Identity(Identity, SendMail):
                         else:
                             # Should retry code that was sent email
                             LOG.debug('user %s was not validated with 2fa due to code' % user_id)
+                            if spassword['sndfa_time_code']:
+                                spassword['sndfa_time_code'] = normalize_db_date(spassword['sndfa_time_code'])
                             if (spassword['sndfa_time_code'] and
                                     spassword['sndfa_time_code'] > datetime.datetime.utcnow() - \
                                     datetime.timedelta(hours=CONF.spassword.sndfa_time_window)):
