@@ -1,3 +1,5 @@
+1.21.0
+
 FIX: use naive datetime when Datetime is migrated to timestamptz in postgresql (#264)
 ADD: new database end vars for docker: DB_NAME, DB_USER, DB_PASSWORD
 ADD: allow to use PostgreSQL based DB instead of MySQL based DB (#256)
