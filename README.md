@@ -179,6 +179,40 @@ Restart again keystone container
 To upgrade to 1.19.0 version make sure upgrade first to 1.18.x version before.
 
 
+#### Migrate from MySQL to PostgreSQL
+Since version 1.21.0, Keystone SPASSWORD allows migration from MySQL to PostgreSQL.
+
+##### Prerequisites
+Default auth plugin in MySQL 8 is `caching_sha2_password` which is not supported by pgloader tool needed by this procedure. During this procedure MySQL should use `mysql_native_password` plugin. To achieve that set in `[mysqld]` section add:
+
+    default-authentication-plugin=mysql_native_password
+
+Then restart your MySQL server and execute:
+
+    ALTER USER 'youruser'@'localhost' IDENTIFIED WITH mysql_native_password BY 'yourpassword';
+
+##### Procedure
+1. Create new Keystone database and user in PostgreSQL:
+```sh
+PGPASSWORD=postgresUser psql -h 172.17.0.1 -p 5432 -U postgresPass <<EOF
+CREATE DATABASE keystoneDb;
+CREATE USER keystoneUser WITH PASSWORD 'keystonePass';
+GRANT ALL PRIVILEGES ON DATABASE keystoneDb TO keystoneUser;
+ALTER DATABASE keystoneDb OWNER TO keystoneUser;
+EOF
+```
+
+
+2. Migrate with [pgloader](https://pgloader.io/) which is commonly available in linux distributions like Debian.
+```sh
+pgloader mysql://keystoneUser:keystonePass@172.17.0.1:3306/keystoneDb postgresql://keystoneUser:keystonePass@172.17.0.1:5432/keystoneDb
+```
+
+3. Restart Keystone Docker container
+```sh
+docker restart keystone
+```
+
 ## Usage
 
 SPASSWORD extension reuses the authentication and authorization mechanisms provided
