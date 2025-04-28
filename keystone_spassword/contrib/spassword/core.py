@@ -155,6 +155,11 @@ class SPasswordManager(manager.Manager):
         LOG.info("User %s already check email in driver manager" % user_id)
         return self.driver.already_email_checked(user_id)
 
+    def set_user_updated(self, user_id):
+        if CONF.spassword.enabled:
+            user = { 'id': user_id }
+            self.driver.update_user_modification_time(user)
+
 
 class Driver(object):
     """Interface description for SPassword driver."""
