@@ -1,4 +1,4 @@
-FIX: allow use empty values for SPASSWORD_SMTP_USER and SPASSWORD_SMTP_PASSWORD env vars (#268)
+FIX: allow use empty values for SPASSWORD_SMTP_USER,  SPASSWORD_SMTP_PASSWORD and SPASSWORD_SMTP_FROM env vars (#268)
 
 1.21.0
 
