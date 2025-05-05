@@ -70,7 +70,8 @@ class SendMail(object):
             server.starttls()
 
         # Use auth only if smtp_user and smtp_password not empty
-        if CONF.spassword.smtp_user and CONF.spassword.smtp_password:
+        if CONF.spassword.smtp_user != "" and CONF.spassword.smtp_password != "":
+            LOG.debug('SMTP_USER %r' % CONF.spassword.smtp_user)
             try:
                 server.login(CONF.spassword.smtp_user,
                              CONF.spassword.smtp_password)
