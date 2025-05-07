@@ -1,3 +1,5 @@
+FIX: allow use empty values for SPASSWORD_SMTP_USER,  SPASSWORD_SMTP_PASSWORD and SPASSWORD_SMTP_FROM env vars (#268)
+
 1.21.0
 
 FIX: use naive datetime when Datetime is migrated to timestamptz in postgresql (#264)
