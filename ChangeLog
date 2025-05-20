@@ -1,3 +1,5 @@
+FIX: set keystone.server.flask.application to CRITICAL level to not show as ERROR some expected 40X errors (i.e. list domains) (#269)
+
 1.22.0
 
 FIX: allow use empty values for SPASSWORD_SMTP_USER,  SPASSWORD_SMTP_PASSWORD and SPASSWORD_SMTP_FROM env vars (#268)
