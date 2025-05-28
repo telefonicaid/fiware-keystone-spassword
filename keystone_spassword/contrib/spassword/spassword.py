@@ -216,6 +216,9 @@ class SPasswordRecoverResource(SPasswordResource):
         self._check_user_has_email_validated(user_info)
 
         code = PROVIDERS.spassword_api.user_ask_check_email_code(user_id)
+        # Set email again as verified
+        PROVIDERS.spassword_api.user_check_email_code(user_id, code)
+
         to = user_info['email'] # must be a list
         subject = Brand + ' reset password '
         text = 'The code for reset your password is %s' % code
@@ -254,7 +257,7 @@ class SPasswordResetResource(SPasswordResource):
 
         if PROVIDERS.spassword_api.user_check_email_code(user_id, code):
             # Create a new password randonly
-            new_password = uuid.uuid4().hex[:8]
+            new_password = uuid.uuid4().hex[:12]
 
             # Set new user password
             try:
