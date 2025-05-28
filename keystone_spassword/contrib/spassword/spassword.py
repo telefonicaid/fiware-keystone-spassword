@@ -201,47 +201,87 @@ class SPasswordResource(ks_flask.ResourceBase, SendMail):
 
 class SPasswordRecoverResource(SPasswordResource):
 
+    @ks_flask.unenforced_api
     def get(self, user_id):
         return self._recover_password(user_id)
 
+    # Should be called without provide an auth token
     def _recover_password(self, user_id):
         """Perform user password recover procedure."""
         self._check_spassword_configured()
-        ENFORCER.enforce_call(
-            action='identity:update_user',
-            build_target=_build_user_target_enforcement
-        )
         user_info = PROVIDERS.identity_api.get_user(user_id)
-        LOG.debug('recover password invoked for user %s %s' % (user_info['id'],
+        LOG.debug('recover password procedure invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
         self._check_user_has_email_defined(user_info)
         self._check_user_has_email_validated(user_info)
 
-        # Create a new password randonly
-        new_password = uuid.uuid4().hex[:8]
-
-        # Set new user password
-        try:
-            update_dict = { 'password': new_password }
-            PROVIDERS.identity_api.update_user(user_id, user_ref=update_dict)
-        except AssertionError:
-            # authentication failed because of invalid username or password
-            msg = 'Invalid username or password'
-            LOG.error('%s' % msg)
-            raise exception.Unauthorized(msg)
-
-        if self._send_recovery_password_email(user_info['email'], new_password):
-            msg = 'recover password email sent to %s' % user_info['email']
+        code = PROVIDERS.spassword_api.user_ask_check_email_code(user_id)
+        to = user_info['email'] # must be a list
+        subject = Brand + ' reset password '
+        text = 'The code for reset your password is %s' % code
+        if CONF.spassword.sndfa_endpoint.startswith('http'):
+            link = '%s/v3/users/%s/reset_password/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
+        else:
+            link = 'http://%s/v3/users/%s/reset_password/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
+        text += '\nLink is: %s' % link
+        if self.send_email(to, subject, text):
+            msg = 'reset password email code sent to %s' % user_info['email']
             LOG.info(msg)
             resp = flask.make_response(msg, http_client.OK)
             resp.headers['Content-Type'] = 'application/json'
             return resp
         else:
-            msg = 'recover password email was not sent to %s' % user_info['email']
+            msg = 'reset password email code was not sent to %s' % user_info['email']
             LOG.info(msg)
             resp = flask.make_response(msg, http_client.BAD_REQUEST)
             resp.headers['Content-Type'] = 'application/json'
+            return resp
+
+class SPasswordResetResource(SPasswordResource):
+
+    @ks_flask.unenforced_api
+    def get(self, user_id, code=None):
+        return self._reset_password(user_id, code)
+
+    # Should be called without provide an auth token
+    def _reset_password(self, user_id, code):
+        """Perform user password reset."""
+
+        user_info = PROVIDERS.identity_api.get_user(user_id)
+        LOG.debug('reset password invoked for user %s %s' % (user_info['id'],
+                                                               user_info['name']))
+        self._check_user_has_email_validated(user_info)
+
+        if PROVIDERS.spassword_api.user_check_email_code(user_id, code):
+            # Create a new password randonly
+            new_password = uuid.uuid4().hex[:8]
+
+            # Set new user password
+            try:
+                update_dict = { 'password': new_password }
+                PROVIDERS.identity_api.update_user(user_id, user_ref=update_dict)
+            except AssertionError:
+                # authentication failed because of invalid username or password
+                msg = 'Invalid username or password'
+                LOG.error('%s' % msg)
+                raise exception.Unauthorized(msg)
+
+            resp = None;
+            msg = None;
+            if self._send_recovery_password_email(user_info['email'], new_password):
+                msg = 'New password email sent to %s' % user_info['email']
+            else:
+                msg = 'New password email was not sent to %s' % user_info['email']
+            LOG.info(msg)
+
+            # Render response in HTML
+            resp = flask.make_response('Valid code. Password sucessfully reset.' + msg, http_client.OK)
+            resp.headers['Content-Type'] = 'text/html'
             return resp            
+        else:
+            resp = flask.make_response('No valid code. Password not reset checked', http_client.UNAUTHORIZED)
+            resp.headers['Content-Type'] = 'application/json'
+            return resp
 
     def _send_recovery_password_email(self, user_email, user_password):
         to = user_email
@@ -467,6 +507,13 @@ class SPasswordAPI(ks_flask.APIBase):
         ks_flask.construct_resource_map(
             resource=SPasswordRecoverResource,
             url='/users/<string:user_id>/recover_password',
+            resource_kwargs={},
+            rel='recover_password',
+            path_vars={'user_id': json_home.Parameters.USER_ID}
+        ),
+        ks_flask.construct_resource_map(
+            resource=SPasswordResetResource,
+            url='/users/<string:user_id>/reset_password/<string:code>',
             resource_kwargs={},
             rel='recover_password',
             path_vars={'user_id': json_home.Parameters.USER_ID}

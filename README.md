@@ -221,8 +221,9 @@ with Keystone, but as a reference you can read more about the Keystone
 Authentication and Authorization mechanism in it's
 [official documentation](https://github.com/openstack/identity-api/blob/master/v3/src/markdown/identity-api-v3.md).
 
+Moreover keystone-spassword adds a new API to handle [second factor authentication](docs/second_factor_auth.md) and new API for:
 
-Moreover keystone-spassword adds a new API to retrieve all project roles for a user (aka Grants):
+- Retrieve all project roles for a user (aka Grants):
         
 **GET '/v3/users/{user_id}/project_roles'**
 
@@ -255,6 +256,13 @@ This call uses a x-auth-token associated to <user_id> user.
   **POST '/v3/users/<user_id>/black'**
 
   This call needs a x-auth-token associated to <user_id> user. The payload for this request is either `{"enable":true}` to enable password expiration black list membership or `{"enable":false}` to disable it.
+
+
+- Init reset password procedure.
+
+  **GET '/v3/users/<user_id>/recover_password'**
+
+  This call does not need a x-auth-token associated to <user_id> user. If user has valid email and this emails was validated then a link for continue reset password procedure will be sent do user email.
 
 
 ## Building and packaging
