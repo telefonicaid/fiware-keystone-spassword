@@ -262,7 +262,15 @@ This call uses a x-auth-token associated to <user_id> user.
 
   **GET '/v3/users/<user_id>/recover_password'**
 
-  This call does not need a x-auth-token associated to <user_id> user. If user has valid and validated email then a link for continue reset password procedure will be sent to user email. When user clicks in link contained in sent email then user password will be reset and sent again by email to user.
+  This call does not need a x-auth-token associated to <user_id> user.
+  If user has valid and validated email then a link for continue reset password procedure will be sent to user email. When user clicks in link contained in sent email then user password will be reset and sent again by email to user.
+
+- Complete reset password procedure.
+
+  **GET '/v3/users/<user_id>/reset_password/<code>'**
+
+  This call does not need a x-auth-token associated to <user_id> user, just the valid <code> sent by email when user performs previous request.
+  Then password is reset to a new random password wich will be sent to the user by email again.
 
 
 ## Building and packaging

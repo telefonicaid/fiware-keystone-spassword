@@ -220,21 +220,21 @@ class SPasswordRecoverResource(SPasswordResource):
         PROVIDERS.spassword_api.user_check_email_code(user_id, code)
 
         to = user_info['email'] # must be a list
-        subject = Brand + ' reset password '
-        text = 'The code for reset your password is %s' % code
+        subject = Brand + ' reset password procedure '
+        text = 'The reset password procedure has been started'
         if CONF.spassword.sndfa_endpoint.startswith('http'):
             link = '%s/v3/users/%s/reset_password/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
         else:
             link = 'http://%s/v3/users/%s/reset_password/%s' % (CONF.spassword.sndfa_endpoint, user_info['id'], code)
-        text += '\nLink is: %s' % link
+        text += '\nPress in following link to complete your password reset: %s' % link
         if self.send_email(to, subject, text):
-            msg = 'reset password email code sent to %s' % user_info['email']
+            msg = 'reset password email link sent to %s' % user_info['email']
             LOG.info(msg)
             resp = flask.make_response(msg, http_client.OK)
             resp.headers['Content-Type'] = 'application/json'
             return resp
         else:
-            msg = 'reset password email code was not sent to %s' % user_info['email']
+            msg = 'reset password email link was not sent to %s' % user_info['email']
             LOG.info(msg)
             resp = flask.make_response(msg, http_client.BAD_REQUEST)
             resp.headers['Content-Type'] = 'application/json'
@@ -272,13 +272,13 @@ class SPasswordResetResource(SPasswordResource):
             resp = None;
             msg = None;
             if self._send_recovery_password_email(user_info['email'], new_password):
-                msg = 'New password email sent to %s' % user_info['email']
+                msg = ' New password was sent by email to %s' % user_info['email']
             else:
-                msg = 'New password email was not sent to %s' % user_info['email']
+                msg = ' New password was not sent by email to %s' % user_info['email']
             LOG.info(msg)
 
             # Render response in HTML
-            resp = flask.make_response('Valid code. Password sucessfully reset.' + msg, http_client.OK)
+            resp = flask.make_response('Request with valid code. Password sucessfully reset.' + msg, http_client.OK)
             resp.headers['Content-Type'] = 'text/html'
             return resp            
         else:
