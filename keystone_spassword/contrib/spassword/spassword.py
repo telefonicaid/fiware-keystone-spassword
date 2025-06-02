@@ -271,7 +271,7 @@ class SPasswordResetResource(SPasswordResource):
 
             resp = None;
             msg = None;
-            if self._send_recovery_password_email(user_info['email'], new_password):
+            if self._send_new_password_email(user_info['email'], new_password):
                 msg = ' New password was sent by email to %s' % user_info['email']
             else:
                 msg = ' New password was not sent by email to %s' % user_info['email']
@@ -282,11 +282,11 @@ class SPasswordResetResource(SPasswordResource):
             resp.headers['Content-Type'] = 'text/html'
             return resp            
         else:
-            resp = flask.make_response('No valid code. Password not reset checked', http_client.UNAUTHORIZED)
-            resp.headers['Content-Type'] = 'application/json'
+            resp = flask.make_response('No valid code. Password not reset', http_client.UNAUTHORIZED)
+            resp.headers['Content-Type'] = 'text/html'
             return resp
 
-    def _send_recovery_password_email(self, user_email, user_password):
+    def _send_new_password_email(self, user_email, user_password):
         to = user_email
         subject = Brand + ' recovery password'
         text = 'Your new password is %s' % user_password
