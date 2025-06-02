@@ -253,7 +253,6 @@ class SPasswordResetResource(SPasswordResource):
         user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('reset password invoked for user %s %s' % (user_info['id'],
                                                                user_info['name']))
-        self._check_user_has_email_validated(user_info)
 
         if PROVIDERS.spassword_api.user_check_email_code(user_id, code):
             # Create a new password randonly
