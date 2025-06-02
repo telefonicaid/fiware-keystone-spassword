@@ -256,7 +256,7 @@ class SPasswordResetResource(SPasswordResource):
 
         if PROVIDERS.spassword_api.user_check_email_code(user_id, code):
             # Create a new password randonly
-            new_password = uuid.uuid4().hex[:12]
+            new_password = str(uuid.uuid4())[:12]
 
             # Set new user password
             try:
@@ -288,7 +288,7 @@ class SPasswordResetResource(SPasswordResource):
     def _send_new_password_email(self, user_email, user_password):
         to = user_email
         subject = Brand + ' recovery password'
-        text = 'Your new password is %s' % user_password
+        text = 'Your new password is %s, proceed to change it as soon as possible' % user_password
         return self.send_email(to, subject, text)
 
 
