@@ -1,37 +1,39 @@
+1.23.0
+
 ADD: recover password procedure by 2 steps: request API and email with link to perform reset password (#273)
 FIX: set keystone.server.flask.application to CRITICAL level to not show as ERROR some expected 40X errors (i.e. list domains) (#269)
 
-1.22.0
+1.22.0 - 2025-05-08
 
 FIX: allow use empty values for SPASSWORD_SMTP_USER,  SPASSWORD_SMTP_PASSWORD and SPASSWORD_SMTP_FROM env vars (#268)
 
-1.21.0
+1.21.0 - 2025-04-08
 
 FIX: use naive datetime when Datetime is migrated to timestamptz in postgresql (#264)
 ADD: new database end vars for docker: DB_NAME, DB_USER, DB_PASSWORD
 ADD: allow to use PostgreSQL based DB instead of MySQL based DB (#256)
 ADD: Rename IoT Platform to Thinking Cities Platform
 
-1.20.0
+1.20.0 - 2025-02-19
 
 ADD: allow to add and remove just one user to expiration password black list (#251)
 
-1.19.1
+1.19.1 - 2024-12-16
 
 Fix: migration spassword script (related with keystone sqlalchemy support) to allow bootstrap from empty database (#240, #243)
 ADD: allow to define pep password using  KEYSTONE_PEP_PASSWORD env var (#247)
 
-1.19.0
+1.19.0 - 2024-06-26
 
 Upgrade to use Keystone Antelope
 Upgrade docker to centos 9 Stream
 Upgrade to support python 3.9
 
-1.18.1
+1.18.1 - 2024-12-12
 
 Fix: migration spassword script (related with keystone sqlalchemy support) to allow bootstrap from empty database (#240)
 
-1.18.0
+1.18.0 - 2024-03-12
 
 Fix: policy.json file from stein for docker (#234)
 Fix: modify docker provision script for compatibility with mysql 8.0 (#232)
@@ -39,32 +41,32 @@ Upgrade to use Keystone Xena
 Upgrade docker to centos 8.4
 Upgrade to support python 3.6
 
-1.17.0
+1.17.0 - 2023-06-19
 
 Add permissions to allow get all role_assignments of a group in all subservices in one request by any admin domain user
 Add openldap-clients dependency and link from /etc/ldap/ldap.conf to etc/ldap/openldap.conf
 
-1.16.0
+1.16.0 - 2022-11-30
 
 Return previous login attempts in extra field after a success login attempt
 
-1.15.0
+1.15.0 - 2022-06-13
 
 Use 1.6.0 version of SCIM in docker image
 Log to access, error and keystone logs to stderr of docker to avoid log to file (#148)
 
-1.14.1
+1.14.1 - 2022-04-29
 
 Fix: check if DB is up even if is behind a load balancer
 
-1.14.0
+1.14.0 - 2022-04-28
 
 ADD: check if mysql credentials are OK before use it by docker statup scripts
 ADD: provision a new user `cep` in default domain
 ADD: ensure blacklist users are in expected domain
 Fix: do not remove database when its supposed not exists (#212)
 
-1.13.0
+1.13.0 - 2021-12-10
 
 ADD: force keystone restart at startup after set configuration (#199)
 ADD: log spassword config at startup
@@ -75,40 +77,40 @@ Fix missed deps (python2-qpid-proton, qpid-proton-c) using epel version 7-14 (#1
 Remove old framework files
 Remove some reduntant logs (flask, stevedore, oslo_policy) docker container
 
-1.12.0
+1.12.0 - 2020-12-17
 
 Add env var to enable/disable fernet token rotation (#163)
 Ensure fenet-keys folder permissions when configured as external volumen (#163)
 Upgrade Dockerfile base image from centos7.7.1908 to centos7.9.2009
 
-1.11.0
+1.11.0 - 2020-11-12
 
 Remove automigrate spassword inside rpm
 Include patch files in RPM builds
 Ensure start uwsgi process when new container starts with new data
 
-1.10.0
+1.10.0 - 2020-04-24
 
 Upgrade plugin for compatibility with Stein version (including docker).
 Fix. get_project_roles API bug of version 1.9.0
 
-1.9.0
+1.9.0 - 2020-03-30
 
 Upgrade plugin for compatibility with Rocky version (including docker).
 
-1.8.0
+1.8.0 - 2020-03-23
 
 Upgrade plugin for compatibility with Queens version (including docker).
 
-1.7.0
+1.7.0 - 2020-03-10
 
 Upgrade plugin for compatibility with Pike version (including docker).
 
-1.6.0
+1.6.0 - 2020-03-06
 
 Upgrade plugin for compatibility with Ocata version (including docker).
 
-1.5.4
+1.5.4 - 2020-03-06
 
 Add: env var to set LOG_LEVEL
 Add: cron task to flush tokens (expired tokens) in docker container
@@ -116,110 +118,110 @@ Add: allow configure keystone cache to use Redis backend with env var
 Add: env vars to token expiration and revocation buffer expiraton
 
 
-1.5.3
+1.5.3 - 2019-12-20
 
 Fix: add missed keystone permission for get_project_roles to policy.json (#123)
 
-1.5.2
+1.5.2 - 2019-12-10
 
 Fix: protect grants and sndfa APIs
 Fix: handle unmatch groups from ldap integration (ldap/docker)
 Set to 3 hours default token expiration time in docker
 Add nagios user to black list
 
-1.5.1
+1.5.1 - 2019-05-27
 
 Allow sndfa endpoints (keystone) urls with `https` and `/idm`
 
 
-1.5.0
+1.5.0 - 2019-02-01
 
 Upgrade plugin for compatibility with Mitaka version (including docker).
 Mitaka is default version for docker.
 
-1.4.9
+1.4.9 - 2021-01-12
 
 Add: cron task to flush tokens (expired tokens) in docker container
 
-1.4.8
+1.4.8 - 2020-01-09
 
 Fix: add missed keystone permission for get_project_roles to policy.json (#123)
 Fix: protect grants and sndfa APIs
 Fix: handle unmatch groups from ldap integration (ldap/docker)
 Set to 3 hours default token expiration time in docker
 
-1.4.7
+1.4.7 - 2019-06-20
 
 Add nagios user to black list
 
-1.4.6
+1.4.6 - 2019-01-25
 
 Add API to get all user projects and the user roles in each project
 
-1.4.5
+1.4.5 - 2018-09-27
 
 Fix user id for blacklist when update docker (#92)
 Render check email and sndfa response in HTML (#88)
 Use multipart when send email about sndfa.
 
-1.4.4
+1.4.4 - 2018-07-23
 
 Add sndfa_endpoint protocol if not provided
 Fix remove old extension when upgrading from and old version of RPM
 
-1.4.3
+1.4.3 - 2018-07-04
 
 Fix check configuration for smtp_tls, smtp_user and smtp_password as STMP server connection
 
-1.4.2
+1.4.2 - 2018-03-28
 
 Fix notification event callbacks for user spassword
 
-1.4.1
+1.4.1 - 2018-03-27
 
 Fix permission over 2FA controller to allow non admin
 
-1.4.0
+1.4.0 - 2018-03-22
 
 LDAP preconfiguration
 Second Factor Authentication added through email
 
-1.3.0
+1.3.0 - 2017-10-05
 
 Return last login attempt time. [#50]
 Set centos mirror to 7.3.1611 for docker image
 
-1.2.1
+1.2.1 - 2017-09-07
 
 Use mysql db port in docker postlauchconfig script
 Allow mysql db port in docker arg --dbhost
 Support for integrate with LDAP
 
-1.2.0
+1.2.0 - 2017-01-24
 
 Update Docker to use keystone liberty version
 
-1.1.2
+1.1.2 - 2016-11-16
 
 Fix prefix path about SCIM version to use by default
 
 
-1.1.1
+1.1.1 - 2016-11-08
 
 Extend get version string script
 
 
-1.1.0
+1.1.0 - 2016-09-19
 
 Set default blacklist user for spassword checks
 Set current keystone dependencies for docker version
 
 
-1.0.6
+1.0.6 - 2016-08-31
 
 Extend compatiblity with keystone liberty version
 
 
-1.0.0
+1.0.0 - 2016-08-30
 
 Initial verion
