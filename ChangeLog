@@ -1,4 +1,4 @@
-1.23.0
+1.23.0 - 2025-06-04
 
 ADD: recover password procedure by 2 steps: request API and email with link to perform reset password (#273)
 FIX: set keystone.server.flask.application to CRITICAL level to not show as ERROR some expected 40X errors (i.e. list domains) (#269)
