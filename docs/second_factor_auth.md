@@ -77,10 +77,4 @@ Second Factor authentication introduces new methods:
   
   This call does not need a x-auth-token. Tipically is done by click in an email link.
 
-- Force to recover a user passsword.
-  
-  ```GET /v3/users/<user_id>/recover_password```
-  
-  This call does not need a x-auth-token
-
 Note that in order to use the `POST /v3/users/<user_id>/sndfa` operation first the user email must be validad. Thus, the `GET /v3/users/<user_id>/checkemail` (and later email validation with `GET /v3/users/<user_id>/checkemail/<code>`) call must be done before.
