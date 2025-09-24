@@ -23,7 +23,7 @@ a recover procedure password, a second factor authentication (2FA)  and so on.
 - 1.9.0 uses keystone Rocky
 - 1.10.0 to 1.17.0 uses keystone Stein
 - 1.18.x uses keystone Xena
-- 1.19.x to 1.22.0 uses keystone Antelope
+- 1.19.x to 1.23.0 uses keystone Antelope
 
 
 ## Installing and Configuration
@@ -171,12 +171,12 @@ Restart again keystone container
 ##### Upgrade from 1.7.0 or upper to 1.17.0
 -> no workaround needed
 
-##### Upgrade from 1.17.0 to 1.18.0
+##### Upgrade from 1.17.0 to 1.18.1
 -> no workaround needed
 
-##### Upgrade from 1.18.0 to 1.19.0
+##### Upgrade from 1.18.1 to 1.19.1
 -> no workaround needed
-To upgrade to 1.19.0 version make sure upgrade first to 1.18.x version before.
+To upgrade to 1.19.1 version make sure upgrade first to 1.18.1 version before.
 
 
 #### Migrate from MySQL to PostgreSQL
