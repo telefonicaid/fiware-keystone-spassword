@@ -294,6 +294,9 @@ class SPasswordResetResource(SPasswordResource):
 
 class SPasswordModifySndfaResource(SPasswordResource):
 
+    def get(self, user_id):
+        return self._get_sndfa(user_id)
+
     def post(self, user_id):
         return self._modify_sndfa(user_id)
 
@@ -319,6 +322,21 @@ class SPasswordModifySndfaResource(SPasswordResource):
             return resp
         else:
             raise exception.ValidationError(message='invalid body format')
+
+
+    def _get_sndfa(self, user_id):
+        """Perform get black """
+        ENFORCER.enforce_call(
+            action='identity:get_user',
+            build_target=_build_user_target_enforcement
+        )
+        user_info = PROVIDERS.identity_api.get_user(user_id)
+        LOG.debug('get sndfa invoked for user %s %s' % (user_info['id'],
+                                                        user_info['name']))
+        sndfa = PROVIDERS.spassword_api.user_get_sndfa(user_id)
+        response = { "sndfa" : sndfa }
+        resp = flask.make_response(jsonutils.dumps(response), http_client.OK)
+        return resp
 
 class SPasswordCheckSndfaResource(SPasswordResource):
 
