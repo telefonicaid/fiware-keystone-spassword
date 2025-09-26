@@ -216,7 +216,10 @@ class SPassword(Driver):
         user_extra = {}
         if spassword_ref:
             spassword = spassword_ref.to_dict()
-            return spassword['sndfa']
+            if 'sndfa' in spassword:
+                return spassword['sndfa']
+            else:
+                False
         else:
             LOG.warn('user %s still has not spassword data' % user_id)
         return False

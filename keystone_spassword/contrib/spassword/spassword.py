@@ -333,8 +333,12 @@ class SPasswordModifySndfaResource(SPasswordResource):
         user_info = PROVIDERS.identity_api.get_user(user_id)
         LOG.debug('get sndfa invoked for user %s %s' % (user_info['id'],
                                                         user_info['name']))
+        email_checked = PROVIDERS.spassword_api.already_user_check_email(user_id)
         sndfa = PROVIDERS.spassword_api.user_get_sndfa(user_id)
-        response = { "sndfa" : sndfa }
+        response = {
+            "sndfa_email": email_checked,
+            "sndfa" : sndfa
+        }
         resp = flask.make_response(jsonutils.dumps(response), http_client.OK)
         return resp
 
