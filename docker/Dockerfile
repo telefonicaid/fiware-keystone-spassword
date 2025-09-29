@@ -29,7 +29,7 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils procps-ng chkconfig && \
     yum -y install python3 cronie && \
-    curl -s --insecure -L 'https://repos.fedorapeople.org/openstack/archived/openstack-antelope/rdo-release-antelope-2.el9s.noarch.rpm' > rdo-release-antelope-2.el9s.noarch.rpm && \
+    curl -s --insecure -L 'https://fedorapeople.org/groups/repos/openstack/archived/openstack-antelope/rdo-release-antelope-2.el9s.noarch.rpm' > rdo-release-antelope-2.el9s.noarch.rpm && \
     yum localinstall -y --nogpgcheck rdo-release-antelope-2.el9s.noarch.rpm && \
     # Set Centos mirror to ensure openstack version
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/rdo-release.repo && \
