@@ -1,3 +1,5 @@
+ADD: API to allow manage 2FA of users by admin.
+
 1.23.0 - 2025-06-04
 
 ADD: recover password procedure by 2 steps: request API and email with link to perform reset password (#273)
