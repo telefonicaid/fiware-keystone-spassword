@@ -71,6 +71,13 @@ Second Factor authentication introduces new methods:
   The payload for this request is either `{"enable":true}` to enable second factor or `{"enable":false}` to disable it.
   This call uses a x-auth-token associated to <user_id> user.
 
+- Get current configuration for second factor authentication for a user.
+
+  ```GET /v3/users/<user_id>/sndfa```
+
+  The response for this request includes `sndfa` and `sndfa_email` booleans related with sndfa is enabled and email is already checked respectly.
+  This call uses a x-auth-token associated to <user_id> user.
+
 - Check a second factor authentication code to allow user authentication. Code is just valid during sndfa_time_window.
   
   ```GET /v3/users/<user_id>/sndfa/<code>```
