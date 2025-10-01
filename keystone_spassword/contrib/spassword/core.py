@@ -127,6 +127,10 @@ class SPasswordManager(manager.Manager):
         LOG.info("User %s modify sndfa in driver manager" % user_id)
         return self.driver.modify_sndfa(user_id, enable)
 
+    def user_get_sndfa(self, user_id):
+        LOG.info("User %s get sndfa in driver manager" % user_id)
+        return self.driver.get_sndfa(user_id)
+
     def user_get_black(self, user_id):
         LOG.info("User %s get black in driver manager" % user_id)
         return self.driver.get_black(user_id)

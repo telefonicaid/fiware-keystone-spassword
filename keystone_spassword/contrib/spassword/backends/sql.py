@@ -211,6 +211,19 @@ class SPassword(Driver):
             LOG.warn('user %s still has not spassword data' % user_id)
         return False
 
+    def get_sndfa(self, user_id):
+        spassword_ref, session = get_spassword_session(user_id)
+        user_extra = {}
+        if spassword_ref:
+            spassword = spassword_ref.to_dict()
+            if 'sndfa' in spassword:
+                return spassword['sndfa']
+            else:
+                False
+        else:
+            LOG.warn('user %s still has not spassword data' % user_id)
+        return False
+
     def get_black(self, user_id):
         spassword_ref, session = get_spassword_session(user_id)
         user_extra = {}
