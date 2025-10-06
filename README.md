@@ -23,7 +23,7 @@ a recover procedure password, a second factor authentication (2FA)  and so on.
 - 1.9.0 uses keystone Rocky
 - 1.10.0 to 1.17.0 uses keystone Stein
 - 1.18.x uses keystone Xena
-- 1.19.x to 1.23.0 uses keystone Antelope
+- 1.19.x to 1.24.0 uses keystone Antelope
 
 
 ## Installing and Configuration
