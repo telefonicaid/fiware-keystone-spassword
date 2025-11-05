@@ -225,9 +225,9 @@ Moreover keystone-spassword adds a new API to handle [second factor authenticati
 
 - Retrieve all project roles for a user (aka Grants):
         
-**GET '/v3/users/{user_id}/project_roles'**
+ **GET '/v3/users/{user_id}/project_roles'**
 
-This call uses a x-auth-token associated to <user_id> user.
+ This call uses a x-auth-token associated to <user_id> user.
 
 ```
 [
@@ -267,7 +267,7 @@ This call uses a x-auth-token associated to <user_id> user.
 
 - Complete reset password procedure.
 
-  **GET '/v3/users/<user_id>/reset_password/<code>'**
+  **GET '/v3/users/<user_id>/reset_password/<code> '**
 
   This call does not need a x-auth-token associated to <user_id> user, just the valid <code> sent by email when user performs previous request.
   Then password is reset to a new random password wich will be sent to the user by email again.
