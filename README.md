@@ -122,8 +122,8 @@ https://hub.docker.com/repository/docker/telefonicaiot/fiware-keystone-spassword
 There are some [env vars  for configuration](docs/DOCKER.md)
 
 #### Upgrade from a older version:
-How to upgrade to latest (1.18.0) docker release:
-Before upgrade to 1.18.0 verison you should upgrade first to 1.17.0 version. Depending on the starting version some steps should be performed before.
+How to upgrade to latest docker release:
+Before upgrade to latest verison you should upgrade first to 1.17.0 version. Depending on the starting version some steps should be performed before.
 
 Normal procedure is stop container, update version in docker-compose and then up container; then container will be recreated.
 But, if starting version is between 1.4.X and 1.6.X then some steps should be done to achieve that.
@@ -267,7 +267,7 @@ Moreover keystone-spassword adds a new API to handle [second factor authenticati
 
 - Complete reset password procedure.
 
-  **GET '/v3/users/<user_id>/reset_password/<code> '**
+  **GET '/v3/users/<user_id>/reset_password/<code_sent>'**
 
   This call does not need a x-auth-token associated to <user_id> user, just the valid <code> sent by email when user performs previous request.
   Then password is reset to a new random password wich will be sent to the user by email again.
