@@ -269,7 +269,7 @@ Moreover keystone-spassword adds a new API to handle [second factor authenticati
 
   **GET /v3/users/<user_id>/reset_password/<code_sent>**
 
-  This call does not need a x-auth-token associated to <user_id> user, just the valid <code> sent by email when user performs previous request.
+  This call does not need a x-auth-token associated to <user_id> user, just the valid <code_sent> sent by email when user performs previous request.
   Then password is reset to a new random password wich will be sent to the user by email again.
 
 
