@@ -29,17 +29,17 @@ from keystone_spassword.contrib.spassword import checker
 
 class TestPasswordChecker(unittest.TestCase):
     def setUp(self):
-        # Crear instancia de CheckPassword
+        # Create instance of CheckPassword
         self.pwd_checker = checker.CheckPassword()
 
-        # Parchear CONF.spassword.enabled a True
+        # Patch CONF.spassword.enabled to True
         patcher = mock.patch('keystone_spassword.contrib.spassword.checker.CONF.spassword.enabled', True)
         self.addCleanup(patcher.stop)
         self.mock_enabled = patcher.start()
 
     def test_strong_password_failure(self):
         """Test that a weak password raises ValidationError."""
-        # Un password débil que cracklib rechazará
+        # try to use a weak password
         weak_password = "1234"
 
         self.assertRaises(
@@ -52,7 +52,7 @@ class TestPasswordChecker(unittest.TestCase):
         """Test that a strong password does not raise an exception."""
         strong_password = "S0me$tr0ngP@ssword!"
 
-        # No debería lanzar excepción
+        # It should not raise exception
         try:
             self.pwd_checker.strong_check_password(strong_password)
         except exception.ValidationError:
