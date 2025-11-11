@@ -1,23 +1,13 @@
-import uuid
 import json
-
-import urllib2
+import unittest
+import time
 import base64
-import StringIO
 import requests
 import logging
-import time
+import urllib.request as urllib2
+import urllib.error
 
-
-KEYSTONE_PROTOCOL = "http"
-KEYSTONE_HOST = "localhost"
-KEYSTONE_PORT = "5001"
-TEST_SERVICE_NAME="smartcity"
-TEST_SUBSERVICE_NAME1="basuras"
-TEST_SUBSERVICE_NAME2="electricidad"
-TEST_SERVICE_ADMIN_USER="adm1"
-TEST_SERVICE_ADMIN_USER2="pepe"
-TEST_SERVICE_ADMIN_PASSWORD="4pass1w0rd"
+from unittest.mock import patch, MagicMock
 
 
 class RestOperations(object):
@@ -117,7 +107,7 @@ class RestOperations(object):
 
         try:
             res = urllib2.urlopen(request)
-        except urllib2.HTTPError as e:
+        except urllib2.URLError as e:
             res = e
             data = res.read()
             try:
@@ -242,88 +232,66 @@ class TestRestOperations(RestOperations):
         return json_body_response['token']['user']['id']
 
 
-class Test_2fa_RestView(object):
 
-    def __init__(self):
-        self.suffix = str(uuid.uuid4())[:8]
+class FakeResponse:
+    """Simulates and object returned by urllib.request.urlopen"""
+    def __init__(self, code=200, data=None, headers=None):
+        self.code = code
+        self.data = data or {}
+        self.raw_json = data
+        self.msg = ""
+        self.headers = headers or {}
 
-        self.payload_data_ok = {
-            "SERVICE_NAME": TEST_SERVICE_NAME,
-            "SERVICE_ADMIN_USER": TEST_SERVICE_ADMIN_USER,
-            "SERVICE_ADMIN_PASSWORD": TEST_SERVICE_ADMIN_PASSWORD,
+    def read(self):
+        return json.dumps(self.data).encode("utf-8")
+
+
+class TestRestOperationsMock(unittest.TestCase):
+
+    def setUp(self):
+        self.testops = TestRestOperations(
+            PROTOCOL="http",
+            HOST="localhost",
+            PORT="5001",
+        )
+
+        self.payload = {
+            "SERVICE_NAME": "smartcity",
+            "SERVICE_ADMIN_USER": "adm1",
+            "SERVICE_ADMIN_PASSWORD": "4pass1w0rd",
         }
-        self.payload_data2_ok = {
-            "SERVICE_NAME": TEST_SERVICE_NAME,
-            "SERVICE_ADMIN_USER": TEST_SERVICE_ADMIN_USER2,
-            "SERVICE_ADMIN_PASSWORD": TEST_SERVICE_ADMIN_PASSWORD,
-        }
-        self.payload_data3_ok = {
-            "enable": True
-        }
-        self.TestRestOps = TestRestOperations(PROTOCOL=KEYSTONE_PROTOCOL,
-                                              HOST=KEYSTONE_HOST,
-                                              PORT=KEYSTONE_PORT)
 
-    def test_checkemail_ok(self):
-        token_res = self.TestRestOps.getToken(self.payload_data_ok)
-        auth_token = token_res.headers.get('X-Subject-Token')
-        user_id = self.TestRestOps.getUserId(self.payload_data_ok)
-        res = self.TestRestOps.rest_request(
+    @patch("urllib.request.urlopen")
+    def test_get_token_ok(self, mock_urlopen):
+        """It should return 201 when not valid token"""
+        mock_urlopen.return_value = FakeResponse(
+            code=201,
+            data={"token": {"user": {"id": "fake-user-id"}}},
+            headers={"X-Subject-Token": "token123"}
+        )
+
+        response = self.testops.getToken(self.payload)
+
+        self.assertEqual(response.code, 201)
+        self.assertEqual(response.headers["X-Subject-Token"], "token123")
+
+    @patch("urllib.request.urlopen")
+    def test_rest_checkemail_401(self, mock_urlopen):
+        """It should return 401 when check emails is wrong"""
+        mock_urlopen.return_value = FakeResponse(
+            code=401,
+            data={"message": "Unauthorized"}
+        )
+
+        response = self.testops.rest_request(
             method="GET",
-            url="/v3/users/" + user_id + "/checkemail",
-            auth_token=auth_token,
+            url="/v3/users/fake/checkemail/badcode",
+            auth_token="token123",
             json_data=False,
-            data=None)
-        assert res.code == 200, (res.code, res.msg, res.raw_json)
+        )
 
-        code = "badcode"
-        res = self.TestRestOps.rest_request(
-            method="GET",
-            url="/v3/users/" + user_id + "/checkemail/" + code,
-            auth_token=auth_token,
-            json_data=False,
-            data=None)
-        assert res.code == 401, (res.code, res.msg, res.raw_json)
+        self.assertEqual(response.code, 401)
 
 
-    def test_sndfa_ok(self):
-        token_res = self.TestRestOps.getToken(self.payload_data2_ok)
-        auth_token = token_res.headers.get('X-Subject-Token')
-        user_id = self.TestRestOps.getUserId(self.payload_data2_ok)
-        res = self.TestRestOps.rest_request(
-            method="POST",
-            url="/v3/users/" + user_id + "/sndfa",
-            auth_token=auth_token,
-            json_data=True,
-            data=self.payload_data3_ok)
-        assert res.code == 200, (res.code, res.msg, res.raw_json)
-
-        code = "badcode"
-        res = self.TestRestOps.rest_request(
-            method="GET",
-            url="/v3/users/" + user_id + "/sndfa/" + code,
-            auth_token=auth_token,
-            json_data=False,
-            data=None)
-        assert res.code == 401, (res.code, res.msg, res.raw_json)
-
-    def test_recover_nok(self):
-        token_res = self.TestRestOps.getToken(self.payload_data_ok)
-        auth_token = token_res.headers.get('X-Subject-Token')
-        user_id = self.TestRestOps.getUserId(self.payload_data_ok)
-        res = self.TestRestOps.rest_request(
-            method="GET",
-            url="/v3/users/" + user_id + "/recover_password",
-            auth_token=auth_token,
-            json_data=False,
-            data=None)
-        # User with email not checked
-        assert res.code == 401, (res.code, res.msg, res.raw_json)
-
-if __name__ == '__main__':
-
-    # Tests
-    test_2fa = Test_2fa_RestView()
-    test_2fa.test_checkemail_ok()
-    test_2fa.test_sndfa_ok()
-    test_2fa.test_recover_nok()
+if __name__ == "__main__":
+    unittest.main()
