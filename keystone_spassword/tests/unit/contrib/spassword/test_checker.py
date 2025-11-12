@@ -20,14 +20,44 @@
 
 """Unit tests for SPASSWORD checker."""
 
-from keystone import tests
+import unittest
+from unittest import mock
+
 from keystone import exception
-import keystone_spassword.contrib.spassword.checker 
+from keystone_spassword.contrib.spassword import checker
 
-class TestPasswordChecker(tests.BaseTestCase):
 
-    def test_checker(self):
-        new_password = "stronger"
-        
-        self.assertRaises(exception.ValidationError,
-                          checker.strong_check_password(new_password))
+class TestPasswordChecker(unittest.TestCase):
+    def setUp(self):
+        # Create instance of CheckPassword
+        self.pwd_checker = checker.CheckPassword()
+
+        # Patch CONF.spassword.enabled to True
+        patcher = mock.patch('keystone_spassword.contrib.spassword.checker.CONF.spassword.enabled', True)
+        self.addCleanup(patcher.stop)
+        self.mock_enabled = patcher.start()
+
+    def test_strong_password_failure(self):
+        """Test that a weak password raises ValidationError."""
+        # try to use a weak password
+        weak_password = "1234"
+
+        self.assertRaises(
+            exception.ValidationError,
+            self.pwd_checker.strong_check_password,
+            weak_password
+        )
+
+    def test_strong_password_success(self):
+        """Test that a strong password does not raise an exception."""
+        strong_password = "S0me$tr0ngP@ssword!"
+
+        # It should not raise exception
+        try:
+            self.pwd_checker.strong_check_password(strong_password)
+        except exception.ValidationError:
+            self.fail("strong_check_password() raised ValidationError unexpectedly!")
+
+
+if __name__ == "__main__":
+    unittest.main()
