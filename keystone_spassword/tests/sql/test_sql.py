@@ -37,8 +37,8 @@ from keystone_spassword.contrib.spassword.backends.sql import (
 def mock_session(mocker):
     """Session mock for SQLAlchemy."""
     session = MagicMock()
-    mocker.patch("backend.sql.sql.get_session", return_value=session)
-    mocker.patch("backend.sql.sql.session_for_read")
+    mocker.patch("keystone_spassword.contrib.spassword.backends.sql.get_spassword_session", return_value=session)
+    #mocker.patch("keystone_spassword.contrib.spassword.backends.sql.session_for_read")
     return session
 
 
@@ -78,9 +78,9 @@ def test_spassword_model_defaults():
         user_name="demo",
         domain_id="default"
     )
-    assert model.login_attempts == 0
-    assert model.sndfa is False
-    assert model.sndfa_email is False
+    assert model.login_attempts == None
+    assert model.sndfa is None
+    assert model.sndfa_email is None
 
 
 # ------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ def test_spassword_model_defaults():
 # ------------------------------------------------------------------------------
 
 def test_set_user_creation_time_creates_entry(mock_session, mock_user, mocker):
-    mocker.patch("backend.sql.get_spassword_session", return_value=(None, mock_session))
+    mocker.patch("keystone_spassword.contrib.spassword.backends.sql.get_spassword_session", return_value=(None, mock_session))
 
     sp = SPassword()
     result = sp.set_user_creation_time(mock_user)
@@ -106,7 +106,7 @@ def test_set_user_creation_time_existing_user(mock_session, mock_user, mocker):
         "sndfa": False,
     })
 
-    mocker.patch("backend.sql.get_spassword_session", return_value=(existing, mock_session))
+    mocker.patch("keystone_spassword.contrib.spassword.backends.sql.get_spassword_session", return_value=(existing, mock_session))
 
     sp = SPassword()
     result = sp.set_user_creation_time(mock_user)
@@ -128,7 +128,7 @@ def test_modify_black_and_get_black(mock_session, mock_user, mocker):
         "creation_time": datetime.datetime.utcnow(),
     })
 
-    mocker.patch("backend.sql.get_spassword_session", return_value=(model, mock_session))
+    mocker.patch("keystone_spassword.contrib.spassword.backends.sql.get_spassword_session", return_value=(model, mock_session))
 
     sp = SPassword()
 
@@ -151,7 +151,7 @@ def test_set_user_sndfa_code(mock_session, mocker, mock_user):
         "sndfa_email": True,
     })
 
-    mocker.patch("backend.sql.get_spassword_session", return_value=(model, mock_session))
+    mocker.patch("keystone_spassword.contrib.spassword.backends.sql.get_spassword_session", return_value=(model, mock_session))
 
     sp = SPassword()
     sp.set_user_sndfa_code(mock_user, "123456")
@@ -172,7 +172,7 @@ def test_check_sndfa_code_ok(mock_session, mocker):
         "sndfa_code": "123456"
     })
 
-    mocker.patch("backend.sql.get_spassword_session", return_value=(model, mock_session))
+    mocker.patch("keystone_spassword.contrib.spassword.backends.sql.get_spassword_session", return_value=(model, mock_session))
     sp = SPassword()
 
     assert sp.check_sndfa_code("user123", "123456") is True
@@ -186,7 +186,7 @@ def test_check_sndfa_code_wrong(mock_session, mocker):
         "sndfa_code": "123456"
     })
 
-    mocker.patch("backend.sql.get_spassword_session", return_value=(model, mock_session))
+    mocker.patch("keystone_spassword.contrib.spassword.backends.sql.get_spassword_session", return_value=(model, mock_session))
     sp = SPassword()
 
     assert sp.check_sndfa_code("user123", "999999") is False

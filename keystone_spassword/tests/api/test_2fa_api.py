@@ -297,7 +297,7 @@ class TestRestOperationsMock(unittest.TestCase):
 
     @patch("urllib.request.urlopen")
     def test_rest_checkemail_401(self, mock_urlopen):
-        """It should return 401 when check emails is wrong"""
+        """It should return 401 when check email is wrong"""
         mock_urlopen.return_value = FakeResponse(
             code=401,
             data={"message": "Unauthorized"}
