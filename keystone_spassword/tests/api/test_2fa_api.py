@@ -253,6 +253,7 @@ class TestRestOperations(RestOperations):
 
 
 
+# FakeResponse mock to emulate HTTP responses
 class FakeResponse:
     """Simulates and object returned by urllib.request.urlopen"""
     def __init__(self, code=200, data=None, headers=None):
@@ -275,12 +276,23 @@ class TestRestOperationsMock(unittest.TestCase):
             PORT="5001",
         )
 
-        self.payload = {
+        self.payload_data_ok = {
             "SERVICE_NAME": "smartgondor",
             "SERVICE_ADMIN_USER": "foo",
             "SERVICE_ADMIN_PASSWORD": "pwd",
         }
 
+        self.payload_data2_ok = {
+            "SERVICE_NAME": "smartgondor",
+            "SERVICE_ADMIN_USER": "bar",
+            "SERVICE_ADMIN_PASSWORD": "pwd",
+        }
+
+        self.payload_enable = {"enable": True}
+
+    # ---------------------------------------------------------
+    # getToken test
+    # ---------------------------------------------------------
     @patch("urllib.request.urlopen")
     def test_get_token_ok(self, mock_urlopen):
         """It should return 201 when not valid token"""
@@ -290,26 +302,79 @@ class TestRestOperationsMock(unittest.TestCase):
             headers={"X-Subject-Token": "token123"}
         )
 
-        response = self.testops.getToken(self.payload)
-
+        response = self.testops.getToken(self.payload_data_ok)
         self.assertEqual(response.code, 201)
         self.assertEqual(response.headers["X-Subject-Token"], "token123")
 
+    # ---------------------------------------------------------
+    # test_checkemail_ok -> test GET y then GET with badcode
+    # ---------------------------------------------------------
     @patch("urllib.request.urlopen")
-    def test_rest_checkemail_401(self, mock_urlopen):
+    def test_checkemail_ok(self, mock_urlopen):
         """It should return 401 when check email is wrong"""
-        mock_urlopen.return_value = FakeResponse(
-            code=401,
-            data={"message": "Unauthorized"}
-        )
+        # First call returns 200 OK
+        mock_urlopen.return_value = FakeResponse(code=200)
 
         response = self.testops.rest_request(
             method="GET",
-            url="/v3/users/fake/checkemail/badcode",
+            url="/v3/users/user123/checkemail",
             auth_token="token123",
             json_data=False,
         )
+        self.assertEqual(response.code, 200)
 
+        # Second call returns 401 Unauthorized
+        mock_urlopen.return_value = FakeResponse(code=401)
+
+        response = self.testops.rest_request(
+            method="GET",
+            url="/v3/users/user123/checkemail/badcode",
+            auth_token="token123",
+            json_data=False,
+        )
+        self.assertEqual(response.code, 401)
+
+    # ---------------------------------------------------------
+    # test_sndfa_ok -> POST enable then GET with bad code
+    # ---------------------------------------------------------
+    @patch("urllib.request.urlopen")
+    def test_sndfa_ok(self, mock_urlopen):
+        # POST enable returns 200
+        mock_urlopen.return_value = FakeResponse(code=200)
+
+        response = self.testops.rest_request(
+            method="POST",
+            url="/v3/users/user456/sndfa",
+            auth_token="token123",
+            json_data=True,
+            data=self.payload_enable,
+        )
+        self.assertEqual(response.code, 200)
+
+        # GET with wrong code returns 401
+        mock_urlopen.return_value = FakeResponse(code=401)
+
+        response = self.testops.rest_request(
+            method="GET",
+            url="/v3/users/user456/sndfa/badcode",
+            auth_token="token123",
+            json_data=False,
+        )
+        self.assertEqual(response.code, 401)
+
+    # ---------------------------------------------------------
+    # test_recover_nok
+    # ---------------------------------------------------------
+    @patch("urllib.request.urlopen")
+    def test_recover_nok(self, mock_urlopen):
+        mock_urlopen.return_value = FakeResponse(code=401)
+
+        response = self.testops.rest_request(
+            method="GET",
+            url="/v3/users/user789/recover_password",
+            auth_token="token123",
+            json_data=False,
+        )
         self.assertEqual(response.code, 401)
 
 
