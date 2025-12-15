@@ -23,18 +23,13 @@ This solution assumes that:
 The solution will use a Read Only LDAP for keystone authentication feature and a SQL driver for Keystone assignment feature.
 The solution will enable [Domain Specific Configuration](http://docs.openstack.org/admin-guide/identity-domain-specific-config.html) for Keystone which imples that each domain could use a different configuration. In this case each domain will have a specific LDAP configuration (endpoint, connection values, etc).
 
-LDAP will provide Users and Groups. Groups are handled and provisioned in Keystone by IoTP Orchestrator.
+LDAP will provide Users and Groups. Users should be asigned to Groups using LDAP.
 User authentication will be done throght LDAP directory.
 
 This solution about integrate LDAP with Keystone expects:
 - Users are in LDAP for authentication: name, description, email, password.
 - Users in LDAP could belong to LDAP groups.
 - Both LDAP Users and LDAP Groups could be asigned to IoT Platform roles, as described in [user role assigment API](https://orchestrator2.docs.apiary.io/#reference/orchestrator/user-role-assigment) and [group role assignment API](https://orchestrator2.docs.apiary.io/#reference/orchestrator/group-role-assigment) and [IoT Platform roles](https://thinking-cities.readthedocs.io/en/master/topics/user_permissions/index.html)
-- Optionally IoTPlatform, through Orchestrator (since version 1.5.0 or upper), could create a predefined groups when create a new Service which are:
-  - ServiceCustomerGroup: with role ServiceCustomer assigned in service.
-  - SubServiceCustomerGroup: with role SubServiceCustomer assigned in all posible subservices
-  - SubServiceAdminGroup: with role SubServiceAdmin assigned in all posible subservices
-  - AdminGroup: with roles admin in service and SubServiceAdmin assigned in all posible subservices
   
 
 ## Requirements
