@@ -30,7 +30,7 @@ The following environment variables are available for keystone-spassword docker
 
 
 
-Orchestrator also needs some command line options for start using docker:
+keystone spassword also needs some command line options for start using docker:
 
 
 | Command parameter | Description                                             |
