@@ -121,7 +121,19 @@ https://hub.docker.com/repository/docker/telefonicaiot/fiware-keystone-spassword
 
 There are some [env vars  for configuration](docs/DOCKER.md)
 
+The Docker image uses OpenStack 2023.2 Bobcat (Keystone 24) on CentOS
+Stream 9.
+
 #### Upgrade from a older version:
+For an Antelope-to-Bobcat upgrade, first test the image and database migration
+on a copy of the deployment. Stop all Keystone instances and back up the
+database, configuration, Fernet keys and credential keys. Start only one
+Bobcat instance to perform `keystone-manage db_sync`, then validate it before
+starting the remaining instances. Preserve the existing key repositories:
+new keys would invalidate existing tokens or prevent access to encrypted
+credentials. A database downgrade is not supported; rollback requires
+restoring the backup and the previous image and configuration.
+
 How to upgrade to latest docker release:
 Before upgrade to latest version you should upgrade first to other previous version. Depending on the starting version some steps should be performed before. All possible ways are described before.
 

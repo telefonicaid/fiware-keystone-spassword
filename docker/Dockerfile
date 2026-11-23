@@ -11,7 +11,6 @@ COPY ./*.patch /opt/keystone/
 COPY ./*.rpm /opt/keystone/
 COPY ./*.json /opt/keystone/
 COPY ./*.py /opt/keystone/
-COPY ./*.cfg /opt/keystone/
 COPY ./keystone-all /opt/keystone/
 
 WORKDIR /opt/keystone
@@ -29,24 +28,10 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils procps-ng chkconfig && \
     yum -y install python3 cronie && \
-    curl -s --insecure -L 'https://fedorapeople.org/groups/repos/openstack/archived/openstack-antelope/rdo-release-antelope-2.el9s.noarch.rpm' > rdo-release-antelope-2.el9s.noarch.rpm && \
-    yum localinstall -y --nogpgcheck rdo-release-antelope-2.el9s.noarch.rpm && \
-    # Set Centos mirror to ensure openstack version
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/rdo-release.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://buildlogs.centos.org|g' /etc/yum.repos.d/rdo-release.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/rdo-release.repo && \
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/messaging.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/messaging.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/messaging.repo && \
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/nfv-openvswitch.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/nfv-openvswitch.repo && \
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/ceph-quincy.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/ceph-quincy.repo && \
-    sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/ceph-quincy.repo && \
+    yum -y install centos-release-openstack-bobcat && \
     yum update -y && \
     # Install keystone dependencies
-    yum -y install crudini openstack-keystone-23.0.1-1.el9s.noarch python3-keystoneclient-5.1.0-4.el9.noarch python3-keystone-23.0.1-1.el9s.noarch python3-openstackclient && \
+    yum -y install crudini openstack-keystone-24.0.0-1.el9s.noarch python3-keystoneclient-5.2.0-1.el9s.noarch python3-keystone-24.0.0-1.el9s.noarch python3-openstackclient && \
     yum -y install httpd python3-mod_wsgi && \
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \

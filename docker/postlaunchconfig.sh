@@ -185,7 +185,7 @@ fi
 
 
 echo "[ postlaunchconfig - db_sync ] "
-/usr/bin/keystone-manage db_sync
+/usr/bin/keystone-manage db_sync || exit 1
 
 echo "[ postlaunchconfig - fernet_setup ] "
 # Ensure directory /etc/keystone/fernet-keys to be configured as volume

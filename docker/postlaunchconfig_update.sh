@@ -127,15 +127,8 @@ fi
 
 export KEYSTONE_HOST="127.0.0.1:5001"
 
-echo "[ postlaunchconfig_update - Start UWSGI process ] "
-/usr/bin/keystone-wsgi-public --port 5001 &
-sleep 2
-keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
-/usr/bin/keystone-wsgi-admin --port 35357 &
-sleep 2
-keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
-sleep 5
-
+echo "[ postlaunchconfig_update - db_sync ] "
+/usr/bin/keystone-manage db_sync || exit 1
 
 if [ "$DB_PASSWORD_ARG" == "-mysql_pwd" ]; then
     DB_ID_ADMIN_DOMAIN="mysql -h $DB_HOST_NAME --port $DB_HOST_PORT -u root --password=$DB_PASSWORD_VALUE -e 'use keystone; select * from project p where p.name=\"admin_domain\";'"
@@ -214,9 +207,6 @@ oslopolicy-convert-json-to-yaml --namespace keystone \
 
 sed -i 's/\"%\"/\\"%\\"/g' /etc/keystone/policy.yaml
 
-echo "[ postlaunchconfig_update - db_sync ] "
-/usr/bin/keystone-manage db_sync
-
 # Ensure directory /etc/keystone/fernet-keys to be configured as volume
 echo "[ postlaunchconfig_update - fernet_setup ] "
 chown -R keystone:keystone /etc/keystone/fernet-keys
@@ -277,15 +267,3 @@ openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_endpoint $SPASSWORD_SNDFA_ENDPOINT
 openstack-config --set /etc/keystone/keystone.conf \
                  spassword sndfa_time_window $SPASSWORD_SNDFA_TIME_WINDOW
-
-
-
-
-# Ensure db is migrated to current keystone version
-echo "[ postlaunchconfig_update - db_sync --migrate ] "
-/usr/bin/keystone-manage db_sync --migrate
-
-echo "[ postlaunchconfig_update ] - keystone_all_pid: $keystone_all_pid"
-echo "[ postlaunchconfig_update ] - keystone_admin_pid: $keystone_admin_pid"
-kill -9 $keystone_all_pid
-kill -9 $keystone_admin_pid
