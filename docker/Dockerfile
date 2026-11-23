@@ -28,10 +28,10 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils procps-ng chkconfig && \
     yum -y install python3 cronie && \
-    yum -y install centos-release-openstack-bobcat && \
+    yum -y install centos-release-openstack-caracal && \
     yum update -y && \
     # Install keystone dependencies
-    yum -y install crudini openstack-keystone-24.0.0-1.el9s.noarch python3-keystoneclient-5.2.0-1.el9s.noarch python3-keystone-24.0.0-1.el9s.noarch python3-openstackclient && \
+    yum -y install crudini openstack-keystone-25.0.0-1.el9s.noarch python3-keystoneclient-5.4.0-1.el9s.noarch python3-keystone-25.0.0-1.el9s.noarch python3-openstackclient && \
     yum -y install httpd python3-mod_wsgi && \
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
