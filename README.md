@@ -121,14 +121,14 @@ https://hub.docker.com/repository/docker/telefonicaiot/fiware-keystone-spassword
 
 There are some [env vars  for configuration](docs/DOCKER.md)
 
-The Docker image uses OpenStack 2024.1 Caracal (Keystone 25) on CentOS
-Stream 9. Caracal is in the upstream unmaintained phase.
+The Docker image uses OpenStack 2024.2 Dalmatian (Keystone 26) on CentOS
+Stream 9. Dalmatian is end-of-life and no longer receives upstream security fixes.
 
 #### Upgrade from a older version:
-For a Bobcat-to-Caracal upgrade, first test the image and database migration
+For a Caracal-to-Dalmatian upgrade, first test the image and database migration
 on a copy of the deployment. Stop all Keystone instances and back up the
 database, configuration, Fernet keys and credential keys. Start only one
-Caracal instance to perform `keystone-manage db_sync`, then validate it before
+Dalmatian instance to perform `keystone-manage db_sync`, then validate it before
 starting the remaining instances. Preserve the existing key repositories:
 new keys would invalidate existing tokens or prevent access to encrypted
 credentials. A database downgrade is not supported; rollback requires

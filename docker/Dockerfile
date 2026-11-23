@@ -28,10 +28,10 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils procps-ng chkconfig && \
     yum -y install python3 cronie && \
-    yum -y install centos-release-openstack-caracal && \
+    yum -y install centos-release-openstack-dalmatian && \
     yum update -y && \
     # Install keystone dependencies
-    yum -y install crudini openstack-keystone-25.0.0-1.el9s.noarch python3-keystoneclient-5.4.0-1.el9s.noarch python3-keystone-25.0.0-1.el9s.noarch python3-openstackclient && \
+    yum -y install crudini openstack-keystone-26.0.0-1.el9s.noarch python3-keystoneclient-5.5.0-1.el9s.noarch python3-keystone-26.0.0-1.el9s.noarch python3-openstackclient && \
     yum -y install httpd python3-mod_wsgi && \
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
@@ -41,7 +41,7 @@ RUN \
     chmod 755 /usr/bin/keystone-all && \
     cp /opt/keystone/openstack-config.sh /usr/bin/openstack-config && \
     chmod 755 /usr/bin/openstack-config && \
-    yum -y install unzip nmap-ncat jq python3-redis && \
+    yum -y install unzip nmap-ncat jq python3-redis python3-chardet && \
     echo "INFO: install cracklib...\n" && \
     yum -y install cracklib gcc python3-devel && \
     yum localinstall -y --nogpgcheck cracklib-devel-2.9.6-27.el9.x86_64.rpm && \
