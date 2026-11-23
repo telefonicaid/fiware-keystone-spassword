@@ -1,8 +1,8 @@
 --- render_token.py
 +++ render_token.py_new
-@@ -142,4 +142,9 @@ def render_token_response_from_model(token, include_catalog=True):
-         restricted = not token.application_credential['unrestricted']
-         token_reference['token'][key]['restricted'] = restricted
+@@ -143,4 +143,9 @@ def render_token_response_from_model(token, include_catalog=True):
+             'x5t#S256': token.oauth2_thumbprint
+         }
  
 +    if token.extras:
 +        token_reference['token']['extras'] = token.extras

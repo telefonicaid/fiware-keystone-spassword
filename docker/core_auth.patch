@@ -1,14 +1,13 @@
 --- core.py   2020-03-04 13:25:28.475608664 +0000
 +++ core.py_new 2020-03-04 13:25:02.063686461 +0000
-@@ -13,3 +13,5 @@ from functools import partial
- 
+@@ -15,2 +15,4 @@
  from oslo_log import log
 +from oslo_log import versionutils
 +from oslo_utils import importutils
  import stevedore
-@@ -40,6 +42,23 @@ def load_auth_method(method):
-    plugin_name = CONF.auth.get(method) or 'default'
-    namespace = 'keystone.auth.%s' % method
+@@ -40,7 +42,24 @@ def load_auth_method(method):
+     plugin_name = CONF.auth.get(method) or 'default'
+     namespace = f'keystone.auth.{method}'
 -    driver_manager = _get_auth_driver_manager(namespace, plugin_name)
 -    return driver_manager.driver
 +    try:
@@ -32,5 +31,5 @@
 +    return driver
  
  
-def load_auth_methods():
+ def load_auth_methods():
 

@@ -28,10 +28,10 @@ RUN \
     # Install keystone dependencies
     yum -y install rpm-build tar findutils procps-ng chkconfig && \
     yum -y install python3 cronie && \
-    yum -y install centos-release-openstack-dalmatian && \
+    yum -y install centos-release-openstack-epoxy && \
     yum update -y && \
     # Install keystone dependencies
-    yum -y install crudini openstack-keystone-26.0.0-1.el9s.noarch python3-keystoneclient-5.5.0-1.el9s.noarch python3-keystone-26.0.0-1.el9s.noarch python3-openstackclient && \
+    yum -y install crudini openstack-keystone-27.0.0-1.el9s.noarch python3-keystoneclient-5.6.0-1.el9s.noarch python3-keystone-27.0.0-1.el9s.noarch python3-openstackclient && \
     yum -y install httpd python3-mod_wsgi && \
     sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
     sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
@@ -45,7 +45,7 @@ RUN \
     echo "INFO: install cracklib...\n" && \
     yum -y install cracklib gcc python3-devel && \
     yum localinstall -y --nogpgcheck cracklib-devel-2.9.6-27.el9.x86_64.rpm && \
-    pip3 install cracklib && \
+    pip3 install --prefix=/usr cracklib && \
     # Set keystone configuration
     openstack-config --set /etc/keystone/keystone.conf \
     DEFAULT public_port 5001  && \
@@ -117,29 +117,31 @@ RUN \
     rm -f /usr/lib/python3.9/site-packages/keystone/contrib/scim/controllers.* && \
     rm -f /usr/lib/python3.9/site-packages/keystone/contrib/scim/routers.* && \
     cd /usr/lib/python3.9/site-packages/keystone/identity && \
-    patch -f -p0 < /opt/keystone/core.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/core.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/common && \
-    patch -f -p0 < /opt/keystone/manager.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/manager.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/auth && \
-    patch -f -p0 < /opt/keystone/core_auth.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/core_auth.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/server && \
-    patch -f -p0 < /opt/keystone/backends.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/backends.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/auth/plugins && \
-    patch -f -p0 < /opt/keystone/auth_plugins_token.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/auth_plugins_token.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/common && \
-    patch -f -p0 < /opt/keystone/common_render_token.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/common_render_token.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/models && \
-    patch -f -p0 < /opt/keystone/token_model.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/token_model.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/token && \
-    patch -f -p0 < /opt/keystone/token_provider.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/token_provider.patch && \
+    cd /usr/lib/python3.9/site-packages/keystone/contrib/spassword && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/spassword_api.patch && \
+    cd /usr/lib/python3.9/site-packages/keystone/server/flask && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/apis.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/api && \
-    patch -f -p0 < /opt/keystone/apis.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/api_role_assignments.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/api && \
-    patch -f -p0 < /opt/keystone/api_role_assignments.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/api && \
-    patch -f -p0 < /opt/keystone/projects.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/projects.patch && \
     cd /usr/lib/python3.9/site-packages/keystone/api/_shared && \
-    patch -f -p0 < /opt/keystone/api_auth.patch && \
+    patch -f --fuzz=0 -p0 < /opt/keystone/api_auth.patch && \
     find /usr/lib/python3.9/site-packages/keystone -name "*.pyc" -delete && \
     find /usr/lib/python3.9/site-packages/keystone -name "*.pyo" -delete && \
     sed -ri \

@@ -121,18 +121,29 @@ https://hub.docker.com/repository/docker/telefonicaiot/fiware-keystone-spassword
 
 There are some [env vars  for configuration](docs/DOCKER.md)
 
-The Docker image uses OpenStack 2024.2 Dalmatian (Keystone 26) on CentOS
-Stream 9. Dalmatian is end-of-life and no longer receives upstream security fixes.
+The Docker image uses OpenStack 2025.1 Epoxy (Keystone 27) on CentOS Stream 9.
+Epoxy is in the upstream unmaintained phase. The available CentOS Keystone RPM
+is 27.0.0 and predates security fixes in later Keystone 27 releases; assess this
+risk before deploying it. SPASSWORD 1.24.0 is installed with an image-specific
+compatibility patch for Keystone 27.
 
 #### Upgrade from a older version:
-For a Caracal-to-Dalmatian upgrade, first test the image and database migration
+For a Dalmatian-to-Epoxy upgrade, first test the image and database migration
 on a copy of the deployment. Stop all Keystone instances and back up the
 database, configuration, Fernet keys and credential keys. Start only one
-Dalmatian instance to perform `keystone-manage db_sync`, then validate it before
+Epoxy instance to perform `keystone-manage db_sync`, then validate it before
 starting the remaining instances. Preserve the existing key repositories:
 new keys would invalidate existing tokens or prevent access to encrypted
 credentials. A database downgrade is not supported; rollback requires
 restoring the backup and the previous image and configuration.
+Keystone 27 replaces passlib for password hashing; test existing password hashes
+and authentication after upgrading.
+
+The Epoxy user-route integration tests in
+`keystone_spassword/tests/api/test_epoxy_user_routes.py` require a disposable
+deployment and domain administrator. Set `KEYSTONE_TEST_URL` (including
+`/v3`), `KEYSTONE_TEST_USERNAME`, `KEYSTONE_TEST_PASSWORD`, and
+`KEYSTONE_TEST_DOMAIN` before running them.
 
 How to upgrade to latest docker release:
 Before upgrade to latest version you should upgrade first to other previous version. Depending on the starting version some steps should be performed before. All possible ways are described before.
