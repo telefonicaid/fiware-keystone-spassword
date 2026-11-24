@@ -39,29 +39,25 @@ fi
 if [ "$DB_HOST_ARG" == "-dbhost" ]; then
     # Wait until DB is up, even if DB is behind a load balancer
     while ! eval "$DB_READY"; do sleep 10; done
-    # Check if postlaunchconfig was executed
-    chkconfig openstack-keystone --level 3
+    # Check if credentials are OK
+    eval "$DB_LIST"
     if [ "$?" == "1" ]; then
-        # Check if credentials are OK
-        eval "$DB_LIST"
-        if [ "$?" == "1" ]; then
-            echo "[ keystone-entrypoint - error in db credentials ] Keystone docker will be not configured"
-            exit 1
-        fi
-        # Check if previos DB data exists
-        eval "$DB_USE"
-        if [ "$?" == "0" ]; then
-            rm -f /var/log/keystone/keystone.log
-            /opt/keystone/postlaunchconfig_update.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $DB_PASSWORD_ARG $DB_PASSWORD_VALUE $TOKEN_EXPIRATION_TIME_ARG $TOKEN_EXPIRATION_TIME_VALUE || exit 1
-        else
-            rm -f /var/log/keystone/keystone.log
-            /opt/keystone/postlaunchconfig.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $DB_PASSWORD_ARG $DB_PASSWORD_VALUE $TOKEN_EXPIRATION_TIME_ARG $TOKEN_EXPIRATION_TIME_VALUE || exit 1
-        fi
+        echo "[ keystone-entrypoint - error in db credentials ] Keystone docker will be not configured"
+        exit 1
+    fi
+    # Check if previous DB data exists
+    eval "$DB_USE"
+    if [ "$?" == "0" ]; then
+        rm -f /var/log/keystone/keystone.log
+        /opt/keystone/postlaunchconfig_update.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $DB_PASSWORD_ARG $DB_PASSWORD_VALUE $TOKEN_EXPIRATION_TIME_ARG $TOKEN_EXPIRATION_TIME_VALUE || exit 1
+    else
+        rm -f /var/log/keystone/keystone.log
+        /opt/keystone/postlaunchconfig.sh $DB_HOST_ARG $DB_HOST_VALUE $DEFAULT_PASSWORD_ARG $DEFAULT_PASSWORD_VALUE $DB_PASSWORD_ARG $DB_PASSWORD_VALUE $TOKEN_EXPIRATION_TIME_ARG $TOKEN_EXPIRATION_TIME_VALUE || exit 1
     fi
 fi
 
-echo "[ keystone-entrypoint - crond ] "
-crond &
+echo "[ keystone-entrypoint - cron ] "
+cron || exit 1
 echo "[keystone-entrypoint spassword config]"
 tail -17 /etc/keystone/keystone.conf
 touch /var/log/keystone/keystone.log

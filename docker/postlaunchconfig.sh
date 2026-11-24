@@ -205,7 +205,7 @@ echo "[ postlaunchconfig - bootstrap ] "
 
 
 echo "[ postlaunchconfig - Start Apache ] "
-/usr/sbin/httpd -k start || exit 1
+/usr/sbin/apache2ctl -k start || exit 1
 sleep 5
 
 
@@ -418,4 +418,4 @@ if [ "${SAML_ENDPOINT}" != "" ] && [ "${SAML_CERTFILE}" != "" ] && [ "${SAML_KEY
 fi
 
 echo "[ postlaunchconfig - Stop Apache ] "
-/usr/sbin/httpd -k stop || exit 1
+/usr/sbin/apache2ctl -k stop || exit 1

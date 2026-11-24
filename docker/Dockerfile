@@ -1,4 +1,4 @@
-FROM quay.io/centos/centos:stream10
+FROM debian:bookworm-slim
 
 MAINTAINER IoT team
 
@@ -12,15 +12,15 @@ ENV DB_HOST=localhost \
 ARG KEYSTONE_REVISION=35308cbe6102ecb8757fe0a53fbe9219f06c3903
 ARG REQUIREMENTS_REVISION=ae79a47881a3595ee80a825e4dadf3217dcac024
 
-RUN dnf -y update && \
-    dnf -y install epel-release dnf-plugins-core && \
-    dnf config-manager --set-enabled crb && \
-    dnf -y install \
-        curl git tar patch findutils procps-ng chkconfig cronie \
-        mariadb postgresql httpd python3-mod_wsgi python3 python3-pip \
-        python3-devel gcc cracklib cracklib-devel cracklib-dicts \
-        openldap-clients openldap-devel cyrus-sasl-devel xmlsec1 \
-        crudini nmap-ncat jq unzip
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y upgrade && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates curl git tar patch findutils procps cron \
+        mariadb-client postgresql-client apache2 libapache2-mod-wsgi-py3 \
+        python3 python3-venv python3-dev gcc libc6-dev libcrack2-dev \
+        cracklib-runtime ldap-utils libldap-common libldap2-dev libsasl2-dev xmlsec1 \
+        crudini netcat-openbsd jq unzip && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m venv /opt/keystone-venv && \
     curl -fsSL "https://opendev.org/openstack/requirements/raw/commit/${REQUIREMENTS_REVISION}/upper-constraints.txt" \
@@ -33,7 +33,7 @@ RUN python3 -m venv /opt/keystone-venv && \
     pip check
 
 COPY ./*.sh ./*.patch ./*.json ./keystone-all /opt/keystone/
-COPY ./keystone-wsgi.conf /etc/httpd/conf.d/keystone-wsgi.conf
+COPY ./keystone-wsgi.conf /etc/apache2/conf-available/keystone-wsgi.conf
 COPY ./keystone.wsgi /opt/keystone/keystone.wsgi
 
 WORKDIR /opt/keystone
@@ -70,15 +70,13 @@ RUN groupadd --system keystone && \
     openstack-config --set /etc/keystone/keystone.conf spassword smtp_user smtpuser@yourdomain.com && \
     openstack-config --set /etc/keystone/keystone.conf spassword smtp_password yourpassword && \
     openstack-config --set /etc/keystone/keystone.conf spassword smtp_from smtpuser && \
-    mkdir -p /etc/ldap && \
-    ln -s /etc/openldap/ldap.conf /etc/ldap/ldap.conf && \
     keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone && \
     mkdir -p /tmp/scim /tmp/spassword && \
     curl -fsSL "https://github.com/telefonicaid/fiware-keystone-scim/archive/refs/tags/${KEYSTONE_SCIM_VERSION}.tar.gz" | \
         tar -xz --strip-components=1 -C /tmp/scim && \
     curl -fsSL "https://github.com/telefonicaid/fiware-keystone-spassword/archive/refs/tags/${KEYSTONE_SPASSWORD_VERSION}.tar.gz" | \
         tar -xz --strip-components=1 -C /tmp/spassword && \
-    site=/opt/keystone-venv/lib/python3.12/site-packages && \
+    site=$(python -c 'import sysconfig; print(sysconfig.get_path("purelib"))') && \
     cp -a /tmp/scim/keystone_scim "$site/" && \
     cp -a /tmp/spassword/keystone_spassword "$site/" && \
     mkdir -p "$site/keystone/contrib" && \
@@ -104,9 +102,11 @@ RUN groupadd --system keystone && \
     patch -f --fuzz=0 -p0 < /opt/keystone/projects.patch && \
     cd "$site/keystone/api/_shared" && patch -f --fuzz=0 -p0 < /opt/keystone/api_auth.patch && \
     find "$site/keystone" "$site/keystone_spassword" "$site/keystone_scim" -name '*.pyc' -delete && \
-    echo 'ServerName 127.0.0.1' >> /etc/httpd/conf/httpd.conf && \
-    rm -rf /tmp/keystone /tmp/scim /tmp/spassword /tmp/upper-constraints.txt && \
-    dnf clean all
+    a2dissite 000-default && \
+    a2enconf keystone-wsgi && \
+    sed -i '/^Listen 80$/d' /etc/apache2/ports.conf && \
+    echo 'ServerName 127.0.0.1' >> /etc/apache2/apache2.conf && \
+    rm -rf /tmp/keystone /tmp/scim /tmp/spassword /tmp/upper-constraints.txt
 
 ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
