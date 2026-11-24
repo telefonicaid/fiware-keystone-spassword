@@ -204,13 +204,8 @@ echo "[ postlaunchconfig - bootstrap ] "
 
 
 
-echo "[ postlaunchconfig - Start UWSGI process ] "
-/usr/bin/keystone-wsgi-public --port 5001 &
-sleep 2
-keystone_all_pid=`ps -Af | grep keystone-wsgi-public | awk '{print $2}'`
-/usr/bin/keystone-wsgi-admin --port 35357 &
-sleep 2
-keystone_admin_pid=`ps -Af | grep keystone-wsgi-admin | awk '{print $2}'`
+echo "[ postlaunchconfig - Start Apache ] "
+/usr/sbin/httpd -k start || exit 1
 sleep 5
 
 
@@ -228,14 +223,10 @@ export OS_PROJECT_DOMAIN_NAME=Default
 export OS_AUTH_URL=http://127.0.0.1:5001/v3
 export OS_IDENTITY_API_VERSION=3
 
-echo "[ postlaunchconfig - create roles  ] "
+echo "[ postlaunchconfig - configure roles  ] "
 #openstack role create admin
-openstack role add --user admin --project admin admin
-openstack role create service
-echo "[ postlaunchconfig - delete roles  ] "
-#openstack role delete _member_
-openstack role delete member
-openstack role delete reader
+openstack role add --user admin --project admin admin || exit 1
+openstack role show service >/dev/null || exit 1
 echo "[ postlaunchconfig - create users ] "
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email iotagent@no.com iotagent
 openstack user create --password $KEYSTONE_ADMIN_PASSWORD --email nagios@no.com nagios
@@ -283,9 +274,8 @@ curl http://${KEYSTONE_HOST}/v3/auth/tokens   \
               }
           }
       }
-    }' | grep ^X-Subject-Token: | awk '{print $2}' )
-echo "ADMIN_TOKEN: $ADMIN_TOKEN"
-[[ "${ADMIN_TOKEN}" == "" ]] && exit 0
+    }' | awk '/^X-Subject-Token:/ {gsub("\r", "", $2); print $2}' )
+[[ "${ADMIN_TOKEN}" == "" ]] && exit 1
 
 openstack domain create admin_domain
 ID_ADMIN_DOMAIN=`openstack domain list | grep "admin_domain" | awk '{print $2}'`
@@ -302,34 +292,34 @@ echo "ID_CLOUD_ADMIN: $ID_CLOUD_ADMIN"
 
 ADMIN_ROLE_ID=$(\
 curl "http://${KEYSTONE_HOST}/v3/roles?name=admin"  \
-         -s                                         \
+         -fsS                                       \
          -H "X-Auth-Token: $ADMIN_TOKEN" \
-        | jq .roles[0].id | tr -d '"' )
+        | jq -er .roles[0].id ) || exit 1
 echo "ADMIN_ROLE_ID: $ADMIN_ROLE_ID"
 
 curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_ADMIN}/roles/${ADMIN_ROLE_ID} \
-     -s                                 \
+     -fsS                               \
      -i                                 \
      -H "X-Auth-Token: $ADMIN_TOKEN"    \
      -H "Accept: application/json"      \
      -H "Content-Type: application/json"\
-     -d '{ }'
+     -d '{ }' || exit 1
 
 
 SERVICE_ROLE_ID=$(\
 curl "http://${KEYSTONE_HOST}/v3/roles?name=service" \
-         -s                                          \
+         -fsS                                        \
          -H "X-Auth-Token: $ADMIN_TOKEN" \
-        | jq .roles[0].id | tr -d '"' )
+        | jq -er .roles[0].id ) || exit 1
 echo "SERVICE_ROLE_ID: $SERVICE_ROLE_ID"
 
 curl -X PUT http://${KEYSTONE_HOST}/v3/domains/${ID_ADMIN_DOMAIN}/users/${ID_CLOUD_SERVICE}/roles/${SERVICE_ROLE_ID} \
-      -s                                 \
+      -fsS                               \
       -i                                 \
       -H "X-Auth-Token: $ADMIN_TOKEN"    \
       -H "Accept: application/json"      \
       -H "Content-Type: application/json"\
-      -d '{ }'
+      -d '{ }' || exit 1
 
 cat /opt/keystone/policy.v3cloudsample.json \
   | jq ' .["identity:scim_create_role"]="rule:cloud_admin or rule:admin_and_matching_domain_id"
@@ -427,7 +417,5 @@ if [ "${SAML_ENDPOINT}" != "" ] && [ "${SAML_CERTFILE}" != "" ] && [ "${SAML_KEY
     /usr/bin/keystone-manage saml_idp_metadata > /etc/keystone/saml2_idp_metadata.xml
 fi
 
-echo "[ postlaunchconfig ] - keystone_all_pid: $keystone_all_pid"
-echo "[ postlaunchconfig ] - keystone_admin_pid: $keystone_admin_pid"
-kill -9 $keystone_all_pid
-kill -9 $keystone_admin_pid
+echo "[ postlaunchconfig - Stop Apache ] "
+/usr/sbin/httpd -k stop || exit 1

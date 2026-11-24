@@ -121,29 +121,45 @@ https://hub.docker.com/repository/docker/telefonicaiot/fiware-keystone-spassword
 
 There are some [env vars  for configuration](docs/DOCKER.md)
 
-The Docker image uses OpenStack 2025.1 Epoxy (Keystone 27) on CentOS Stream 9.
-Epoxy is in the upstream unmaintained phase. The available CentOS Keystone RPM
-is 27.0.0 and predates security fixes in later Keystone 27 releases; assess this
-risk before deploying it. SPASSWORD 1.24.0 is installed with an image-specific
-compatibility patch for Keystone 27.
+The Docker image uses OpenStack 2025.2 Flamingo on CentOS Stream 10 with
+Python 3.12. Keystone is installed from upstream source at commit
+`35308cbe6102ecb8757fe0a53fbe9219f06c3903`, which follows 28.1.0 and includes
+the EC2 credential security fix for
+[bug 2165281](https://bugs.launchpad.net/keystone/+bug/2165281). Its development
+version is 28.1.1.dev1; it is not an official 28.1.1 release. Dependencies are
+installed using a pinned Flamingo upper-constraints revision. Review and update
+these pins when upstream publishes security fixes.
+
+SCIM 1.8.0 and SPASSWORD 1.24.0 are installed from their upstream tags, with an
+image-specific SPASSWORD compatibility patch. Keystone and the extensions are
+installed in a Python virtual environment rather than as RDO RPMs. Apache uses
+the Keystone WSGI module because Flamingo removed the old WSGI scripts.
 
 #### Upgrade from a older version:
-For a Dalmatian-to-Epoxy upgrade, first test the image and database migration
+For an Epoxy-to-Flamingo upgrade, first test the image and database migration
 on a copy of the deployment. Stop all Keystone instances and back up the
 database, configuration, Fernet keys and credential keys. Start only one
-Epoxy instance to perform `keystone-manage db_sync`, then validate it before
+Flamingo instance to perform `keystone-manage db_sync`, then validate it before
 starting the remaining instances. Preserve the existing key repositories:
 new keys would invalidate existing tokens or prevent access to encrypted
 credentials. A database downgrade is not supported; rollback requires
 restoring the backup and the previous image and configuration.
-Keystone 27 replaces passlib for password hashing; test existing password hashes
-and authentication after upgrading.
+
+Review the [Flamingo release notes](https://docs.openstack.org/releasenotes/keystone/2025.2.html)
+before upgrading, particularly changes to custom policies, delegated credentials
+and custom authentication methods. Test existing password hashes,
+authentication and any custom policies and federation or LDAP integrations.
+Flamingo creates protected built-in roles during bootstrap; a fresh installation
+keeps those roles instead of attempting to delete them.
 
 The Epoxy user-route integration tests in
 `keystone_spassword/tests/api/test_epoxy_user_routes.py` require a disposable
 deployment and domain administrator. Set `KEYSTONE_TEST_URL` (including
 `/v3`), `KEYSTONE_TEST_USERNAME`, `KEYSTONE_TEST_PASSWORD`, and
-`KEYSTONE_TEST_DOMAIN` before running them.
+`KEYSTONE_TEST_DOMAIN` before running them. The domain-role policy test also
+requires `KEYSTONE_TEST_POLICY_SCOPE_DISABLED=true` and a disposable deployment
+with scope enforcement disabled. Disabling scope enforcement relaxes upstream
+authorization checks and is not the image default.
 
 How to upgrade to latest docker release:
 Before upgrade to latest version you should upgrade first to other previous version. Depending on the starting version some steps should be performed before. All possible ways are described before.

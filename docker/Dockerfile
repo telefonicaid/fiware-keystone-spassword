@@ -1,163 +1,113 @@
-FROM quay.io/centos/centos:stream9
+FROM quay.io/centos/centos:stream10
 
 MAINTAINER IoT team
 
-ENV DB_HOST localhost
-ENV KEYSTONE_SCIM_VERSION 1.8.0
-ENV KEYSTONE_SPASSWORD_VERSION 1.24.0
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-COPY ./*.sh /opt/keystone/
-COPY ./*.patch /opt/keystone/
-COPY ./*.rpm /opt/keystone/
-COPY ./*.json /opt/keystone/
-COPY ./*.py /opt/keystone/
-COPY ./keystone-all /opt/keystone/
+ENV DB_HOST=localhost \
+    KEYSTONE_SCIM_VERSION=1.8.0 \
+    KEYSTONE_SPASSWORD_VERSION=1.24.0 \
+    PATH=/opt/keystone-venv/bin:$PATH
+
+ARG KEYSTONE_REVISION=35308cbe6102ecb8757fe0a53fbe9219f06c3903
+ARG REQUIREMENTS_REVISION=ae79a47881a3595ee80a825e4dadf3217dcac024
+
+RUN dnf -y update && \
+    dnf -y install epel-release dnf-plugins-core && \
+    dnf config-manager --set-enabled crb && \
+    dnf -y install \
+        curl git tar patch findutils procps-ng chkconfig cronie \
+        mariadb postgresql httpd python3-mod_wsgi python3 python3-pip \
+        python3-devel gcc cracklib cracklib-devel cracklib-dicts \
+        openldap-clients openldap-devel cyrus-sasl-devel xmlsec1 \
+        crudini nmap-ncat jq unzip
+
+RUN python3 -m venv /opt/keystone-venv && \
+    curl -fsSL "https://opendev.org/openstack/requirements/raw/commit/${REQUIREMENTS_REVISION}/upper-constraints.txt" \
+        -o /tmp/upper-constraints.txt && \
+    git clone https://opendev.org/openstack/keystone.git /tmp/keystone && \
+    git -C /tmp/keystone checkout --detach "${KEYSTONE_REVISION}" && \
+    pip install --no-cache-dir -c /tmp/upper-constraints.txt \
+        '/tmp/keystone[ldap]' 'python-keystoneclient==5.7.0' \
+        python-openstackclient PyMySQL psycopg2-binary redis cracklib && \
+    pip check
+
+COPY ./*.sh ./*.patch ./*.json ./keystone-all /opt/keystone/
+COPY ./keystone-wsgi.conf /etc/httpd/conf.d/keystone-wsgi.conf
+COPY ./keystone.wsgi /opt/keystone/keystone.wsgi
 
 WORKDIR /opt/keystone
 
-RUN \
-    yum update -y && \
-    #yum install -y curl && \
-    dnf install curl -y --allowerasing && \
-    # rpm -qa && \
-    yum install -y epel-release && yum update -y epel-release && \
-    # Install MySQL client
-    yum -y install mysql git && \
-    # Install PostgreSQL client
-    yum -y install postgresql python3-psycopg2 && \
-    # Install keystone dependencies
-    yum -y install rpm-build tar findutils procps-ng chkconfig && \
-    yum -y install python3 cronie && \
-    yum -y install centos-release-openstack-epoxy && \
-    yum update -y && \
-    # Install keystone dependencies
-    yum -y install crudini openstack-keystone-27.0.0-1.el9s.noarch python3-keystoneclient-5.6.0-1.el9s.noarch python3-keystone-27.0.0-1.el9s.noarch python3-openstackclient && \
-    yum -y install httpd python3-mod_wsgi && \
-    sed -i 's/#ServerName www.example.com:80/ServerName 127.0.0.1 /g' /etc/httpd/conf/httpd.conf && \
-    sed -i 's/5000/5001/g' /usr/share/keystone/wsgi-keystone.conf && \
-    ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d && \
-    systemctl enable httpd.service && \
-    cp /opt/keystone/keystone-all /usr/bin && \
-    chmod 755 /usr/bin/keystone-all && \
+RUN groupadd --system keystone && \
+    useradd --system --gid keystone --home-dir /var/lib/keystone \
+        --shell /sbin/nologin keystone && \
+    mkdir -p /etc/keystone/domains /etc/keystone/policy.d \
+        /etc/keystone/fernet-keys /var/lib/keystone /var/log/keystone && \
+    chown -R keystone:keystone /etc/keystone/domains /etc/keystone/policy.d \
+        /etc/keystone/fernet-keys /var/lib/keystone /var/log/keystone && \
+    chmod 750 /etc/keystone/fernet-keys && \
+    cp /tmp/keystone/etc/sso_callback_template.html /etc/keystone/ && \
+    touch /etc/keystone/keystone.conf && \
+    chown root:keystone /etc/keystone/keystone.conf && \
+    chmod 640 /etc/keystone/keystone.conf && \
+    ln -s /opt/keystone-venv/bin/keystone-manage /usr/bin/keystone-manage && \
     cp /opt/keystone/openstack-config.sh /usr/bin/openstack-config && \
-    chmod 755 /usr/bin/openstack-config && \
-    yum -y install unzip nmap-ncat jq python3-redis python3-chardet && \
-    echo "INFO: install cracklib...\n" && \
-    yum -y install cracklib gcc python3-devel && \
-    yum localinstall -y --nogpgcheck cracklib-devel-2.9.6-27.el9.x86_64.rpm && \
-    pip3 install --prefix=/usr cracklib && \
-    # Set keystone configuration
-    openstack-config --set /etc/keystone/keystone.conf \
-    DEFAULT public_port 5001  && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    os_inherit enabled true  && \
-    # Set log configuration
-    openstack-config --set /etc/keystone/keystone.conf \
-    DEFAULT default_log_levels amqp=WARN,amqplib=WARN,boto=WARN,qpid=WARN,sqlalchemy=WARN,suds=INFO,oslo.messaging=INFO,oslo_messaging=INFO,iso8601=WARN,requests.packages.urllib3.connectionpool=WARN,urllib3.connectionpool=WARN,websocket=WARN,requests.packages.urllib3.util.retry=WARN,urllib3.util.retry=WARN,keystonemiddleware=WARN,routes.middleware=WARN,stevedore=ERROR,taskflow=WARN,keystoneauth=WARN,oslo.cache=INFO,oslo.policy=ERROR,oslo_policy=ERROR,dogpile.core.dogpile=INFO,keystone.server.flask.application=CRITICAL && \
-    mkdir -p /etc/keystone/policy.d && \
-    chown keystone.keystone /etc/keystone/policy.d && \
-    # Set keystone Fernet tokens
-    openstack-config --set /etc/keystone/keystone.conf \
-    token provider fernet && \
-    mkdir -p /etc/keystone/fernet-keys && \
-    chown -R keystone:keystone /etc/keystone/fernet-keys && \
-    chmod -R o-rwx /etc/keystone/fernet-keys && \
-    keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone  && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    fernet_tokens max_active_keys 6 && \
-    # Create /opt/keystone
-    mkdir -p /opt/keystone && \
-    # Keystone postconfig file
-    chmod 755 /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh /opt/keystone/keystone-entrypoint.sh && \
-    ln -s /etc/keystone/keystone-paste.ini /usr/share/keystone/keystone-dist-paste.ini && \
-    mkdir -p /usr/lib/python3.9/site-packages/keystone/contrib && \
-    touch /usr/lib/python3.9/site-packages/keystone/contrib/__init__.py && \
-    # Install Keystone-SCIM
-    tag=$KEYSTONE_SCIM_VERSION && \
-    user="telefonicaid" && \
-    repo_scim="fiware-keystone-scim" && \
-    pack_scim="package-keystone-scim.sh" && \
-    url_scim="https://github.com/${user}/${repo_scim}/archive/${tag}.tar.gz" && \
-    dir=~/fiware-keystone && \
-    rm -fR $dir && mkdir -p $dir && \
-    curl -s --insecure -L "${url_scim}" | tar zxvf - -C ${dir} && \
-    cd ${dir}/${repo_scim}-${tag} && \
-    source ./${pack_scim} --with-python39 --with-version $KEYSTONE_SCIM_VERSION --with-release 0 && \
-    find . -name "*.rpm" -exec rpm -Uvh {} \; && \
-    # Install Keystone-SPASSWORD
-    cd /opt/keystone && \
-    tag=$KEYSTONE_SPASSWORD_VERSION && \
-    user="telefonicaid" && \
-    repo_spassword="fiware-keystone-spassword" && \
-    pack_spassword="package-keystone-spassword.sh" && \
-    url_spassword="https://github.com/${user}/${repo_spassword}/archive/${tag}.tar.gz" && \
-    dir=~/fiware-keystone && \
-    rm -fR $dir && mkdir -p $dir && \
-    curl -s --insecure -L "${url_spassword}" | tar zxvf - -C ${dir} && \
-    cd ${dir}/${repo_spassword}-${tag} && \
-    source ./${pack_spassword} --with-python39 --with-version $KEYSTONE_SPASSWORD_VERSION --with-release 0 && \
-    find . -name "*.rpm" -exec rpm -Uvh {} \; && \
-    # LDAP pre-support
-    yum -y install openldap-clients && \
+    cp /opt/keystone/keystone-all /usr/bin/keystone-all && \
+    chmod 755 /usr/bin/openstack-config /usr/bin/keystone-all \
+        /opt/keystone/postlaunchconfig.sh /opt/keystone/postlaunchconfig_update.sh \
+        /opt/keystone/keystone-entrypoint.sh && \
+    openstack-config --set /etc/keystone/keystone.conf DEFAULT public_port 5001 && \
+    openstack-config --set /etc/keystone/keystone.conf os_inherit enabled true && \
+    openstack-config --set /etc/keystone/keystone.conf token provider fernet && \
+    openstack-config --set /etc/keystone/keystone.conf fernet_tokens max_active_keys 6 && \
+    openstack-config --set /etc/keystone/keystone.conf identity domain_specific_drivers_enabled true && \
+    openstack-config --set /etc/keystone/keystone.conf identity domain_config_dir /etc/keystone/domains && \
+    openstack-config --set /etc/keystone/keystone.conf identity driver keystone_spassword.contrib.spassword.backends.sql.Identity && \
+    openstack-config --set /etc/keystone/keystone.conf auth password keystone_spassword.contrib.spassword.SPassword && \
+    openstack-config --set /etc/keystone/keystone.conf spassword enabled true && \
+    openstack-config --set /etc/keystone/keystone.conf spassword pwd_max_tries 5 && \
+    openstack-config --set /etc/keystone/keystone.conf spassword pwd_user_blacklist '' && \
+    openstack-config --set /etc/keystone/keystone.conf spassword smtp_user smtpuser@yourdomain.com && \
+    openstack-config --set /etc/keystone/keystone.conf spassword smtp_password yourpassword && \
+    openstack-config --set /etc/keystone/keystone.conf spassword smtp_from smtpuser && \
     mkdir -p /etc/ldap && \
     ln -s /etc/openldap/ldap.conf /etc/ldap/ldap.conf && \
-    mkdir -p /etc/keystone/domains && \
-    chown keystone.keystone /etc/keystone/domains && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    identity domain_specific_drivers_enabled true && \
-    openstack-config --set /etc/keystone/keystone.conf \
-    identity domain_config_dir /etc/keystone/domains && \
-    # Federation by SAML2 pre-support
-    yum install -y xmlsec1 && \
-    # Patching ...
-    ln -s /usr/lib/python3.9/site-packages/keystone/contrib/scim/scim.py  /usr/lib/python3.9/site-packages/keystone/api && \
-    ln -s /usr/lib/python3.9/site-packages/keystone/contrib/spassword/spassword.py  /usr/lib/python3.9/site-packages/keystone/api && \
-    rm -f /usr/lib/python3.9/site-packages/keystone/contrib/spassword/controllers.* && \
-    rm -f /usr/lib/python3.9/site-packages/keystone/contrib/spassword/routers.* && \
-    rm -f /usr/lib/python3.9/site-packages/keystone/contrib/scim/controllers.* && \
-    rm -f /usr/lib/python3.9/site-packages/keystone/contrib/scim/routers.* && \
-    cd /usr/lib/python3.9/site-packages/keystone/identity && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/core.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/common && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/manager.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/auth && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/core_auth.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/server && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/backends.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/auth/plugins && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/auth_plugins_token.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/common && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/common_render_token.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/models && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/token_model.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/token && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/token_provider.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/contrib/spassword && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/spassword_api.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/server/flask && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/apis.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/api && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/api_role_assignments.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/api && \
+    keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone && \
+    mkdir -p /tmp/scim /tmp/spassword && \
+    curl -fsSL "https://github.com/telefonicaid/fiware-keystone-scim/archive/refs/tags/${KEYSTONE_SCIM_VERSION}.tar.gz" | \
+        tar -xz --strip-components=1 -C /tmp/scim && \
+    curl -fsSL "https://github.com/telefonicaid/fiware-keystone-spassword/archive/refs/tags/${KEYSTONE_SPASSWORD_VERSION}.tar.gz" | \
+        tar -xz --strip-components=1 -C /tmp/spassword && \
+    site=/opt/keystone-venv/lib/python3.12/site-packages && \
+    cp -a /tmp/scim/keystone_scim "$site/" && \
+    cp -a /tmp/spassword/keystone_spassword "$site/" && \
+    mkdir -p "$site/keystone/contrib" && \
+    touch "$site/keystone/contrib/__init__.py" && \
+    ln -s "$site/keystone_scim/contrib/scim" "$site/keystone/contrib/scim" && \
+    ln -s "$site/keystone_spassword/contrib/spassword" "$site/keystone/contrib/spassword" && \
+    ln -s "$site/keystone/contrib/scim/scim.py" "$site/keystone/api/scim.py" && \
+    ln -s "$site/keystone/contrib/spassword/spassword.py" "$site/keystone/api/spassword.py" && \
+    ln -s "$site/keystone_spassword/contrib/spassword/migrate_repo/versions/1_spassword.py" \
+        "$site/keystone/common/sql/migrations/versions/1_spassword.py" && \
+    rm -f "$site/keystone/contrib/"{spassword,scim}/{controllers,routers}.py && \
+    cd "$site/keystone/identity" && patch -f --fuzz=0 -p0 < /opt/keystone/core.patch && \
+    cd "$site/keystone/common" && patch -f --fuzz=0 -p0 < /opt/keystone/manager.patch && \
+    cd "$site/keystone/auth" && patch -f --fuzz=0 -p0 < /opt/keystone/core_auth.patch && \
+    cd "$site/keystone/server" && patch -f --fuzz=0 -p0 < /opt/keystone/backends.patch && \
+    cd "$site/keystone/auth/plugins" && patch -f --fuzz=0 -p0 < /opt/keystone/auth_plugins_token.patch && \
+    cd "$site/keystone/common" && patch -f --fuzz=0 -p0 < /opt/keystone/common_render_token.patch && \
+    cd "$site/keystone/models" && patch -f --fuzz=0 -p0 < /opt/keystone/token_model.patch && \
+    cd "$site/keystone/token" && patch -f --fuzz=0 -p0 < /opt/keystone/token_provider.patch && \
+    cd "$site/keystone/contrib/spassword" && patch -f --fuzz=0 -p0 < /opt/keystone/spassword_api.patch && \
+    cd "$site/keystone/server/flask" && patch -f --fuzz=0 -p0 < /opt/keystone/apis.patch && \
+    cd "$site/keystone/api" && patch -f --fuzz=0 -p0 < /opt/keystone/api_role_assignments.patch && \
     patch -f --fuzz=0 -p0 < /opt/keystone/projects.patch && \
-    cd /usr/lib/python3.9/site-packages/keystone/api/_shared && \
-    patch -f --fuzz=0 -p0 < /opt/keystone/api_auth.patch && \
-    find /usr/lib/python3.9/site-packages/keystone -name "*.pyc" -delete && \
-    find /usr/lib/python3.9/site-packages/keystone -name "*.pyo" -delete && \
-    sed -ri \
-              -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/1/fd/1!g' \
-              -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/1/fd/2!g' \
-              /etc/httpd/conf.d/wsgi-keystone.conf && \
-    rm /etc/keystone/logging.conf && \
-    # Cleaning unused files...
-    yum -y remove gcc python3-devel && \
-    yum -y erase libss && \
-    yum clean all && rm -rf /var/lib/yum/yumdb && \
-    rm -rf /var/lib/yum/history && find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'es' ! -name 'es_ES' | xargs rm -r && \
-    rm -rf ~/fiware-keystone && rm -f /var/log/*log && rm -f /opt/keystone/*.rpm
+    cd "$site/keystone/api/_shared" && patch -f --fuzz=0 -p0 < /opt/keystone/api_auth.patch && \
+    find "$site/keystone" "$site/keystone_spassword" "$site/keystone_scim" -name '*.pyc' -delete && \
+    echo 'ServerName 127.0.0.1' >> /etc/httpd/conf/httpd.conf && \
+    rm -rf /tmp/keystone /tmp/scim /tmp/spassword /tmp/upper-constraints.txt && \
+    dnf clean all
 
-
-# Define the entry point
 ENTRYPOINT ["/opt/keystone/keystone-entrypoint.sh"]
 
 EXPOSE 5001 35357
